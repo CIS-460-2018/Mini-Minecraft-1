@@ -1,6 +1,6 @@
 QT += core widgets
 
-TARGET = 277
+TARGET = Mini Minecraft
 TEMPLATE = app
 CONFIG += console
 CONFIG += c++11
