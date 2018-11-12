@@ -9,13 +9,11 @@
 
 
 OpenGLContext::OpenGLContext(QWidget *parent)
-    : QOpenGLWidget(parent), rng(99.f)
-{
-}
+    : QOpenGLWidget(parent)
+{}
 
 OpenGLContext::~OpenGLContext()
-{
-}
+{}
 
 inline const char *glGS(GLenum e)
 {
@@ -67,7 +65,7 @@ void OpenGLContext::debugContextVersion()
                "If you cannot get 3.2 support, it is possible to port this project....");
 
         // Note: doing this requires at least the following actions:
-        // * Change the header and base class in OpenGLContext.h to 3.0/3.1 instead of 3.2 Core.
+        // * Change the header and base class in glwidget277.h to 3.0/3.1 instead of 3.2 Core.
         // * Change the shaders to require GLSL 1.30 or 1.40.
     }
 }
@@ -145,11 +143,3 @@ void OpenGLContext::printShaderInfoLog(int shader)
     // Throwing here allows us to use the debugger to track down the error.
     throw;
 }
-
-/*** AUTOMATIC TESTING: DO NOT MODIFY ***/
-/***/ void OpenGLContext::saveImageAndQuit() {
-/***/     glFlush();
-/***/     QImage image = grabFramebuffer();
-/***/     image.save("image.png");
-/***/     QApplication::quit();
-/***/ }

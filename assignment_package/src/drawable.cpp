@@ -7,6 +7,9 @@ Drawable::Drawable(OpenGLContext* context)
       context(context)
 {}
 
+Drawable::~Drawable()
+{}
+
 
 void Drawable::destroy()
 {

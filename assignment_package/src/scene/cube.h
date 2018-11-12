@@ -10,6 +10,7 @@
 class Cube : public Drawable
 {
 public:
-    Cube(OpenGLContext* context);
-    virtual void create();
+    Cube(OpenGLContext* context) : Drawable(context){}
+    virtual ~Cube(){}
+    void create() override;
 };

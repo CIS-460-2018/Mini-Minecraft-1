@@ -140,9 +140,8 @@ void Cube::create()
     createCubeVertexNormals(sph_vert_nor);
     createCubeIndices(sph_idx);
 
+
     for(int i = 0; i < CUB_VERT_COUNT; i++){
-        // The default Lambert shader outputs position as
-        // color for easier vision of blocks, so this value is never used.
         cub_vert_col[i] = glm::vec4(0.2f, 1.0f, 0.6f, 1);
     }
 
@@ -171,6 +170,3 @@ void Cube::create()
     context->glBindBuffer(GL_ARRAY_BUFFER, bufCol);
     context->glBufferData(GL_ARRAY_BUFFER, CUB_VERT_COUNT * sizeof(glm::vec4), cub_vert_col, GL_STATIC_DRAW);
 }
-
-Cube::Cube(OpenGLContext *context) : Drawable(context)
-{}

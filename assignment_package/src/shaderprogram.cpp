@@ -1,6 +1,8 @@
 #include "shaderprogram.h"
 #include <QFile>
 #include <QStringBuilder>
+#include <QTextStream>
+#include <QDebug>
 
 
 ShaderProgram::ShaderProgram(OpenGLContext *context)

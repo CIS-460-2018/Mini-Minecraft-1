@@ -7,14 +7,14 @@ SOURCES += \
     $$PWD/mygl.cpp \
     $$PWD/shaderprogram.cpp \
     $$PWD/utils.cpp \
-    $$PWD/la.cpp \
     $$PWD/drawable.cpp \
     $$PWD/camera.cpp \
     $$PWD/cameracontrolshelp.cpp \
     $$PWD/scene/cube.cpp \
-    $$PWD/scene/scene.cpp \
     $$PWD/scene/transform.cpp \
-    $$PWD/openglcontext.cpp
+    $$PWD/openglcontext.cpp \
+    $$PWD/scene/terrain.cpp \
+    $$PWD/scene/worldaxes.cpp
 
 HEADERS += \
     $$PWD/la.h \
@@ -26,6 +26,7 @@ HEADERS += \
     $$PWD/camera.h \
     $$PWD/cameracontrolshelp.h \
     $$PWD/scene/cube.h \
-    $$PWD/scene/scene.h \
     $$PWD/scene/transform.h \
-    $$PWD/openglcontext.h
+    $$PWD/openglcontext.h \
+    $$PWD/scene/terrain.h \
+    $$PWD/scene/worldaxes.h
