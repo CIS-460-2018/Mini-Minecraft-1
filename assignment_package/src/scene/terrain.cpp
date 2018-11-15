@@ -34,7 +34,7 @@ void Terrain::CreateTestScene()
                     }
                     else
                     {
-                        m_blocks[x][y][z] = DIRT;
+                        m_blocks[x][y][z] = STONE;
                     }
                 }
                 else
