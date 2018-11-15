@@ -2,8 +2,8 @@
 #include <la.h>
 
 Drawable::Drawable(OpenGLContext* context)
-    : bufIdx(), bufPos(), bufNor(), bufCol(),
-      idxBound(false), posBound(false), norBound(false), colBound(false),
+    : bufIdx(), bufPosNorCol(),
+      idxBound(false), posNorColBound(false),
       context(context)
 {}
 
@@ -14,9 +14,7 @@ Drawable::~Drawable()
 void Drawable::destroy()
 {
     context->glDeleteBuffers(1, &bufIdx);
-    context->glDeleteBuffers(1, &bufPos);
-    context->glDeleteBuffers(1, &bufNor);
-    context->glDeleteBuffers(1, &bufCol);
+    context->glDeleteBuffers(1, &bufPosNorCol);
 }
 
 GLenum Drawable::drawMode()
@@ -42,25 +40,11 @@ void Drawable::generateIdx()
     context->glGenBuffers(1, &bufIdx);
 }
 
-void Drawable::generatePos()
+void Drawable::generatePosNorCol()
 {
-    posBound = true;
-    // Create a VBO on our GPU and store its handle in bufPos
-    context->glGenBuffers(1, &bufPos);
-}
-
-void Drawable::generateNor()
-{
-    norBound = true;
-    // Create a VBO on our GPU and store its handle in bufNor
-    context->glGenBuffers(1, &bufNor);
-}
-
-void Drawable::generateCol()
-{
-    colBound = true;
-    // Create a VBO on our GPU and store its handle in bufCol
-    context->glGenBuffers(1, &bufCol);
+    posNorColBound = true;
+    // Create a VBO on our GPU and store its handle in bufPosNorCol
+    context->glGenBuffers(1, &bufPosNorCol);
 }
 
 bool Drawable::bindIdx()
@@ -71,26 +55,10 @@ bool Drawable::bindIdx()
     return idxBound;
 }
 
-bool Drawable::bindPos()
+bool Drawable::bindPosNorCol()
 {
-    if(posBound){
-        context->glBindBuffer(GL_ARRAY_BUFFER, bufPos);
+    if(posNorColBound){
+        context->glBindBuffer(GL_ARRAY_BUFFER, bufPosNorCol);
     }
-    return posBound;
-}
-
-bool Drawable::bindNor()
-{
-    if(norBound){
-        context->glBindBuffer(GL_ARRAY_BUFFER, bufNor);
-    }
-    return norBound;
-}
-
-bool Drawable::bindCol()
-{
-    if(colBound){
-        context->glBindBuffer(GL_ARRAY_BUFFER, bufCol);
-    }
-    return colBound;
+    return posNorColBound;
 }
