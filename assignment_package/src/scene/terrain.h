@@ -2,6 +2,8 @@
 #include <QList>
 #include <la.h>
 
+using namespace glm;
+
 // C++ 11 allows us to define the size of an enum. This lets us use only one byte
 // of memory to store our different block types. By default, the size of a C++ enum
 // is that of an int (so, usually four bytes). This *does* limit us to only 256 different
@@ -27,4 +29,9 @@ public:
     void setBlockAt(int x, int y, int z, BlockType t); // Given a world-space coordinate (which may have negative
                                                            // values) set the block at that point in space to the
                                                            // given type.
+//    vec2 randomfunc(vec2 p);
+
+//    float interpNoise2D(float x, float y);
+
+//    float fbm(float x, float y);
 };
