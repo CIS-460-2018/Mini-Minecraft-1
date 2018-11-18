@@ -33,11 +33,12 @@ float interpNoise2D(float x, float y) {
 }
 
 float fbm(float x, float y) {
+    x /= 64.f; y /= 64.f;
     float total = 0;
     float persistence = 0.5f;
     int octaves = 8;
 
-    for(int i = 0; i< octaves; i++) {
+    for(int i = 1; i<= octaves; i++) {
         float freq = pow(2.f, i);
         float amp = pow(persistence, i);
 
@@ -68,7 +69,8 @@ void Terrain::CreateTestScene()
         {
             float height = fbm(x, z);
 //            std::cout << height << std::endl;
-            height = 116 + height*10;
+            height = 128 + height * 32;
+//            height = 116 + height * 10;
 
             if (height < 128) {
                 height = 128.f;
