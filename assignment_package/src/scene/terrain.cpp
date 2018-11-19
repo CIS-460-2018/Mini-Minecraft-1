@@ -1,9 +1,61 @@
 #include <scene/terrain.h>
-
 #include <scene/cube.h>
+#include <random>
+#include <iostream>
+#include <math.h>
 
-Terrain::Terrain() : dimensions(64, 256, 64)
+using namespace glm;
+using namespace std;
+
+Terrain::Terrain()
+    : dimensions(64, 256, 64), x_boundary_start(0), y_boundary_start(0), z_boundary_start(0),
+      x_boundary_end(64), y_boundary_end(256),
+      z_boundary_end(64)
 {}
+
+Terrain::Terrain(int x_boundary_end, int y_boundary_end, int z_boundary_end)
+    : dimensions(x_boundary_end, y_boundary_end, z_boundary_end),
+      x_boundary_start(0), x_boundary_end(x_boundary_end), y_boundary_start(0), y_boundary_end(y_boundary_end),
+      z_boundary_start(0), z_boundary_end(z_boundary_end)
+{}
+
+float rand(vec2 n) {
+    return (fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453));
+}
+
+
+float interpNoise2D(float x, float y) {
+    float intX = floor(x);
+    float fractX = fract(x);
+    float intY = floor(y);
+    float fractY = fract(y);
+
+    float v1 = rand(vec2(intX, intY));
+    float v2 = rand(vec2(intX + 1, intY));
+    float v3 = rand(vec2(intX, intY + 1));
+    float v4 = rand(vec2(intX + 1, intY + 1));
+
+    float i1 = mix(v1, v2, fractX);
+    float i2 = mix(v3, v4, fractX);
+
+    return mix(i1, i2, fractY);
+}
+
+float fbm(float x, float y) {
+    x /= 64.f; y /= 64.f;
+    float total = 0;
+    float persistence = 0.5f;
+    int octaves = 8;
+
+    for(int i = 1; i<= octaves; i++) {
+        float freq = pow(2.f, i);
+        float amp = pow(persistence, i);
+
+        total += interpNoise2D(x * freq, y * freq) * amp;
+    }
+
+    return total;
+}
 
 BlockType Terrain::getBlockAt(int x, int y, int z) const
 {
@@ -20,26 +72,48 @@ void Terrain::setBlockAt(int x, int y, int z, BlockType t)
 void Terrain::CreateTestScene()
 {
     // Create the basic terrain floor
-    for(int x = 0; x < 64; ++x)
+    for(int x = x_boundary_start; x < x_boundary_end; ++x)
     {
-        for(int z = 0; z < 64; ++z)
+        for(int z = z_boundary_start; z < z_boundary_end; ++z)
         {
-            for(int y = 127; y < 256; ++y)
-            {
-                if(y <= 128)
-                {
-                    if((x + z) % 2 == 0)
-                    {
-                        m_blocks[x][y][z] = STONE;
-                    }
-                    else
-                    {
-                        m_blocks[x][y][z] = DIRT;
-                    }
+            float height = fbm(x, z);
+
+            height = 128 + height * 32;
+//            height = 116 + height * 10;
+
+            if (height < 128) {
+                height = 128.f;
+            }
+            else if (height > 256) {
+                height = 256.f;
+            }
+//            for(int y = 127; y < 256; ++y)
+//            {
+//                if(y <= 128)
+//                {
+//                    if((x + z) % 2 == 0)
+//                    {
+//                        m_blocks[x][y][z] = STONE;
+//                    }
+//                    else
+//                    {
+//                        m_blocks[x][y][z] = DIRT;
+//                    }
+//                }
+//                else
+//                {
+//                    m_blocks[x][y][z] = EMPTY;
+//                }
+//            }
+            for(int y = 0; y < height; y++) {
+                if(y == ceil(height) - 1) {
+                    setBlockAt(x, y, z, GRASS);
                 }
-                else
-                {
-                    m_blocks[x][y][z] = EMPTY;
+                else if(y >= 128) {
+                    setBlockAt(x, y, z, DIRT);
+                }
+                else {
+                    setBlockAt(x, y, z, STONE);
                 }
             }
         }
@@ -57,3 +131,5 @@ void Terrain::CreateTestScene()
         m_blocks[32][y][32] = GRASS;
     }
 }
+
+
