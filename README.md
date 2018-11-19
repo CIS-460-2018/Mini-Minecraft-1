@@ -28,3 +28,5 @@ In order to handle collision check, I decided to surround my player with a bound
 Difficulties/Issues:
 My collision method handles the collision with the terrain, but does not handle any other collision (e.g. collision with a grass block). I will need to take more time on this to debug
 The translation along the right vector affects the position very little compared to the translation along the forward vector. They are much more balanced when the movements are not affected by velocity, acceleration
+
+Note: There were some merging issues so we submitted the branch link for the player physics part.
