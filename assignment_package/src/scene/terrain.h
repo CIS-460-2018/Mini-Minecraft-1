@@ -23,12 +23,9 @@ private:
     int64_t getKey(int x, int y, bool chunked) const;
     OpenGLContext* context;
 public:
-//     Terrain(OpenGLContext* c);
-    Terrain();
+    Terrain(OpenGLContext* c);
     Terrain(OpenGLContext* c, int x_boundary_end, int y_boundary_end, int z_boundary_end);
-    BlockType m_blocks[64][256][64];                    // A 3D list of the blocks in the world.
-                                                           // You'll need to replace this with a far more
-                                                           // efficient system of storing terrain.
+
     void CreateTestScene();
 
     QHash<int64_t, Chunk*> chunkMap;

@@ -7,13 +7,12 @@
 using namespace glm;
 using namespace std;
 
-Terrain::Terrain()
-    : dimensions(64, 256, 64), x_boundary_start(0), y_boundary_start(0), z_boundary_start(0),
+Terrain::Terrain(OpenGLContext* c)
+    : context(c), dimensions(64, 256, 64), x_boundary_start(0), y_boundary_start(0), z_boundary_start(0),
       x_boundary_end(64), y_boundary_end(256),
       z_boundary_end(64)
 {}
 
-//Terrain::Terrain(OpenGLContext* c) : dimensions(64, 256, 64), context(c)
 Terrain::Terrain(OpenGLContext* c, int x_boundary_end, int y_boundary_end, int z_boundary_end)
     : context(c), dimensions(x_boundary_end, y_boundary_end, z_boundary_end),
       x_boundary_start(0), x_boundary_end(x_boundary_end), y_boundary_start(0), y_boundary_end(y_boundary_end),
@@ -116,7 +115,7 @@ void Terrain::CreateTestScene()
             float height = fbm(x, z);
 
             height = 128 + height * 32;
-//            height = 116 + height * 10;
+            //height = 116 + height * 10;
 
             if (height < 128) {
                 height = 128.f;
@@ -124,15 +123,19 @@ void Terrain::CreateTestScene()
             else if (height > 256) {
                 height = 256.f;
             }
-            for(int y = 0; y < height; y++) {
-                if(y == ceil(height) - 1) {
-                    setBlockAt(x, y, z, GRASS);
-                }
-                else if(y >= 128) {
-                    setBlockAt(x, y, z, DIRT);
-                }
-                else {
-                    setBlockAt(x, y, z, STONE);
+            for(int y = 0; y < 256; y++) {
+                if(y < height) {
+                    if(y == ceil(height) - 1) {
+                        setBlockAt(x, y, z, GRASS);
+                    }
+                    else if(y >= 128) {
+                        setBlockAt(x, y, z, DIRT);
+                    }
+                    else {
+                        setBlockAt(x, y, z, STONE);
+                    }
+                } else {
+                    setBlockAt(x, y, z, EMPTY);
                 }
             }
         }
