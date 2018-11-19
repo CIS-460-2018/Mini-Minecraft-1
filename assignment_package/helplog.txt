@@ -3,7 +3,3 @@ Milestone 1:
 Prateek
 Interleaving VBOs: https: //stackoverflow.com/questions/16380005/opengl-3-4-glvertexattribpointer-stride-and-offset-miscalculation
 Bitwise operations in C++: https://www.geeksforgeeks.org/bitwise-operators-in-c-cpp/
-
-
-
-- Inter-chunk adjacency
