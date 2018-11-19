@@ -50,6 +50,8 @@ public:
 
     void placeBlock();
 
+    void checkBoundary();
+
 protected:
     void keyPressEvent(QKeyEvent *e);
     void mousePressEvent(QMouseEvent *e);

@@ -211,7 +211,7 @@ void MyGL::placeBlock()
 
     while(t < 20) {
         glm::vec3 new_pos = pos + t * direction;
-        std::cout << new_pos.x << new_pos.y << new_pos.z << std::endl;
+//        std::cout << new_pos.x << new_pos.y << new_pos.z << std::endl;
 //        for(int x = pos.x - 1; x <= pos.x + 1; x++) {
 //            for(int y = pos.y - 2; y <= pos.y + 1; y++) {
 //                for(int z = pos.z - 1; z <= pos.z + 1; z++) {
@@ -262,6 +262,47 @@ void MyGL::placeBlock()
             break;
         }
         t += 0.1;
+    }
+}
+
+void MyGL::checkBoundary()
+{
+    glm::vec3 pos = mp_camera->eye;
+    if(pos.x < 10) {
+
+    }
+
+    if(fabs(pos.x - mp_terrain->x_boundary_end) >= 10) {
+//    if(mp_terrain->dimensions[0] == 64) {
+//        mp_terrain->dimensions[0] += 64;
+//        mp_terrain->x_boundary_end += 64;
+//        BlockType new_blocks [128][256][64];
+
+//        for(int x = 0; x < 64; x++) {
+//            for(int y = 0; y < 128; y++) {
+//                for(int z = 0; z < 64; z++) {
+//                    new_blocks[x][y][z] = mp_terrain->getBlockAt(x, y, z);
+//                }
+//            }
+//        }
+
+//        mp_terrain->m_blocks = new_blocks;
+//        for(int x = 64; x < 128; x++) {
+//            for(int y = 0; y < 128; y++) {
+//                for(int z = 0; z < 64; z++) {
+//                    mp_terrain->setBlockAt(x, y, z, STONE);
+//                }
+//            }
+//        }
+
+    }
+
+    if(pos.z < 10) {
+
+    }
+
+    if(fabs(pos.z - mp_terrain->z_boundary_end) >= 10) {
+
     }
 }
 
@@ -316,4 +357,5 @@ void MyGL::keyPressEvent(QKeyEvent *e)
         *mp_camera = Camera(this->width(), this->height());
     }
     mp_camera->RecomputeAttributes();
+//    checkBoundary();
 }

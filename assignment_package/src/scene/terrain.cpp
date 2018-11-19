@@ -77,6 +77,7 @@ void Terrain::CreateTestScene()
         for(int z = z_boundary_start; z < z_boundary_end; ++z)
         {
             float height = fbm(x, z);
+
             height = 128 + height * 32;
 //            height = 116 + height * 10;
 
