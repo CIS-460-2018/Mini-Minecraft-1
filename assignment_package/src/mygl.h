@@ -8,6 +8,7 @@
 #include <scene/worldaxes.h>
 #include "camera.h"
 #include <scene/terrain.h>
+#include "blocktype.h"
 
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>

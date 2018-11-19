@@ -299,6 +299,7 @@ void MyGL::mousePressEvent(QMouseEvent *e)
     } else if(e->buttons() == Qt::RightButton) {
         placeBlock();
     }
+    mp_terrain->updateScene();
 }
 
 void MyGL::keyPressEvent(QKeyEvent *e)
