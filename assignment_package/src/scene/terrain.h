@@ -17,10 +17,13 @@ class Terrain
 {
 public:
     Terrain();
+    Terrain(int x_boundary_end, int y_boundary_end, int z_boundary_end);
     BlockType m_blocks[64][256][64];                    // A 3D list of the blocks in the world.
                                                            // You'll need to replace this with a far more
                                                            // efficient system of storing terrain.
     void CreateTestScene();
+
+    int x_boundary_start, x_boundary_end, y_boundary_start, y_boundary_end, z_boundary_start, z_boundary_end;
 
     glm::ivec3 dimensions;
 

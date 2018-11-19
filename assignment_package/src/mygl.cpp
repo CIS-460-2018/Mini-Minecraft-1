@@ -19,7 +19,7 @@ MyGL::MyGL(QWidget *parent)
     setFocusPolicy(Qt::ClickFocus);
 
     setMouseTracking(true); // MyGL will track the mouse's movements even if a mouse button is not pressed
-    setCursor(Qt::BlankCursor); // Make the cursor invisible
+    //setCursor(Qt::BlankCursor); // Make the cursor invisible
 }
 
 MyGL::~MyGL()
@@ -162,6 +162,117 @@ void MyGL::GLDrawScene()
     }
 }
 
+float distance3D(int x1, int y1, int z1, int x2, int y2, int z2)
+{
+    return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2) + pow(z2 - z1, 2));
+}
+
+void MyGL::removeBlock()
+{
+    glm::vec3 pos = mp_camera->eye;
+    glm::vec3 direction = mp_camera->look;
+    float t = 0.1f;
+    while(t < 20) {
+        glm::vec3 new_pos = pos + t * direction;
+//        std::cout << new_pos.x << new_pos.y << new_pos.z << std::endl;
+//        for(int x = pos.x - 1; x <= pos.x + 1; x++) {
+//            for(int y = pos.y - 2; y <= pos.y + 1; y++) {
+//                for(int z = pos.z - 1; z <= pos.z + 1; z++) {
+//                    if(mp_terrain->getBlockAt(x, y, z) != EMPTY) {
+//                        mp_terrain->setBlockAt(x, y, z, EMPTY);
+//                    }
+//                }
+//            }
+//        }
+        if(mp_terrain->getBlockAt(new_pos.x, new_pos.y, new_pos.z) != EMPTY) {
+            mp_terrain->setBlockAt(new_pos.x, new_pos.y, new_pos.z, EMPTY);
+            break;
+        }
+        t += 0.1;
+    }
+}
+
+void MyGL::placeBlock()
+{
+    glm::vec3 pos = mp_camera->eye;
+    glm::vec3 direction = mp_camera->look;
+    float t = 0.1f;
+
+//    std::cout << pos.x << pos.y << pos.z << std::endl;
+//    for(int x = pos.x - 1; x <= pos.x + 1; x++) {
+//        for(int y = pos.y - 1; y <= pos.y + 1; y++) {
+//            for(int z = pos.z - 1; z <= pos.z + 1; z++) {
+//                std::cout << x << y << z << std::endl;
+//                mp_terrain->setBlockAt(x, y, z, STONE);
+//            }
+//        }
+//    }
+
+
+    while(t < 20) {
+        glm::vec3 new_pos = pos + t * direction;
+        std::cout << new_pos.x << new_pos.y << new_pos.z << std::endl;
+//        for(int x = pos.x - 1; x <= pos.x + 1; x++) {
+//            for(int y = pos.y - 2; y <= pos.y + 1; y++) {
+//                for(int z = pos.z - 1; z <= pos.z + 1; z++) {
+//                    if(mp_terrain->getBlockAt(x, y, z) != EMPTY) {
+//                        mp_terrain->setBlockAt(x, y, z, EMPTY);
+//                    }
+//                }
+//            }
+//        }
+        if(mp_terrain->getBlockAt(new_pos.x, new_pos.y, new_pos.z) != EMPTY) {
+            int x_insert = INT_MAX;
+            int y_insert = INT_MAX;
+            int z_insert = INT_MAX;
+            float min_distance = FLT_MAX;
+            for(int x = new_pos.x - 1; x <= new_pos.x + 1; x++) {
+                if(mp_terrain->getBlockAt(x, new_pos.y, new_pos.z) == EMPTY) {
+                    if(min_distance > distance3D(pos.x, pos.y, pos.z, x, new_pos.y, new_pos.z))
+                        min_distance = distance3D(pos.x, pos.y, pos.z, x, new_pos.y, new_pos.z);
+                        x_insert = x;
+                        y_insert = new_pos.y;
+                        z_insert = new_pos.z;
+                }
+            }
+
+            for(int y = new_pos.y - 1; y <= new_pos.y + 1; y++) {
+                if(mp_terrain->getBlockAt(new_pos.x, y, new_pos.z) == EMPTY) {
+                    if(min_distance > distance3D(pos.x, pos.y, pos.z, new_pos.x, y, new_pos.z))
+                        min_distance = distance3D(pos.x, pos.y, pos.z, new_pos.x, y, new_pos.z);
+                        x_insert = new_pos.x;
+                        y_insert = y;
+                        z_insert = new_pos.z;
+                }
+            }
+
+            for(int z = new_pos.z - 1; z <= new_pos.z + 1; z++) {
+                if(mp_terrain->getBlockAt(new_pos.x, new_pos.y, z) == EMPTY) {
+                    if(min_distance > distance3D(pos.x, pos.y, pos.z, new_pos.x, new_pos.y, z))
+                        min_distance = distance3D(pos.x, pos.y, pos.z, new_pos.x, new_pos.y, z);
+                        x_insert = new_pos.x;
+                        y_insert = new_pos.y;
+                        z_insert = z;
+                }
+            }
+
+            if(min_distance != FLT_MAX) {
+                mp_terrain->setBlockAt(x_insert, y_insert, z_insert, STONE);
+            }
+            break;
+        }
+        t += 0.1;
+    }
+}
+
+void MyGL::mousePressEvent(QMouseEvent *e)
+{
+    if(e->buttons() == Qt::LeftButton) {
+        removeBlock();
+    } else if(e->buttons() == Qt::RightButton) {
+        placeBlock();
+    }
+}
 
 void MyGL::keyPressEvent(QKeyEvent *e)
 {

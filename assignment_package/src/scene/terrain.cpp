@@ -7,7 +7,17 @@
 using namespace glm;
 using namespace std;
 
-Terrain::Terrain() : dimensions(64, 256, 64)
+Terrain::Terrain()
+    : dimensions(64, 256, 64), x_boundary_start(0), y_boundary_start(0), z_boundary_start(0),
+      x_boundary_end(64), y_boundary_end(256),
+      z_boundary_end(64)
+{}
+
+Terrain::Terrain(int x_boundary_end, int y_boundary_end, int z_boundary_end)
+    : dimensions(x_boundary_end, y_boundary_end, z_boundary_end),
+      x_boundary_start(0), y_boundary_start(0), z_boundary_start(0),
+      x_boundary_end(x_boundary_end), y_boundary_end(y_boundary_end),
+      z_boundary_end(z_boundary_end)
 {}
 
 float rand(vec2 n) {
@@ -63,9 +73,9 @@ void Terrain::setBlockAt(int x, int y, int z, BlockType t)
 void Terrain::CreateTestScene()
 {
     // Create the basic terrain floor
-    for(int x = 0; x < 64; ++x)
+    for(int x = x_boundary_start; x < x_boundary_end; ++x)
     {
-        for(int z = 0; z < 64; ++z)
+        for(int z = z_boundary_start; z < z_boundary_end; ++z)
         {
             float height = fbm(x, z);
 //            std::cout << height << std::endl;
