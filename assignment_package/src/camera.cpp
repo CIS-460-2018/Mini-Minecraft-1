@@ -65,6 +65,16 @@ glm::mat4 Camera::getViewProj()
     return glm::perspective(glm::radians(fovy), width / (float)height, near_clip, far_clip) * glm::lookAt(eye, ref, up);
 }
 
+glm::mat4 Camera::getView()
+{
+    return glm::lookAt(eye, ref, up);
+}
+
+glm::mat4 Camera::getProj()
+{
+    return glm::perspective(fovy, width / (float)height, near_clip, far_clip);
+}
+
 void Camera::RotateAboutUp(float deg)
 {
     glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(deg), up);
@@ -73,6 +83,7 @@ void Camera::RotateAboutUp(float deg)
     ref = ref + eye;
     RecomputeAttributes();
 }
+
 void Camera::RotateAboutRight(float deg)
 {
     glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(deg), right);
@@ -85,6 +96,8 @@ void Camera::RotateAboutRight(float deg)
 void Camera::TranslateAlongLook(float amt)
 {
     glm::vec3 translation = look * amt;
+    translation -= glm::vec3(0, translation.y, 0); // remove the y-component
+    translation = glm::normalize(translation); // normalize the vector
     eye += translation;
     ref += translation;
 }
@@ -95,9 +108,18 @@ void Camera::TranslateAlongRight(float amt)
     eye += translation;
     ref += translation;
 }
+
 void Camera::TranslateAlongUp(float amt)
 {
     glm::vec3 translation = up * amt;
+    upTransform += translation;
     eye += translation;
     ref += translation;
+}
+
+void Camera::getInitialHeightLevel()
+{
+    eye -= upTransform;
+    ref -= upTransform;
+    upTransform = glm::vec3(0); // reset the total up transform
 }

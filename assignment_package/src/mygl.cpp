@@ -1,16 +1,20 @@
 #include "mygl.h"
 #include <la.h>
+#include "math.h"
 
 #include <iostream>
 #include <QApplication>
 #include <QKeyEvent>
+#include <algorithm>
+#include<cmath>
+#include <QDateTime>
 
 
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       mp_geomCube(new Cube(this)), mp_worldAxes(new WorldAxes(this)),
       mp_progLambert(new ShaderProgram(this)), mp_progFlat(new ShaderProgram(this)),
-      mp_camera(new Camera()), mp_terrain(new Terrain())
+      mp_camera(new Camera()), mp_terrain(new Terrain()), mp_player(new Player(mp_camera))
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -34,6 +38,7 @@ MyGL::~MyGL()
     delete mp_progFlat;
     delete mp_camera;
     delete mp_terrain;
+    delete mp_player;
 }
 
 
@@ -86,13 +91,14 @@ void MyGL::initializeGL()
     glBindVertexArray(vao);
 
     mp_terrain->CreateTestScene();
+    startTime = QDateTime::currentMSecsSinceEpoch(); // set start time
 }
 
 void MyGL::resizeGL(int w, int h)
 {
     //This code sets the concatenated view and perspective projection matrices used for
     //our scene's camera view.
-    *mp_camera = Camera(w, h, glm::vec3(mp_terrain->dimensions.x, mp_terrain->dimensions.y * 0.75, mp_terrain->dimensions.z),
+    *mp_camera = Camera(w, h, glm::vec3(mp_player->getPosition()),//glm::vec3(mp_terrain->dimensions.x, mp_terrain->dimensions.y * 0.75, mp_terrain->dimensions.z),
                        glm::vec3(mp_terrain->dimensions.x / 2, mp_terrain->dimensions.y / 2, mp_terrain->dimensions.z / 2), glm::vec3(0,1,0));
     glm::mat4 viewproj = mp_camera->getViewProj();
 
@@ -109,6 +115,22 @@ void MyGL::resizeGL(int w, int h)
 // We're treating MyGL as our game engine class, so we're going to use timerUpdate
 void MyGL::timerUpdate()
 {
+    // add a timer variable to myGl, set it to start time, at each timer update find the current time and find delta t from that and pass it to physics update
+    // update physics: what is my velocity based on key presses, set a velocity
+    // check for collisions -> blockAt() -> set position here
+    // update camera position
+
+    // find the time elapsed
+    int64_t now = QDateTime::currentMSecsSinceEpoch();
+    int64_t dt = now - startTime; // delta-t
+
+    // update the velocity
+    mp_player->updateVelocity(dt);
+    // check for collisions
+    mp_player->checkCollision(dt, mp_terrain);
+    mp_camera->RecomputeAttributes();
+    startTime = now;
+    mp_player->resetKey();
     update();
 }
 
@@ -162,47 +184,13 @@ void MyGL::GLDrawScene()
     }
 }
 
+void MyGL::mouseMoveEvent(QMouseEvent *e)
+{
+    mp_player->updateMouse(e);
+}
+
 
 void MyGL::keyPressEvent(QKeyEvent *e)
 {
-
-    float amount = 2.0f;
-    if(e->modifiers() & Qt::ShiftModifier){
-        amount = 10.0f;
-    }
-    // http://doc.qt.io/qt-5/qt.html#Key-enum
-    // This could all be much more efficient if a switch
-    // statement were used, but I really dislike their
-    // syntax so I chose to be lazy and use a long
-    // chain of if statements instead
-    if (e->key() == Qt::Key_Escape) {
-        QApplication::quit();
-    } else if (e->key() == Qt::Key_Right) {
-        mp_camera->RotateAboutUp(-amount);
-    } else if (e->key() == Qt::Key_Left) {
-        mp_camera->RotateAboutUp(amount);
-    } else if (e->key() == Qt::Key_Up) {
-        mp_camera->RotateAboutRight(-amount);
-    } else if (e->key() == Qt::Key_Down) {
-        mp_camera->RotateAboutRight(amount);
-    } else if (e->key() == Qt::Key_1) {
-        mp_camera->fovy += amount;
-    } else if (e->key() == Qt::Key_2) {
-        mp_camera->fovy -= amount;
-    } else if (e->key() == Qt::Key_W) {
-        mp_camera->TranslateAlongLook(amount);
-    } else if (e->key() == Qt::Key_S) {
-        mp_camera->TranslateAlongLook(-amount);
-    } else if (e->key() == Qt::Key_D) {
-        mp_camera->TranslateAlongRight(amount);
-    } else if (e->key() == Qt::Key_A) {
-        mp_camera->TranslateAlongRight(-amount);
-    } else if (e->key() == Qt::Key_Q) {
-        mp_camera->TranslateAlongUp(-amount);
-    } else if (e->key() == Qt::Key_E) {
-        mp_camera->TranslateAlongUp(amount);
-    } else if (e->key() == Qt::Key_R) {
-        *mp_camera = Camera(this->width(), this->height());
-    }
-    mp_camera->RecomputeAttributes();
+    mp_player->updateKey(e);
 }
