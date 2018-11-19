@@ -2,7 +2,8 @@
 
 #include "drawable.h"
 #include "la.h"
-#include "terrain.h"
+#include <scene/terrain.h>
+#include "blocktype.h"
 
 #include <QOpenGLContext>
 #include <QOpenGLBuffer>
@@ -20,7 +21,7 @@ public:
     BlockType m_blocks[65536];
     Chunk(OpenGLContext* context);
     Chunk(OpenGLContext* context, BlockType blocks[16][256][16]);
-    virtual ~Chunk(){}
+    virtual ~Chunk() override {}
 
     BlockType getBlockType(int x, int y, int z) const;
     BlockType* getBlockTypeRef(int x, int y, int z);

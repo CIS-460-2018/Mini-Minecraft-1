@@ -2,19 +2,31 @@
 
 #include <scene/cube.h>
 
-Terrain::Terrain() : dimensions(64, 256, 64)
+Terrain::Terrain(OpenGLContext* c) : dimensions(64, 256, 64), context(c)
 {}
 
 BlockType Terrain::getBlockAt(int x, int y, int z) const
 {
-    // TODO: Make this work with your new block storage!
-    return m_blocks[x][y][z];
+    return chunkMap[getKey(x, z)]->getBlockType(x%16, y, z%16);
+}
+
+int64_t Terrain::getKey(int x, int z) const {
+    int64_t xz = 0xffffffffffffffff;
+    int64_t chunkx = x/16;
+    int64_t chunkz = z/16;
+    chunkx = (chunkx << 32) | 0x00000000ffffffff;
+    chunkz = chunkz | 0xffffffff00000000;
+    xz = chunkz & chunkx;
+    return xz;
 }
 
 void Terrain::setBlockAt(int x, int y, int z, BlockType t)
 {
-    // TODO: Make this work with your new block storage!
-    m_blocks[x][y][z] = t;
+    int64_t key = getKey(x, z);
+    if(!chunkMap.contains(key)) {
+        chunkMap.insert(key, new Chunk(context));
+    }
+    *(chunkMap[key]->getBlockTypeRef(x%16, y, z%16)) = t;
 }
 
 void Terrain::CreateTestScene()
@@ -24,9 +36,9 @@ void Terrain::CreateTestScene()
     {
         for(int z = 0; z < 64; ++z)
         {
-            for(int y = 127; y < 256; ++y)
+            for(int y = 0; y < 256; ++y)
             {
-                if(y <= 128)
+                if(y == 128 || y == 127 )
                 {
                     if((x + z) % 2 == 0)
                     {

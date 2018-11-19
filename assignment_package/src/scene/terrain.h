@@ -1,24 +1,31 @@
 #pragma once
 #include <QList>
 #include <la.h>
+#include <QOpenGLContext>
+
+#include <scene/terrain.h>
+#include "chunk.h"
+#include "blocktype.h"
 
 // C++ 11 allows us to define the size of an enum. This lets us use only one byte
 // of memory to store our different block types. By default, the size of a C++ enum
 // is that of an int (so, usually four bytes). This *does* limit us to only 256 different
 // block types, but in the scope of this project we'll never get anywhere near that many.
-enum BlockType : unsigned char
-{
-    EMPTY, GRASS, DIRT, STONE
-};
+
+class Chunk;
+enum BlockType: unsigned char;
 
 class Terrain
 {
+private:
+    int64_t getKey(int x, int y) const;
+    OpenGLContext* context;
 public:
-    Terrain();
-    BlockType m_blocks[64][256][64];                    // A 3D list of the blocks in the world.
-                                                           // You'll need to replace this with a far more
-                                                           // efficient system of storing terrain.
+    Terrain(OpenGLContext* c);
+
     void CreateTestScene();
+
+    QHash<int64_t, Chunk*> chunkMap;
 
     glm::ivec3 dimensions;
 

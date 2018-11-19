@@ -31,4 +31,5 @@ HEADERS += \
     $$PWD/openglcontext.h \
     $$PWD/scene/terrain.h \
     $$PWD/scene/worldaxes.h \
-    $$PWD/scene/chunk.h
+    $$PWD/scene/chunk.h \
+    $$PWD/blocktype.h
