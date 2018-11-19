@@ -23,9 +23,9 @@ public:
                                                            // efficient system of storing terrain.
     void CreateTestScene();
 
-    int x_boundary_start, x_boundary_end, y_boundary_start, y_boundary_end, z_boundary_start, z_boundary_end;
-
     glm::ivec3 dimensions;
+
+    int x_boundary_start, x_boundary_end, y_boundary_start, y_boundary_end, z_boundary_start, z_boundary_end;
 
     BlockType getBlockAt(int x, int y, int z) const;   // Given a world-space coordinate (which may have negative
                                                            // values) return the block stored at that point in space.

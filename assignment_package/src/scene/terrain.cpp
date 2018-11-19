@@ -15,9 +15,8 @@ Terrain::Terrain()
 
 Terrain::Terrain(int x_boundary_end, int y_boundary_end, int z_boundary_end)
     : dimensions(x_boundary_end, y_boundary_end, z_boundary_end),
-      x_boundary_start(0), y_boundary_start(0), z_boundary_start(0),
-      x_boundary_end(x_boundary_end), y_boundary_end(y_boundary_end),
-      z_boundary_end(z_boundary_end)
+      x_boundary_start(0), x_boundary_end(x_boundary_end), y_boundary_start(0), y_boundary_end(y_boundary_end),
+      z_boundary_start(0), z_boundary_end(z_boundary_end)
 {}
 
 float rand(vec2 n) {
@@ -78,7 +77,6 @@ void Terrain::CreateTestScene()
         for(int z = z_boundary_start; z < z_boundary_end; ++z)
         {
             float height = fbm(x, z);
-//            std::cout << height << std::endl;
             height = 128 + height * 32;
 //            height = 116 + height * 10;
 
