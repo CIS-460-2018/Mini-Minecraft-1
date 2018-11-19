@@ -7,6 +7,8 @@
 #include "chunk.h"
 #include "blocktype.h"
 
+using namespace glm;
+
 // C++ 11 allows us to define the size of an enum. This lets us use only one byte
 // of memory to store our different block types. By default, the size of a C++ enum
 // is that of an int (so, usually four bytes). This *does* limit us to only 256 different
@@ -21,13 +23,19 @@ private:
     int64_t getKey(int x, int y, bool chunked) const;
     OpenGLContext* context;
 public:
-    Terrain(OpenGLContext* c);
-
+//     Terrain(OpenGLContext* c);
+    Terrain();
+    Terrain(OpenGLContext* c, int x_boundary_end, int y_boundary_end, int z_boundary_end);
+    BlockType m_blocks[64][256][64];                    // A 3D list of the blocks in the world.
+                                                           // You'll need to replace this with a far more
+                                                           // efficient system of storing terrain.
     void CreateTestScene();
 
     QHash<int64_t, Chunk*> chunkMap;
 
     glm::ivec3 dimensions;
+
+    int x_boundary_start, x_boundary_end, y_boundary_start, y_boundary_end, z_boundary_start, z_boundary_end;
 
     BlockType getBlockAt(int x, int y, int z) const;   // Given a world-space coordinate (which may have negative
                                                            // values) return the block stored at that point in space.
@@ -38,4 +46,9 @@ public:
                         // and you are ready to set a VBO
     void createVertexPosNorCol(Chunk* c, int xChunk, int zChunk);
     bool checkEmpty(int x, int y, int z, Chunk* c, int xChunk, int zChunk);
+//    vec2 randomfunc(vec2 p);
+
+//    float interpNoise2D(float x, float y);
+
+//    float fbm(float x, float y);
 };

@@ -1,0 +1,1 @@
+Used the lecture slides for noise and fractal brownian motion functions.
