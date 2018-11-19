@@ -86,6 +86,7 @@ void MyGL::initializeGL()
     glBindVertexArray(vao);
 
     mp_terrain->CreateTestScene();
+    mp_terrain->updateScene();
 }
 
 void MyGL::resizeGL(int w, int h)
@@ -134,7 +135,6 @@ void MyGL::paintGL()
 void MyGL::GLDrawScene()
 {
     for(int64_t xz: mp_terrain->chunkMap.keys()) {
-        QList<int64_t> list = mp_terrain->chunkMap.keys();
         Chunk* c = mp_terrain->chunkMap[xz];
         int64_t zChunk = xz & 0x00000000ffffffff;
         if(zChunk & 0x0000000080000000) {

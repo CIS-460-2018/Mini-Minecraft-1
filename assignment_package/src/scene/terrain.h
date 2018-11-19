@@ -18,7 +18,7 @@ enum BlockType: unsigned char;
 class Terrain
 {
 private:
-    int64_t getKey(int x, int y) const;
+    int64_t getKey(int x, int y, bool chunked) const;
     OpenGLContext* context;
 public:
     Terrain(OpenGLContext* c);
@@ -34,4 +34,8 @@ public:
     void setBlockAt(int x, int y, int z, BlockType t); // Given a world-space coordinate (which may have negative
                                                            // values) set the block at that point in space to the
                                                            // given type.
+    void updateScene(); // creates the VBOS for every chunk. Should only be called after all 16x256x16 blocks are assigned a blocktype
+                        // and you are ready to set a VBO
+    void createVertexPosNorCol(Chunk* c, int xChunk, int zChunk);
+    bool checkEmpty(int x, int y, int z, Chunk* c, int xChunk, int zChunk);
 };

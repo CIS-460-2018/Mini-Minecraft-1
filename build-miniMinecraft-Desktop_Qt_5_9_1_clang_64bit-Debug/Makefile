@@ -1832,6 +1832,8 @@ terrain.o: ../assignment_package/src/scene/terrain.cpp ../assignment_package/src
 		../assignment_package/include/glm/gtx/string_cast.inl \
 		../assignment_package/include/glm/gtc/type_ptr.hpp \
 		../assignment_package/include/glm/gtc/type_ptr.inl \
+		/Users/prateekagarwal/Qt/5.9.1/clang_64/lib/QtGui.framework/Headers/QOpenGLContext \
+		/Users/prateekagarwal/Qt/5.9.1/clang_64/lib/QtGui.framework/Headers/qopenglcontext.h \
 		../assignment_package/src/scene/chunk.h \
 		../assignment_package/src/drawable.h \
 		../assignment_package/src/openglcontext.h \
@@ -1842,8 +1844,6 @@ terrain.o: ../assignment_package/src/scene/terrain.cpp ../assignment_package/src
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/QTimer \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/qtimer.h \
 		../assignment_package/src/blocktype.h \
-		/Users/prateekagarwal/Qt/5.9.1/clang_64/lib/QtGui.framework/Headers/QOpenGLContext \
-		/Users/prateekagarwal/Qt/5.9.1/clang_64/lib/QtGui.framework/Headers/qopenglcontext.h \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/lib/QtGui.framework/Headers/QOpenGLBuffer \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/lib/QtGui.framework/Headers/qopenglbuffer.h \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/lib/QtGui.framework/Headers/QOpenGLShaderProgram \
@@ -2064,9 +2064,9 @@ chunk.o: ../assignment_package/src/scene/chunk.cpp ../assignment_package/src/sce
 		../assignment_package/src/scene/terrain.h \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/lib/QtGui.framework/Headers/QList \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/lib/QtGui.framework/Headers/qevent.h \
-		../assignment_package/src/blocktype.h \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/lib/QtGui.framework/Headers/QOpenGLContext \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/lib/QtGui.framework/Headers/qopenglcontext.h \
+		../assignment_package/src/blocktype.h \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/lib/QtGui.framework/Headers/QOpenGLBuffer \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/lib/QtGui.framework/Headers/qopenglbuffer.h \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/lib/QtGui.framework/Headers/QOpenGLShaderProgram \

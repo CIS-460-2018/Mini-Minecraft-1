@@ -14,10 +14,11 @@ using namespace std;
 class Chunk: public Drawable
 {
 private:
-    int faces;
     void createVertexPosNorCol(vector<glm::vec4> &posNorCol);
     void createIndices(vector<GLuint> &idx);
 public:
+    int faces;
+    vector<glm::vec4> c_vert_pos_nor_col;
     BlockType m_blocks[65536];
     Chunk(OpenGLContext* context);
     Chunk(OpenGLContext* context, BlockType blocks[16][256][16]);
