@@ -1,6 +1,11 @@
 #pragma once
 #include <QList>
 #include <la.h>
+#include <QOpenGLContext>
+
+#include <scene/terrain.h>
+#include "chunk.h"
+#include "blocktype.h"
 
 using namespace glm;
 
@@ -8,20 +13,25 @@ using namespace glm;
 // of memory to store our different block types. By default, the size of a C++ enum
 // is that of an int (so, usually four bytes). This *does* limit us to only 256 different
 // block types, but in the scope of this project we'll never get anywhere near that many.
-enum BlockType : unsigned char
-{
-    EMPTY, GRASS, DIRT, STONE
-};
+
+class Chunk;
+enum BlockType: unsigned char;
 
 class Terrain
 {
+private:
+    int64_t getKey(int x, int y, bool chunked) const;
+    OpenGLContext* context;
 public:
+//     Terrain(OpenGLContext* c);
     Terrain();
-    Terrain(int x_boundary_end, int y_boundary_end, int z_boundary_end);
+    Terrain(OpenGLContext* c, int x_boundary_end, int y_boundary_end, int z_boundary_end);
     BlockType m_blocks[64][256][64];                    // A 3D list of the blocks in the world.
                                                            // You'll need to replace this with a far more
                                                            // efficient system of storing terrain.
     void CreateTestScene();
+
+    QHash<int64_t, Chunk*> chunkMap;
 
     glm::ivec3 dimensions;
 
@@ -32,6 +42,10 @@ public:
     void setBlockAt(int x, int y, int z, BlockType t); // Given a world-space coordinate (which may have negative
                                                            // values) set the block at that point in space to the
                                                            // given type.
+    void updateScene(); // creates the VBOS for every chunk. Should only be called after all 16x256x16 blocks are assigned a blocktype
+                        // and you are ready to set a VBO
+    void createVertexPosNorCol(Chunk* c, int xChunk, int zChunk);
+    bool checkEmpty(int x, int y, int z, Chunk* c, int xChunk, int zChunk);
 //    vec2 randomfunc(vec2 p);
 
 //    float interpNoise2D(float x, float y);

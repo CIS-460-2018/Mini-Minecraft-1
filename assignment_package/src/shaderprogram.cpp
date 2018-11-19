@@ -147,19 +147,19 @@ void ShaderProgram::draw(Drawable &d)
         // glBindBuffer on the Drawable's VBO for vertex position,
         // meaning that glVertexAttribPointer associates vs_Pos
         // (referred to by attrPos) with that VBO
-    if (attrPos != -1 && d.bindPos()) {
+    if (attrPos != -1 && d.bindPosNorCol()) {
         context->glEnableVertexAttribArray(attrPos);
-        context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, 0, NULL);
+        context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, 12*sizeof(GL_FLOAT), 0);
     }
 
-    if (attrNor != -1 && d.bindNor()) {
+    if (attrNor != -1 && d.bindPosNorCol()) {
         context->glEnableVertexAttribArray(attrNor);
-        context->glVertexAttribPointer(attrNor, 4, GL_FLOAT, false, 0, NULL);
+        context->glVertexAttribPointer(attrNor, 4, GL_FLOAT, false, 12*sizeof(GL_FLOAT), (GLvoid*)(4*sizeof(GL_FLOAT)));
     }
 
-    if (attrCol != -1 && d.bindCol()) {
+    if (attrCol != -1 && d.bindPosNorCol()) {
         context->glEnableVertexAttribArray(attrCol);
-        context->glVertexAttribPointer(attrCol, 4, GL_FLOAT, false, 0, NULL);
+        context->glVertexAttribPointer(attrCol, 4, GL_FLOAT, false, 12*sizeof(GL_FLOAT), (GLvoid*)(8*sizeof(GL_FLOAT)));
     }
 
     // Bind the index buffer and then draw shapes from it.

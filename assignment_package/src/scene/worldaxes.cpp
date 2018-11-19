@@ -10,18 +10,24 @@ void WorldAxes::create()
     glm::vec4 col[6] = {glm::vec4(1,0,0,1), glm::vec4(1,0,0,1),
                         glm::vec4(0,1,0,1), glm::vec4(0,1,0,1),
                         glm::vec4(0,0,1,1), glm::vec4(0,0,1,1)};
+    glm::vec4 nor[6] = {glm::vec4(0, 0, 1, 0), glm::vec4(0, 0, 1, 0),
+                        glm::vec4(0, 0, 1, 0), glm::vec4(0, 0, 1, 0),
+                        glm::vec4(0, 0, 1, 0), glm::vec4(0, 0, 1, 0)};
+    glm::vec4 posNorCol[18];
+    for(int i = 0; i < 6; i++) {
+        posNorCol[i*3] = pos[i];
+        posNorCol[i*3+1] = nor[i];
+        posNorCol[i*3+2] = col[i];
+    }
 
     count = 6;
 
     generateIdx();
     context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufIdx);
-    context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(GLuint), idx, GL_STATIC_DRAW);
-    generatePos();
-    context->glBindBuffer(GL_ARRAY_BUFFER, bufPos);
-    context->glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(glm::vec4), pos, GL_STATIC_DRAW);
-    generateCol();
-    context->glBindBuffer(GL_ARRAY_BUFFER, bufCol);
-    context->glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(glm::vec4), col, GL_STATIC_DRAW);
+    context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(GLuint), idx, GL_STATIC_DRAW);
+    generatePosNorCol();
+    context->glBindBuffer(GL_ARRAY_BUFFER, bufPosNorCol);
+    context->glBufferData(GL_ARRAY_BUFFER, count * 3 * sizeof(glm::vec4), posNorCol, GL_STATIC_DRAW);
 }
 
 GLenum WorldAxes::drawMode()

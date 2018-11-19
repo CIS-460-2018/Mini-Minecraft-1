@@ -10,7 +10,7 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       mp_geomCube(new Cube(this)), mp_worldAxes(new WorldAxes(this)),
       mp_progLambert(new ShaderProgram(this)), mp_progFlat(new ShaderProgram(this)),
-      mp_camera(new Camera()), mp_terrain(new Terrain())
+      mp_camera(new Camera()), mp_terrain(new Terrain(this))
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -86,6 +86,7 @@ void MyGL::initializeGL()
     glBindVertexArray(vao);
 
     mp_terrain->CreateTestScene();
+    mp_terrain->updateScene();
 }
 
 void MyGL::resizeGL(int w, int h)
@@ -133,32 +134,17 @@ void MyGL::paintGL()
 
 void MyGL::GLDrawScene()
 {
-    for(int x = 0; x < mp_terrain->dimensions.x; ++x)
-    {
-        for(int y = 0; y < mp_terrain->dimensions.y; ++y)
-        {
-            for(int z = 0; z < mp_terrain->dimensions.z; ++z)
-            {
-                BlockType t;
-                if((t = mp_terrain->m_blocks[x][y][z]) != EMPTY)
-                {
-                    switch(t)
-                    {
-                    case DIRT:
-                        mp_progLambert->setGeometryColor(glm::vec4(121.f, 85.f, 58.f, 255.f) / 255.f);
-                        break;
-                    case GRASS:
-                        mp_progLambert->setGeometryColor(glm::vec4(95.f, 159.f, 53.f, 255.f) / 255.f);
-                        break;
-                    case STONE:
-                        mp_progLambert->setGeometryColor(glm::vec4(0.5f));
-                        break;
-                    }
-                    mp_progLambert->setModelMatrix(glm::translate(glm::mat4(), glm::vec3(x, y, z)));
-                    mp_progLambert->draw(*mp_geomCube);
-                }
-            }
+    for(int64_t xz: mp_terrain->chunkMap.keys()) {
+        Chunk* c = mp_terrain->chunkMap[xz];
+        int64_t zChunk = xz & 0x00000000ffffffff;
+        if(zChunk & 0x0000000080000000) {
+            zChunk = zChunk | 0xffffffff00000000;
         }
+        int64_t xChunk = xz >> 32;
+
+        c->create();
+        mp_progLambert->setModelMatrix(glm::translate(glm::mat4(), glm::vec3(xChunk*16, 0, zChunk*16)));
+        mp_progLambert->draw(*c);
     }
 }
 
