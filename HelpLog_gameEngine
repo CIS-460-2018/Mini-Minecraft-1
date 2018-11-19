@@ -1,0 +1,4 @@
+Game Engine Help Log:
+
+Sunday OH:
+- Went over collision and camera concepts with Grace to understand how the collision must be handled and in what order velocity update, camera update, collision check, etc. should be done
