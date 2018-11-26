@@ -243,7 +243,6 @@ DIST          = /Users/prateekagarwal/Qt/5.9.1/clang_64/mkspecs/features/spec_pr
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/mkspecs/features/qt_config.prf \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/mkspecs/macx-clang/qmake.conf \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/mkspecs/features/spec_post.prf \
-		../assignment_package/.qmake.stash \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/mkspecs/features/exclusive_builds.prf \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/mkspecs/features/mac/sdk.prf \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/mkspecs/features/toolchain.prf \
@@ -473,7 +472,6 @@ Makefile: ../assignment_package/miniMinecraft.pro /Users/prateekagarwal/Qt/5.9.1
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/mkspecs/features/qt_config.prf \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/mkspecs/macx-clang/qmake.conf \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/mkspecs/features/spec_post.prf \
-		.qmake.stash \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/mkspecs/features/exclusive_builds.prf \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/mkspecs/features/mac/sdk.prf \
 		/Users/prateekagarwal/Qt/5.9.1/clang_64/mkspecs/features/toolchain.prf \
@@ -664,7 +662,6 @@ Makefile: ../assignment_package/miniMinecraft.pro /Users/prateekagarwal/Qt/5.9.1
 /Users/prateekagarwal/Qt/5.9.1/clang_64/mkspecs/features/qt_config.prf:
 /Users/prateekagarwal/Qt/5.9.1/clang_64/mkspecs/macx-clang/qmake.conf:
 /Users/prateekagarwal/Qt/5.9.1/clang_64/mkspecs/features/spec_post.prf:
-.qmake.stash:
 /Users/prateekagarwal/Qt/5.9.1/clang_64/mkspecs/features/exclusive_builds.prf:
 /Users/prateekagarwal/Qt/5.9.1/clang_64/mkspecs/features/mac/sdk.prf:
 /Users/prateekagarwal/Qt/5.9.1/clang_64/mkspecs/features/toolchain.prf:
@@ -739,7 +736,6 @@ clean: compiler_clean
 
 distclean: clean 
 	-$(DEL_FILE) -r MiniMinecraft.app
-	-$(DEL_FILE) .qmake.stash
 	-$(DEL_FILE) Makefile
 
 
