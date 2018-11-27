@@ -1,31 +1,33 @@
 build-miniMinecraft-Desktop_Qt_5_9_1_clang_64bit-Debug/
-	.qmake.stash
-	Makefile
-	MiniMinecraft.app/
-	camera.o
-	cameracontrolshelp.o
-	chunk.o
-	cube.o
-	drawable.o
-	main.o
-	mainwindow.o
-	miniMinecraft.pro.user.6c59cef
-	moc_cameracontrolshelp.cpp
-	moc_cameracontrolshelp.o
-	moc_mainwindow.cpp
-	moc_mainwindow.o
-	moc_mygl.cpp
-	moc_mygl.o
-	moc_predefs.h
-	mygl.o
-	openglcontext.o
-	qrc_glsl.cpp
-	qrc_glsl.o
-	shaderprogram.o
-	terrain.o
-	transform.o
-	ui_cameracontrolshelp.h
-	ui_mainwindow.h
-	utils.o
-	worldaxes.o
+assignment_package/.qmake.stash
+assignment_package/Makefile
+assignment_package/MiniMinecraft.app/
+assignment_package/camera.o
+assignment_package/cameracontrolshelp.o
+assignment_package/chunk.o
+assignment_package/cube.o
+assignment_package/drawable.o
+assignment_package/main.o
+assignment_package/mainwindow.o
+assignment_package/miniMinecraft.pro.user.6c59cef
+assignment_package/miniMinecraft.pro
+assignment_package/miniMinecraft.pro.user
+assignment_package/moc_cameracontrolshelp.cpp
+assignment_package/moc_cameracontrolshelp.o
+assignment_package/moc_mainwindow.cpp
+assignment_package/moc_mainwindow.o
+assignment_package/moc_mygl.cpp
+assignment_package/moc_mygl.o
+assignment_package/moc_predefs.h
+assignment_package/mygl.o
+assignment_package/openglcontext.o
+assignment_package/qrc_glsl.cpp
+assignment_package/qrc_glsl.o
+assignment_package/shaderprogram.o
+assignment_package/terrain.o
+assignment_package/transform.o
+assignment_package/ui_cameracontrolshelp.h
+assignment_package/ui_mainwindow.h
+assignment_package/utils.o
+assignment_package/worldaxes.o
 .DS_Store
