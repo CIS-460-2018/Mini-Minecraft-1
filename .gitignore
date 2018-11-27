@@ -1,2 +1,31 @@
 build-miniMinecraft-Desktop_Qt_5_9_1_clang_64bit-Debug/
+	.qmake.stash
+	Makefile
+	MiniMinecraft.app/
+	camera.o
+	cameracontrolshelp.o
+	chunk.o
+	cube.o
+	drawable.o
+	main.o
+	mainwindow.o
+	miniMinecraft.pro.user.6c59cef
+	moc_cameracontrolshelp.cpp
+	moc_cameracontrolshelp.o
+	moc_mainwindow.cpp
+	moc_mainwindow.o
+	moc_mygl.cpp
+	moc_mygl.o
+	moc_predefs.h
+	mygl.o
+	openglcontext.o
+	qrc_glsl.cpp
+	qrc_glsl.o
+	shaderprogram.o
+	terrain.o
+	transform.o
+	ui_cameracontrolshelp.h
+	ui_mainwindow.h
+	utils.o
+	worldaxes.o
 .DS_Store
