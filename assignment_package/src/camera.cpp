@@ -98,13 +98,6 @@ void Camera::TranslateAlongRight(float amt)
 void Camera::TranslateAlongUp(float amt)
 {
     glm::vec3 translation = up * amt;
-    upTransform += translation;
     eye += translation;
     ref += translation;
-}
-void Camera::getInitialHeightLevel()
-{
-    eye -= upTransform;
-    ref -= upTransform;
-    upTransform = glm::vec3(0); // reset the total up transform
 }

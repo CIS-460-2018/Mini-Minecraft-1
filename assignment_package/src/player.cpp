@@ -47,18 +47,20 @@ void Player::updateVelocity()
         } else if (key == Qt::Key_F) {
             if (isFlyMode) {
                 isFlyMode = false;
-                camera->getInitialHeightLevel();
+                acceleration = glm::vec4(0, -G, 0, 1);
+                grounded = false;
             } else {
                 isFlyMode = true;
+                position += 5.0f;
                 camera->TranslateAlongUp(5.0f);
             }
         } else if (key == Qt::Key_E) {
             if (isFlyMode) {
-                camera->TranslateAlongUp(amount / 10.0f);
+                camera->TranslateAlongUp(amount);
             }
         } else if (key == Qt::Key_Q) {
             if (isFlyMode) {
-                camera->TranslateAlongUp(-amount / 10.0f);
+                camera->TranslateAlongUp(-amount);
             }
         }
     }
@@ -74,20 +76,24 @@ void Player::checkCollision(float dt, Terrain* t)
     float curDist = 0;
     if (isFlyMode) {
         if (posIncrease.z != 0) {
-            position += posIncrease;
-            camera->TranslateAlongLook(posIncrease.z);
-            velocity = glm::vec4(0, 0, 0, 1);
+            if (posIncrease.z > 0) {
+                position += 1.0f;
+                camera->TranslateAlongLook(1.0f);
+            } else {
+                position -= 1.0f;
+                camera->TranslateAlongLook(-1.0f);
+            }
         }
         if (posIncrease.x != 0) {
-            position += posIncrease;
-            camera->TranslateAlongRight(posIncrease.x);
-            velocity = glm::vec4(0, 0, 0, 1);
+            if (posIncrease.x > 0) {
+                position += 1.0f;
+                camera->TranslateAlongRight(1.0f);
+            } else {
+                position -= 1.0f;
+                camera->TranslateAlongRight(-1.0f);
+            }
         }
-        if (posIncrease.y != 0) {
-            position += posIncrease;
-            camera->TranslateAlongUp(posIncrease.y);
-            velocity = glm::vec4(0, 0, 0, 1);
-        }
+        velocity = glm::vec4(0, 0, 0, 1);
         return; // player is not subject to terrain collisions during fly mode
     }
     bool isColFound = false;
