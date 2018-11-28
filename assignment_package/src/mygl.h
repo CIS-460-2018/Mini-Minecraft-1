@@ -9,6 +9,7 @@
 #include "camera.h"
 #include <scene/terrain.h>
 #include "blocktype.h"
+#include "player.h"
 
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
@@ -28,6 +29,9 @@ private:
 
     Camera* mp_camera;
     Terrain* mp_terrain;
+
+    Player* mp_player; // player instance
+    int64_t startTime; // initial elapsed time
 
     /// Timer linked to timerUpdate(). Fires approx. 60 times per second
     QTimer timer;
@@ -56,6 +60,7 @@ public:
 protected:
     void keyPressEvent(QKeyEvent *e);
     void mousePressEvent(QMouseEvent *e);
+    void mouseMoveEvent(QMouseEvent *e);
 
 private slots:
     /// Slot that gets called ~60 times per second

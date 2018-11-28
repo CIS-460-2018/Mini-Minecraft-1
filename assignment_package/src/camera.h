@@ -17,6 +17,8 @@ public:
     float near_clip;  // Near clip plane distance
     float far_clip;  // Far clip plane distance
 
+    glm::vec3 upTransform; // total amount of up-down transformation, initially set to zero
+
     //Computed attributes
     float aspect;
 
@@ -39,4 +41,6 @@ public:
     void TranslateAlongLook(float amt);
     void TranslateAlongRight(float amt);
     void TranslateAlongUp(float amt);
+
+    void getInitialHeightLevel();
 };

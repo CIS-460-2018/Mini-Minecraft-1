@@ -15,7 +15,8 @@ SOURCES += \
     $$PWD/openglcontext.cpp \
     $$PWD/scene/terrain.cpp \
     $$PWD/scene/worldaxes.cpp \
-    $$PWD/scene/chunk.cpp
+    $$PWD/scene/chunk.cpp \
+    $$PWD/player.cpp
 
 HEADERS += \
     $$PWD/la.h \
@@ -32,4 +33,5 @@ HEADERS += \
     $$PWD/scene/terrain.h \
     $$PWD/scene/worldaxes.h \
     $$PWD/scene/chunk.h \
-    $$PWD/blocktype.h
+    $$PWD/blocktype.h \
+    $$PWD/player.h

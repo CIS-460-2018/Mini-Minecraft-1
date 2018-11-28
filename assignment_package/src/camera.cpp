@@ -84,7 +84,7 @@ void Camera::RotateAboutRight(float deg)
 
 void Camera::TranslateAlongLook(float amt)
 {
-    glm::vec3 translation = look * amt;
+    glm::vec3 translation = glm::normalize(glm::vec3(look.x, 0, look.z)) * amt;
     eye += translation;
     ref += translation;
 }
@@ -98,6 +98,13 @@ void Camera::TranslateAlongRight(float amt)
 void Camera::TranslateAlongUp(float amt)
 {
     glm::vec3 translation = up * amt;
+    upTransform += translation;
     eye += translation;
     ref += translation;
+}
+void Camera::getInitialHeightLevel()
+{
+    eye -= upTransform;
+    ref -= upTransform;
+    upTransform = glm::vec3(0); // reset the total up transform
 }
