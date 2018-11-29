@@ -21,7 +21,7 @@ void Player::updateMouse(QMouseEvent *e)
 {
     mouse = e;
     glm::vec2 pos(e->pos().x(), e->pos().y());
-    glm::vec2 diff = 0.1f * (pos - m_mousePosPrev);
+    glm::vec2 diff = 0.2f * (pos - m_mousePosPrev);
     m_mousePosPrev = pos;
     camera->RotateAboutUp(-diff.x);
     camera->RotateAboutRight(-diff.y);
@@ -33,17 +33,25 @@ void Player::updateVelocity()
     if (key != 0) {
         float amount = 2.0f;
         if (key == Qt::Key_Space) {
-            velocity += glm::vec4(0, 7, 0, 1); // jump with speed of 10
+            velocity = glm::vec4(0, 7, 0, 1); // jump with speed of 10
             acceleration = glm::vec4(0, -G, 0, 1);
             grounded = false;
         } else if (key == Qt::Key_W) {
-            velocity += glm::vec4(0, 0, amount, 1);
+            glm::vec3 v = amount * camera->look;
+            v.y = 0;
+            velocity += glm::vec4(v, 1);
         } else if (key == Qt::Key_S) {
-            velocity += glm::vec4(0, 0, -amount, 1);
+            glm::vec3 v = -amount * camera->look;
+            v.y = 0;
+            velocity += glm::vec4(v, 1);
         } else if (key == Qt::Key_D) {
-            velocity += glm::vec4(amount, 0, 0, 1);
+            glm::vec3 v = amount * camera->right;
+            v.y = 0;
+            velocity += glm::vec4(v, 1);
         } else if (key == Qt::Key_A) {
-            velocity += glm::vec4(-amount, 0, 0, 1);
+            glm::vec3 v = -amount * camera->right;
+            v.y = 0;
+            velocity += glm::vec4(v, 1);
         } else if (key == Qt::Key_F) {
             if (isFlyMode) {
                 isFlyMode = false;
@@ -77,21 +85,27 @@ void Player::checkCollision(float dt, Terrain* t)
     if (isFlyMode) {
         if (posIncrease.z != 0) {
             if (posIncrease.z > 0) {
-                position += 1.0f;
-                camera->TranslateAlongLook(1.0f);
+                position.z += 1.0f;
+                camera->ref.z += 1.0;
+                //camera->TranslateAlongLook(1.0f);
             } else {
-                position -= 1.0f;
-                camera->TranslateAlongLook(-1.0f);
+                position.z -= 1.0f;
+                camera->ref.z -= 1.0;
+                //camera->TranslateAlongLook(-1.0f);
             }
+            camera->eye = glm::vec3(position.x, position.y, position.z);
         }
         if (posIncrease.x != 0) {
             if (posIncrease.x > 0) {
-                position += 1.0f;
-                camera->TranslateAlongRight(1.0f);
+                position.x += 1.0f;
+                camera->ref.x += 1.0;
+                //camera->TranslateAlongRight(1.0f);
             } else {
-                position -= 1.0f;
-                camera->TranslateAlongRight(-1.0f);
+                position.x -= 1.0f;
+                camera->ref.x -= 1.0;
+                //camera->TranslateAlongRight(-1.0f);
             }
+            camera->eye = glm::vec3(position.x, position.y, position.z);
         }
         velocity = glm::vec4(0, 0, 0, 1);
         return; // player is not subject to terrain collisions during fly mode
@@ -105,7 +119,6 @@ void Player::checkCollision(float dt, Terrain* t)
             glm::vec4 potentialPos = point + curDist * dir;
             BlockType currBlock = t->getBlockAt(potentialPos.x, potentialPos.y, potentialPos.z);
             if (currBlock != EMPTY) {
-                std::cout << position.y << std::endl;
                 if (!grounded) {
                     grounded = true;
                     velocity = glm::vec4(0, 0, 0, 1);
