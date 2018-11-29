@@ -30,3 +30,6 @@ My collision method handles the collision with the terrain, but does not handle 
 The translation along the right vector affects the position very little compared to the translation along the forward vector. They are much more balanced when the movements are not affected by velocity, acceleration
 
 Note: There were some merging issues so we submitted the branch link for the player physics part.
+
+Update:
+- All the bugs from the previous part are fixed and merged with master.
