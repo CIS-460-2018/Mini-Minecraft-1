@@ -117,9 +117,9 @@ void Terrain::setBlockAt(int x, int y, int z, BlockType t)
 void Terrain::CreateTestScene()
 {
     // Create the basic terrain floor
-    for(int x = -64; x < 32; ++x)
+    for(int x = x_boundary_start; x < x_boundary_end; ++x)
     {
-        for(int z = -64; z < 32; ++z)
+        for(int z = z_boundary_start; z < z_boundary_end; ++z)
         {
             float height = fbm(x, z);
 
