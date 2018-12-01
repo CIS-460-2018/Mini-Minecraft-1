@@ -31,3 +31,5 @@ assignment_package/ui_mainwindow.h
 assignment_package/utils.o
 assignment_package/worldaxes.o
 .DS_Store
+assignment_package/miniMinecraft.pro.user*
+assignment_package/player.o
