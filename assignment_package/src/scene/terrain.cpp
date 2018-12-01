@@ -44,7 +44,7 @@ float interpNoise2D(float x, float y) {
 float fbm(float x, float y) {
     x /= 64.f; y /= 64.f;
     float total = 0;
-    float persistence = 0.5f;
+    float persistence = 0.45f;
     int octaves = 8;
 
     for(int i = 1; i<= octaves; i++) {
@@ -59,7 +59,17 @@ float fbm(float x, float y) {
 
 BlockType Terrain::getBlockAt(int x, int y, int z) const
 {
-    return chunkMap[getKey(x, z, false)]->getBlockType(x%16, y, z%16);
+    int originalX = x;
+    int originalZ = z;
+    x = abs(x)%16;
+    z = abs(z)%16;
+    if(originalX < 0 && x != 0) {
+        x = 16 - x;
+    }
+    if(originalZ < 0 && z != 0) {
+        z = 16 - z;
+    }
+    return chunkMap[getKey(x, z, false)]->getBlockType(x, y, z);
 }
 
 int64_t Terrain::getKey(int x, int z, bool chunked) const {
@@ -70,12 +80,14 @@ int64_t Terrain::getKey(int x, int z, bool chunked) const {
         chunkx = x;
         chunkz = z;
     } else {
-        chunkx = x/16;
-        chunkz = z/16;
+        float fx = floorf(x / 16.0);
+        float fz = floorf(z / 16.0);
+        chunkx = int64_t(fx);
+        chunkz = int64_t(fz);
     }
-    chunkx = (chunkx << 32) | 0x00000000ffffffff;
+    xz = (xz & (chunkx << 32)) | 0x00000000ffffffff;
     chunkz = chunkz | 0xffffffff00000000;
-    xz = chunkz & chunkx;
+    xz = xz & chunkz;
     return xz;
 }
 
@@ -85,33 +97,26 @@ void Terrain::setBlockAt(int x, int y, int z, BlockType t)
     if(!chunkMap.contains(key)) {
         chunkMap.insert(key, new Chunk(context));
     }
-    *(chunkMap[key]->getBlockTypeRef(x%16, y, z%16)) = t;
+    int originalX = x;
+    int originalZ = z;
+    x = abs(x)%16;
+    z = abs(z)%16;
+    if(originalX < 0 && x != 0) {
+        x = 16 - x;
+    }
+    if(originalZ < 0 && z != 0) {
+        z = 16 - z;
+    }
+    *(chunkMap[key]->getBlockTypeRef(x, y, z)) = t;
 }
 
 void Terrain::CreateTestScene()
 {
     // Create the basic terrain floor
-    for(int x = x_boundary_start; x < x_boundary_end; ++x)
+    for(int x = -64; x < 32; ++x)
     {
-        for(int z = z_boundary_start; z < z_boundary_end; ++z)
+        for(int z = -64; z < 32; ++z)
         {
-//             for(int y = 0; y < 256; ++y)
-//             {
-//                 if(y == 128 || y == 127 )
-//                 {
-//                     if((x + z) % 2 == 0)
-//                     {
-//                         setBlockAt(x, y, z, STONE);
-//                     }
-//                     else
-//                     {
-//                         setBlockAt(x, y, z, DIRT);
-//                     }
-//                 }
-//                 else
-//                 {
-//                     setBlockAt(x, y, z, EMPTY);
-//                 }
             float height = fbm(x, z);
 
             height = 128 + height * 32;
@@ -140,32 +145,19 @@ void Terrain::CreateTestScene()
             }
         }
     }
-    // Add "walls" for collision testing
-    for(int x = 0; x < 64; ++x)
-    {
-        setBlockAt(x, 129, 0, GRASS);
-        setBlockAt(x, 130, 0, GRASS);
-        setBlockAt(x, 129, 63, GRASS);
-        setBlockAt(0, 130, x, GRASS);
-    }
-    for(int y = 129; y < 140; ++y)
-    {
-        setBlockAt(32, y, 32, GRASS);
-    }
 }
 
 void Terrain::updateScene() {
     for(int64_t xz: chunkMap.keys()) {
         Chunk* c = chunkMap[xz];
+        c->destroy();
         int64_t zChunk = xz & 0x00000000ffffffff;
         if(zChunk & 0x0000000080000000) {
             zChunk = zChunk | 0xffffffff00000000;
         }
-        int64_t xChunk = xz >> 32;
-
-        createVertexPosNorCol(c, xChunk, zChunk);
-
-        c->faces = c->c_vert_pos_nor_col.size()/12;
+        int64_t xChunk = (xz >> 32);
+        createVertexPosNorCol(c, (int)xChunk, (int)zChunk);
+        c->create();
     }
 }
 
@@ -289,6 +281,7 @@ void Terrain::createVertexPosNorCol(Chunk* c, int xChunk, int zChunk) {
             }
         }
     }
+    c->faces = c->c_vert_pos_nor_col.size()/12;
 }
 
 bool Terrain::checkEmpty(int x, int y, int z, Chunk* c, int xChunk, int zChunk) {
