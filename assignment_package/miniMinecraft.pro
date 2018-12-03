@@ -50,3 +50,7 @@ address_sanitizer {
 HEADERS +=
 
 SOURCES +=
+
+DISTFILES += \
+    glsl/overlay.frag.glsl \
+    glsl/overlay.vert.glsl

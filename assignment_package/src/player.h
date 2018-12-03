@@ -9,7 +9,6 @@
 class Player
 {
 private:
-    glm::vec4 position = glm::vec4(20, 200, 20, 1); // player's position in 3D space, initially at (20, 160, 20)
     glm::vec4 velocity = glm::vec4(0, 0, 0, 1); // player's velocity in 3D space, initially zero
     const float G = 9.81f; // gravitational constant
     glm::vec4 acceleration = glm::vec4(0, -G, 0, 1);
@@ -17,11 +16,14 @@ private:
     int key = 0; // key tracker
     QMouseEvent* mouse; // mouse tracker
     bool isFlyMode; // determine the fly/gravity mode
+    bool inLiquid; // in lava or water
     bool grounded = false;
 
     glm::vec2 m_mousePosPrev;
 public:
     Player(Camera* cam);
+
+    glm::vec4 position = glm::vec4(20, 200, 20, 1); // player's position in 3D space, initially at (20, 160, 20)
 
     void updateKey(QKeyEvent* e); // updates the most recently pressed keyboard key
 
@@ -34,6 +36,8 @@ public:
     void checkCollision(float dt, Terrain *t);
 
     std::vector<glm::vec4> getPointsToCheck(glm::vec4 direction);
+
+    bool isLiquidBlock(BlockType b);
 
     glm::vec4 getPosition();
 

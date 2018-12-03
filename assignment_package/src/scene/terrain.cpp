@@ -121,30 +121,41 @@ void Terrain::CreateTestScene()
     {
         for(int z = -64; z < 32; ++z)
         {
-            float height = fbm(x, z);
+//            float height = fbm(x, z);
 
-            height = 128 + height * 32;
-            //height = 116 + height * 10;
+//            height = 128 + height * 32;
+//            //height = 116 + height * 10;
 
-            if (height < 128) {
-                height = 128.f;
-            }
-            else if (height > 256) {
-                height = 256.f;
-            }
+//            if (height < 128) {
+//                height = 128.f;
+//            }
+//            else if (height > 256) {
+//                height = 256.f;
+//            }
+//            for(int y = 0; y < 256; y++) {
+//                if(y < height) {
+//                    if(y == ceil(height) - 1) {
+//                        setBlockAt(x, y, z, GRASS);
+//                    }
+//                    else if(y >= 128) {
+//                        setBlockAt(x, y, z, DIRT);
+//                    }
+//                    else {
+//                        setBlockAt(x, y, z, STONE);
+//                    }
+//                } else {
+//                    setBlockAt(x, y, z, EMPTY);
+//                }
+//            }
             for(int y = 0; y < 256; y++) {
-                if(y < height) {
-                    if(y == ceil(height) - 1) {
-                        setBlockAt(x, y, z, GRASS);
-                    }
-                    else if(y >= 128) {
-                        setBlockAt(x, y, z, DIRT);
-                    }
-                    else {
-                        setBlockAt(x, y, z, STONE);
-                    }
+                if(y < 128) {
+                    setBlockAt(x, y, z, GRASS);
                 } else {
-                    setBlockAt(x, y, z, EMPTY);
+                    if(y < 140 && z > 0 && z < 32 && x > 0 && x < 32) {
+                        setBlockAt(x, y, z, STONE);
+                    } else {
+                        setBlockAt(x, y, z, EMPTY);
+                    }
                 }
             }
         }
@@ -181,7 +192,7 @@ void Terrain::createVertexPosNorCol(Chunk* c, int xChunk, int zChunk) {
                         col = (glm::vec4(95.f, 159.f, 53.f, 255.f) / 255.f);
                         break;
                     case STONE:
-                        col = (glm::vec4(0.5f));
+                        col = (glm::vec4(0.5f, 0.5f, 0.5f, 1.f));
                         break;
                     }
 
