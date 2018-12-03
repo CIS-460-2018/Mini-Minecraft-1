@@ -1,4 +1,5 @@
 #include "chunk.h"
+bool Chunk::isOpaqueDrawn = false;
 
 Chunk::Chunk(OpenGLContext* context) : Drawable(context) {}
 
@@ -31,8 +32,19 @@ int64_t getKey(int x, int z) {
     return xz;
 }
 
-void Chunk::createIndices(vector<GLuint> &idx) {
-    for(int i = 0; i < faces; i++){
+void Chunk::createIndicesOpaque(vector<GLuint> &idx) {
+    for(int i = 0; i < facesOpaque; i++){
+        idx.push_back(i*4);
+        idx.push_back(i*4+1);
+        idx.push_back(i*4+2);
+        idx.push_back(i*4);
+        idx.push_back(i*4+2);
+        idx.push_back(i*4+3);
+    }
+}
+
+void Chunk::createIndicesTransparent(vector<GLuint> &idx) {
+    for(int i = 0; i < facesTransparent; i++){
         idx.push_back(i*4);
         idx.push_back(i*4+1);
         idx.push_back(i*4+2);
@@ -45,7 +57,7 @@ void Chunk::createIndices(vector<GLuint> &idx) {
 void Chunk::create() {
     vector<GLuint> c_idx;
 
-    createIndices(c_idx);
+    createIndicesOpaque(c_idx);
 
     count = c_idx.size();
 
@@ -53,7 +65,21 @@ void Chunk::create() {
     context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufIdx);
     context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(GLuint), &c_idx[0], GL_STATIC_DRAW);
 
-    generatePosNorCol();
-    context->glBindBuffer(GL_ARRAY_BUFFER, bufPosNorCol);
-    context->glBufferData(GL_ARRAY_BUFFER, c_vert_pos_nor_col.size() * sizeof(glm::vec4), &c_vert_pos_nor_col[0], GL_STATIC_DRAW);
+    generatePosNorUVOpaque();
+    context->glBindBuffer(GL_ARRAY_BUFFER, bufPosNorUVOpaque);
+    context->glBufferData(GL_ARRAY_BUFFER, c_vert_pos_nor_uv_opaque.size() * sizeof(glm::vec4), &c_vert_pos_nor_uv_opaque[0], GL_STATIC_DRAW);
+}
+
+void Chunk::createTransparent() {
+    vector<GLuint> c_idx;
+    createIndicesTransparent(c_idx);
+    countT = c_idx.size();
+
+    generateIdxT();
+    context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufIdxT);
+    context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, countT * sizeof(GLuint), &c_idx[0], GL_STATIC_DRAW);
+
+    generatePosNorUVTransparent();
+    context->glBindBuffer(GL_ARRAY_BUFFER, bufPosNorUVTransparent);
+    context->glBufferData(GL_ARRAY_BUFFER, c_vert_pos_nor_uv_transparent.size() * sizeof(glm::vec4), &c_vert_pos_nor_uv_transparent[0], GL_STATIC_DRAW);
 }

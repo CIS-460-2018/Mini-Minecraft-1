@@ -25,8 +25,8 @@ void WorldAxes::create()
     generateIdx();
     context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufIdx);
     context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(GLuint), idx, GL_STATIC_DRAW);
-    generatePosNorCol();
-    context->glBindBuffer(GL_ARRAY_BUFFER, bufPosNorCol);
+    generatePosNorUVOpaque();
+    context->glBindBuffer(GL_ARRAY_BUFFER, bufPosNorUVOpaque);
     context->glBufferData(GL_ARRAY_BUFFER, count * 3 * sizeof(glm::vec4), posNorCol, GL_STATIC_DRAW);
 }
 

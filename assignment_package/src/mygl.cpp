@@ -11,7 +11,7 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       mp_geomCube(new Cube(this)), mp_worldAxes(new WorldAxes(this)),
       mp_progLambert(new ShaderProgram(this)), mp_progFlat(new ShaderProgram(this)),
-      mp_camera(new Camera()), mp_terrain(new Terrain(this)), mp_player(new Player(mp_camera))
+      mp_camera(new Camera()), mp_terrain(new Terrain(this)), mp_player(new Player(mp_camera)), mp_texture(new Texture(this))
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -36,8 +36,8 @@ MyGL::~MyGL()
     delete mp_camera;
     delete mp_terrain;
     delete mp_player;
+    delete mp_texture;
 }
-
 
 void MyGL::MoveMouseToCenter()
 {
@@ -56,6 +56,8 @@ void MyGL::initializeGL()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LINE_SMOOTH);
     glEnable(GL_POLYGON_SMOOTH);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
     // Set the size with which points should be rendered
@@ -71,7 +73,6 @@ void MyGL::initializeGL()
     //Create the instance of Cube
     mp_geomCube->create();
     mp_worldAxes->create();
-
     // Create and set up the diffuse shader
     mp_progLambert->create(":/glsl/lambert.vert.glsl", ":/glsl/lambert.frag.glsl");
     // Create and set up the flat lighting shader
@@ -80,7 +81,7 @@ void MyGL::initializeGL()
     // Set a color with which to draw geometry since you won't have one
     // defined until you implement the Node classes.
     // This makes your geometry render green.
-    mp_progLambert->setGeometryColor(glm::vec4(0,1,0,1));
+   // mp_progLambert->setGeometryColor(glm::vec4(0,1,0,1));
 
     // We have to have a VAO bound in OpenGL 3.2 Core. But if we're not
     // using multiple VAOs, we can just bind one once.
@@ -89,6 +90,8 @@ void MyGL::initializeGL()
 
     mp_terrain->CreateTestScene();
     mp_terrain->updateScene();
+    mp_texture->create(":/minecraft_textures_all/minecraft_textures_all.png");
+    mp_texture->load(0);
 
     startTime = QDateTime::currentMSecsSinceEpoch(); // set start time
 }
@@ -105,10 +108,10 @@ void MyGL::resizeGL(int w, int h)
 
     mp_progLambert->setViewProjMatrix(viewproj);
     mp_progFlat->setViewProjMatrix(viewproj);
+    mp_progLambert->setViewVector(glm::vec4(mp_camera->eye, 0));
 
     printGLErrorLog();
 }
-
 
 // MyGL's constructor links timerUpdate() to a timer that fires 60 times per second.
 // We're treating MyGL as our game engine class, so we're going to use timerUpdate
@@ -137,7 +140,12 @@ void MyGL::paintGL()
 
     mp_progFlat->setViewProjMatrix(mp_camera->getViewProj());
     mp_progLambert->setViewProjMatrix(mp_camera->getViewProj());
+    mp_progLambert->setViewVector(glm::vec4(mp_camera->eye, 0));
+    mp_progLambert->setTime(m_time);
+    mp_progFlat->setTime(m_time);
+    m_time++;
 
+    mp_texture->bind(0);
     GLDrawScene();
 
     glDisable(GL_DEPTH_TEST);
@@ -148,6 +156,7 @@ void MyGL::paintGL()
 
 void MyGL::GLDrawScene()
 {
+    // first draw the opaques
     for(int64_t xz: mp_terrain->chunkMap.keys()) {
         Chunk* c = mp_terrain->chunkMap[xz];
         int64_t zChunk = xz & 0x00000000ffffffff;
@@ -155,10 +164,21 @@ void MyGL::GLDrawScene()
             zChunk = zChunk | 0xffffffff00000000;
         }
         int64_t xChunk = xz >> 32;
-
         c->create();
         mp_progLambert->setModelMatrix(glm::translate(glm::mat4(), glm::vec3(xChunk*16, 0, zChunk*16)));
         mp_progLambert->draw(*c);
+    }
+    // then draw the transparents
+    for(int64_t xz: mp_terrain->chunkMap.keys()) {
+        Chunk* c = mp_terrain->chunkMap[xz];
+        int64_t zChunk = xz & 0x00000000ffffffff;
+        if(zChunk & 0x0000000080000000) {
+            zChunk = zChunk | 0xffffffff00000000;
+        }
+        int64_t xChunk = xz >> 32;
+        c->createTransparent();
+        mp_progLambert->setModelMatrix(glm::translate(glm::mat4(), glm::vec3(xChunk*16, 0, zChunk*16)));
+        mp_progLambert->drawT(*c);
     }
 }
 
@@ -257,7 +277,7 @@ void MyGL::placeBlock()
             }
 
             if(min_distance != FLT_MAX) {
-                mp_terrain->setBlockAt(x_insert, y_insert, z_insert, STONE);
+                mp_terrain->setBlockAt(x_insert, y_insert, z_insert, WATER);
             }
             break;
         }
@@ -309,9 +329,9 @@ void MyGL::checkBoundary()
 void MyGL::mousePressEvent(QMouseEvent *e)
 {
     if(e->buttons() == Qt::LeftButton) {
-        removeBlock();
-    } else if(e->buttons() == Qt::RightButton) {
         placeBlock();
+    } else if(e->buttons() == Qt::RightButton) {
+        removeBlock();
     }
     mp_terrain->updateScene();
 }
@@ -321,8 +341,8 @@ void MyGL::mouseMoveEvent(QMouseEvent *e)
     mp_player->updateMouse(e);
 }
 
-
 void MyGL::keyPressEvent(QKeyEvent *e)
 {
     mp_player->updateKey(e);
 }
+

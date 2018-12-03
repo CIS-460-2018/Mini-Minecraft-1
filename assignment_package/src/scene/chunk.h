@@ -15,10 +15,14 @@ class Chunk: public Drawable
 {
 private:
     void createVertexPosNorCol(vector<glm::vec4> &posNorCol);
-    void createIndices(vector<GLuint> &idx);
+    void createIndicesOpaque(vector<GLuint> &idx);
+    void createIndicesTransparent(vector<GLuint> &idx);
 public:
-    int faces;
-    vector<glm::vec4> c_vert_pos_nor_col;
+    static bool isOpaqueDrawn;
+    int facesOpaque;
+    int facesTransparent;
+    vector<glm::vec4> c_vert_pos_nor_uv_opaque;
+    vector<glm::vec4> c_vert_pos_nor_uv_transparent;
     BlockType m_blocks[65536];
     Chunk(OpenGLContext* context);
     Chunk(OpenGLContext* context, BlockType blocks[16][256][16]);
@@ -28,4 +32,5 @@ public:
     BlockType* getBlockTypeRef(int x, int y, int z);
 
     void create() override;
+    void createTransparent();
 };

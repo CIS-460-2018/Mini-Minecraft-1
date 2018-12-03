@@ -163,127 +163,309 @@ void Terrain::updateScene() {
         }
         int64_t xChunk = xz >> 32;
 
-        createVertexPosNorCol(c, xChunk, zChunk);
+        createVertexPosNorUV(c, xChunk, zChunk);
 
-        c->faces = c->c_vert_pos_nor_col.size()/12;
+        c->facesOpaque = c->c_vert_pos_nor_uv_opaque.size() / 12;
+        c->facesTransparent = c->c_vert_pos_nor_uv_transparent.size() / 12;
     }
 }
 
-void Terrain::createVertexPosNorCol(Chunk* c, int xChunk, int zChunk) {
-    c->c_vert_pos_nor_col.clear();
+void Terrain::createVertexPosNorUV(Chunk* c, int xChunk, int zChunk) {
+    c->c_vert_pos_nor_uv_opaque.clear();
+    c->c_vert_pos_nor_uv_transparent.clear();
     for(int x = 0; x < 16; x++) {
         for(int y = 0; y < 256; y++) {
             for(int z = 0; z < 16; z++) {
                 BlockType t;
                 if((t = c->getBlockType(x, y, z)) != EMPTY) {
-                    glm::vec4 col;
+                    float cosinePow = 0.0f;
+                    float isAnimate = 0;
+                    bool isTransparent = false;
+                    uvIndicator = 0;
                     switch(t) {
                     case DIRT:
-                        col = (glm::vec4(121.f, 85.f, 58.f, 255.f) / 255.f);
+                        uvIndicator = 1;
+                        cosinePow = 90.0f;
+                        isAnimate = 0;
+                        isTransparent = false;
                         break;
                     case GRASS:
-                        col = (glm::vec4(95.f, 159.f, 53.f, 255.f) / 255.f);
+                        uvIndicator = 2;
+                        cosinePow = 70.0f;
+                        isAnimate = 0;
+                        isTransparent = false;
                         break;
                     case STONE:
-                        col = (glm::vec4(0.5f));
+                        uvIndicator = 3;
+                        cosinePow = 30.0f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        break;
+                    case WOOD:
+                        uvIndicator = 4;
+                        cosinePow = 90.0f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        break;
+                    case LEAF:
+                        uvIndicator = 5;
+                        cosinePow = 70.0f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        break;
+                    case BEDROCK:
+                        uvIndicator = 6;
+                        cosinePow = 50.0f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        break;
+                    case LAVA:
+                        uvIndicator = 7;
+                        cosinePow = 10.0f;
+                        isAnimate = 1;
+                        isTransparent = false;
+                        break;
+                    case WATER:
+                        uvIndicator = 8;
+                        cosinePow = 10.0f;
+                        isAnimate = 1;
+                        isTransparent = true;
+                        break;
+                    case ICE:
+                        uvIndicator = 9;
+                        cosinePow = 10.0f;
+                        isAnimate = 0;
+                        isTransparent = true;
                         break;
                     }
 
                     // top
                     if(checkEmpty(x, y+1, z, c, xChunk, zChunk)) {
+                        glm::vec2 uvPoint = getTexture(0); // get the top uv starting from top left vertex
                         glm::vec4 normal = glm::vec4(0, 1, 0, 0);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y+1, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y+1, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y+1, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y+1, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
+                        if (isTransparent) {
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x, y+1, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y -= 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x, y+1, z, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.x += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x+1, y+1, z, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x+1, y+1, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                        } else {
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x, y+1, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y -= 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x, y+1, z, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.x += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x+1, y+1, z, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x+1, y+1, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                        }
                     }
                     // bottom
                     if(checkEmpty(x, y-1, z, c, xChunk, zChunk)) {
+                        glm::vec2 uvPoint = getTexture(1); // get the bottom uv starting from top left vertex
                         glm::vec4 normal = glm::vec4(0, -1, 0, 0);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
+                        if (isTransparent) {
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x, y, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y -= 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x, y, z, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.x += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x+1, y, z, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x+1, y, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                        } else {
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x, y, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y -= 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x, y, z, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.x += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x+1, y, z, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x+1, y, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                        }
                     }
                     //right
                     if(checkEmpty(x+1, y, z, c, xChunk, zChunk)) {
+                        glm::vec2 uvPoint = getTexture(2); // get the bottom uv starting from top left vertex
                         glm::vec4 normal = glm::vec4(1, 0, 0, 0);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y+1, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y+1, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
+                        if (isTransparent) {
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x+1, y+1, z, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y -= 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x+1, y, z, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.x += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x+1, y, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x+1, y+1, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                        } else {
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x+1, y+1, z, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y -= 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x+1, y, z, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.x += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x+1, y, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x+1, y+1, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                        }
                     }
                     //left
                     if(checkEmpty(x-1, y, z, c, xChunk, zChunk)) {
+                        glm::vec2 uvPoint = getTexture(2); // get the side uv starting from top left vertex
                         glm::vec4 normal = glm::vec4(-1, 0, 0, 0);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y+1, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y+1, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
+                        if (isTransparent) {
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x, y+1, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y -= 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x, y, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.x += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x, y, z, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x, y+1, z, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                        } else {
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x, y+1, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y -= 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x, y, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.x += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x, y, z, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x, y+1, z, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                        }
                     }
                     //front
                     if(checkEmpty(x, y, z+1, c, xChunk, zChunk)) {
+                        glm::vec2 uvPoint = getTexture(2); // get the side uv starting from top left vertex
                         glm::vec4 normal = glm::vec4(0, 0, 1, 0);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y+1, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y+1, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
+                        if (isTransparent) {
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x+1, y+1, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y -= 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x+1, y, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.x += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x, y, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x, y+1, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                        } else {
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x+1, y+1, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y -= 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x+1, y, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.x += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x, y, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x, y+1, z+1, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                        }
                     }
                     //back
                     if(checkEmpty(x, y, z-1, c, xChunk, zChunk)) {
+                        glm::vec2 uvPoint = getTexture(2); // get the side uv starting from top left vertex
                         glm::vec4 normal = glm::vec4(0, 0, -1, 0);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y+1, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y+1, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
+                        if (isTransparent) {
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x, y+1, z, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y -= 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x, y, z, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.x += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x+1, y, z, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(x+1, y+1, z, 1.0f));
+                            c->c_vert_pos_nor_uv_transparent.push_back(normal);
+                            c->c_vert_pos_nor_uv_transparent.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                        } else {
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x, y+1, z, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y -= 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x, y, z, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.x += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x+1, y, z, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                            uvPoint.y += 1.0f / 16.0f;
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(x+1, y+1, z, 1.0f));
+                            c->c_vert_pos_nor_uv_opaque.push_back(normal);
+                            c->c_vert_pos_nor_uv_opaque.push_back(glm::vec4(uvPoint.x, uvPoint.y, cosinePow, isAnimate));
+                        }
                     }
                 }
             }
@@ -320,4 +502,39 @@ bool Terrain::checkEmpty(int x, int y, int z, Chunk* c, int xChunk, int zChunk) 
     }
 }
 
+vec2 Terrain::getTexture(int faceNum)
+{
+    // if dirt
+    if (uvIndicator == 1) {
+        return glm::vec2(1.0f / 16.0f * 2, 1.0f);
+    } else if (uvIndicator == 2) { // if grass
+        // check if grass top
+        if (faceNum == 0) {
+            return glm::vec2(1.0f / 16.0f * 8, 1.0f / 16.0f * 14);
+        } else if (faceNum == 1) { // check if grass bottom
+            return glm::vec2(1.0f / 16.0f * 2, 1.0f);
+        } else { // grass sides
+            return glm::vec2(1.0f / 16.0f * 3, 1.0f);
+        }
+    } else if (uvIndicator == 3) { // if stone
+        return glm::vec2(1.0f / 16.0f * 1, 1.0f);
+    } else if (uvIndicator == 4) { // if wood
+        // check if wood top or bottom
+        if (faceNum == 0) {
+        return glm::vec2(1.0f / 16.0f * 5, 1.0f / 16.0f * 15);
+        } else { // wood sides
+        return glm::vec2(1.0f / 16.0f * 4, 1.0f / 16.0f * 15);
+        }
+    } else if (uvIndicator == 5) { // if leaf
+        return glm::vec2(1.0f / 16.0f * 5, 1.0f / 16.0f * 13);
+    } else if (uvIndicator == 6) { // if bedrock
+        return glm::vec2(1.0f / 16.0f * 1, 1.0f / 16.0f * 15);
+    } else if (uvIndicator == 7) { // if lava
+        return glm::vec2(1.0f / 16.0f * 13, 1.0f / 16.0f * 2);
+    } else if (uvIndicator == 8) { // if water
+        return glm::vec2(1.0f / 16.0f * 13, 1.0f / 16.0f * 4);
+    } else { // if ice
+        return glm::vec2(1.0f / 16.0f * 3, 1.0f / 16.0f * 12);
+    }
+}
 

@@ -22,6 +22,8 @@ class Terrain
 private:
     int64_t getKey(int x, int y, bool chunked) const;
     OpenGLContext* context;
+    int uvIndicator;
+
 public:
     Terrain(OpenGLContext* c);
     Terrain(OpenGLContext* c, int x_boundary_end, int y_boundary_end, int z_boundary_end);
@@ -41,8 +43,10 @@ public:
                                                            // given type.
     void updateScene(); // creates the VBOS for every chunk. Should only be called after all 16x256x16 blocks are assigned a blocktype
                         // and you are ready to set a VBO
-    void createVertexPosNorCol(Chunk* c, int xChunk, int zChunk);
+    void createVertexPosNorUV(Chunk* c, int xChunk, int zChunk);
     bool checkEmpty(int x, int y, int z, Chunk* c, int xChunk, int zChunk);
+
+    glm::vec2 getTexture(int faceNum); // return the corresponding uv coordinate for the top left face corner
 //    vec2 randomfunc(vec2 p);
 
 //    float interpNoise2D(float x, float y);

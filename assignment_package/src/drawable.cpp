@@ -2,8 +2,8 @@
 #include <la.h>
 
 Drawable::Drawable(OpenGLContext* context)
-    : bufIdx(), bufPosNorCol(),
-      idxBound(false), posNorColBound(false),
+    : bufIdx(), bufIdxT(), bufPosNorUVOpaque(), bufPosNorUVTransparent(),
+      idxBound(false), idxBoundT(false), posNorUVOpaqueBound(false), posNorUVTransparentBound(false),
       context(context)
 {}
 
@@ -14,7 +14,9 @@ Drawable::~Drawable()
 void Drawable::destroy()
 {
     context->glDeleteBuffers(1, &bufIdx);
-    context->glDeleteBuffers(1, &bufPosNorCol);
+    context->glDeleteBuffers(1, &bufIdxT);
+    context->glDeleteBuffers(1, &bufPosNorUVOpaque);
+    context->glDeleteBuffers(1, &bufPosNorUVTransparent);
 }
 
 GLenum Drawable::drawMode()
@@ -33,6 +35,11 @@ int Drawable::elemCount()
     return count;
 }
 
+int Drawable::elemCountT()
+{
+    return countT;
+}
+
 void Drawable::generateIdx()
 {
     idxBound = true;
@@ -40,11 +47,25 @@ void Drawable::generateIdx()
     context->glGenBuffers(1, &bufIdx);
 }
 
-void Drawable::generatePosNorCol()
+void Drawable::generateIdxT()
 {
-    posNorColBound = true;
-    // Create a VBO on our GPU and store its handle in bufPosNorCol
-    context->glGenBuffers(1, &bufPosNorCol);
+    idxBoundT = true;
+    // Create a VBO on our GPU and store its handle in bufIdx
+    context->glGenBuffers(1, &bufIdxT);
+}
+
+void Drawable::generatePosNorUVOpaque()
+{
+    posNorUVOpaqueBound = true;
+    // Create a VBO on our GPU and store its handle in bufPosNorUVOpaque
+    context->glGenBuffers(1, &bufPosNorUVOpaque);
+}
+
+void Drawable::generatePosNorUVTransparent()
+{
+    posNorUVTransparentBound = true;
+    // Create a VBO on our GPU and store its handle in bufPosNorUVTransparent
+    context->glGenBuffers(1, &bufPosNorUVTransparent);
 }
 
 bool Drawable::bindIdx()
@@ -55,10 +76,26 @@ bool Drawable::bindIdx()
     return idxBound;
 }
 
-bool Drawable::bindPosNorCol()
+bool Drawable::bindIdxT()
 {
-    if(posNorColBound){
-        context->glBindBuffer(GL_ARRAY_BUFFER, bufPosNorCol);
+    if(idxBoundT) {
+        context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufIdxT);
     }
-    return posNorColBound;
+    return idxBoundT;
+}
+
+bool Drawable::bindPosNorUVOpaque()
+{
+    if(posNorUVOpaqueBound){
+        context->glBindBuffer(GL_ARRAY_BUFFER, bufPosNorUVOpaque);
+    }
+    return posNorUVOpaqueBound;
+}
+
+bool Drawable::bindPosNorUVTransparent()
+{
+    if(posNorUVTransparentBound){
+        context->glBindBuffer(GL_ARRAY_BUFFER, bufPosNorUVTransparent);
+    }
+    return posNorUVTransparentBound;
 }

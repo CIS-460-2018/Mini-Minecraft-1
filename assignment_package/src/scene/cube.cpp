@@ -170,7 +170,7 @@ void Cube::create()
 
     // The next few sets of function calls are basically the same as above, except bufPos and bufNor are
     // array buffers rather than element array buffers, as they store vertex attributes like position.
-    generatePosNorCol();
-    context->glBindBuffer(GL_ARRAY_BUFFER, bufPosNorCol);
+    generatePosNorUVOpaque();
+    context->glBindBuffer(GL_ARRAY_BUFFER, bufPosNorUVOpaque);
     context->glBufferData(GL_ARRAY_BUFFER, CUB_VERT_COUNT * 3 * sizeof(glm::vec4), vert_pos_nor_col, GL_STATIC_DRAW);
 }

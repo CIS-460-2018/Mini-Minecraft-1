@@ -26,18 +26,27 @@ in vec4 vs_Pos;             // The array of vertex positions passed to the shade
 
 in vec4 vs_Nor;             // The array of vertex normals passed to the shader
 
-in vec4 vs_Col;             // The array of vertex colors passed to the shader.
+in float vs_Cos;
+
+in float vs_Animate;
+
+in vec2 vs_UV;
+
+in vec4 u_ViewVec;
 
 out vec4 fs_Nor;            // The array of normals that has been transformed by u_ModelInvTr. This is implicitly passed to the fragment shader.
 out vec4 fs_LightVec;       // The direction in which our virtual light lies, relative to each vertex. This is implicitly passed to the fragment shader.
-out vec4 fs_Col;            // The color of each vertex. This is implicitly passed to the fragment shader.
+out vec2 fs_UV;
+out float fs_Cos;
+out float fs_Animate;
+out vec4 fs_ViewVec;
 
 const vec4 lightDir = vec4(1,1,1,0);  // The direction of our virtual light, which is used to compute the shading of
                                         // the geometry in the fragment shader.
 
 void main()
 {
-    fs_Col = vs_Col;                         // Pass the vertex colors to the fragment shader for interpolation
+    //fs_Col = vs_Col;                         // Pass the vertex colors to the fragment shader for interpolation
 
     mat3 invTranspose = mat3(u_ModelInvTr);
     fs_Nor = vec4(invTranspose * vec3(vs_Nor), 0);          // Pass the vertex normals to the fragment shader for interpolation.
@@ -46,6 +55,10 @@ void main()
                                                             // perpendicular to the surface after the surface is transformed by
                                                             // the model matrix.
 
+    fs_UV = vs_UV;
+    fs_Cos = vs_Cos;
+    fs_Animate = vs_Animate;
+    fs_ViewVec = u_ViewVec;
 
     vec4 modelposition = u_Model * vs_Pos;   // Temporarily store the transformed vertex positions for use below
 
