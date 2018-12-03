@@ -34,9 +34,9 @@ Note: There were some merging issues so we submitted the branch link for the pla
 Update:
 - All the bugs from the previous part are fixed and merged with master.
 
-
-
-
+<br />
+<br />
+<br />
 Milestone 2:
 
 1. L-Systems - Yamir Tainwala
