@@ -12,13 +12,15 @@ protected:
     int countT;     // The number of indices stored in bufIdx transparent.
     GLuint bufIdx; // A Vertex Buffer Object that we will use to store triangle indices (GLuints)
     GLuint bufIdxT; // A Vertex Buffer Object that we will use to store triangle indices (GLuints) transparent
+    GLuint bufIdxCol; // A VBO that we will use for triangle indices for PosNorCol VBOs
     GLuint bufPosNorUVOpaque; // A Vertex Buffer Object that we will use to store mesh vertices, normals, and uvs for opaque blocks
     GLuint bufPosNorUVTransparent; // A Vertex Buffer Object that we will use to store mesh vertices, normals, and uvs for transparent blocks
-   // GLuint bufPosNorCol;
+    GLuint bufPosNorCol;
 
     bool idxBound; // Set to TRUE by generateIdx(), returned by bindIdx().
     bool idxBoundT;
-   // bool posNorColBound;
+    bool idxBoundCol;
+    bool posNorColBound;
     bool posNorUVOpaqueBound;
     bool posNorUVTransparentBound;
 
@@ -43,13 +45,15 @@ public:
     // These will properly set the values of idxBound etc. which need to be checked in ShaderProgram::draw()
     void generateIdx();
     void generateIdxT();
-    //void generatePosNorCol();
+    void generateIdxPosNorCol();
+    void generatePosNorCol();
     void generatePosNorUVOpaque();
     void generatePosNorUVTransparent();
 
     bool bindIdx();
     bool bindIdxT();
-    //bool bindPosNorCol();
+    bool bindIdxCol();
+    bool bindPosNorCol();
     bool bindPosNorUVOpaque();
     bool bindPosNorUVTransparent();
 };

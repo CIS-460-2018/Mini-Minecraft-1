@@ -189,7 +189,6 @@ void Terrain::drawLSystem(LSystem *l_system) {
     }
 }
 
-
 void Terrain::drawRoute(Turtle startTurtle, Turtle nextTurtle) {
     int start_x = startTurtle.pos.x;
     int end_x = nextTurtle.pos.x;
@@ -210,8 +209,12 @@ void Terrain::drawRoute(Turtle startTurtle, Turtle nextTurtle) {
                     setBlockAt(start_x + (i * x_incr) + d, 128, start_z + (i * z_incr), WATER);
                     setBlockAt(start_x + (i * x_incr), 128, start_z + (i * z_incr) + d, WATER);
                     setBlockAt(start_x + (i * x_incr) + d, 128, start_z + (i * z_incr) + d, WATER);
+
+                    setBlockAt(start_x + (i * x_incr) + d, 129, start_z + (i * z_incr), WATER);
+                    setBlockAt(start_x + (i * x_incr), 129, start_z + (i * z_incr) + d, WATER);
+                    setBlockAt(start_x + (i * x_incr) + d, 129, start_z + (i * z_incr) + d, WATER);
                     //Set all blocks above the river to be empty
-                    for(int y = 129; y < 256; y++) {
+                    for(int y = 130; y < 256; y++) {
                         setBlockAt(start_x + (i * x_incr) + d, y, start_z + (i * z_incr), EMPTY);
                         setBlockAt(start_x + (i * x_incr), y, start_z + (i * z_incr) + d, EMPTY);
                         setBlockAt(start_x + (i * x_incr) + d, y, start_z + (i * z_incr) + d, EMPTY);
@@ -282,6 +285,13 @@ void Terrain::createNewChunk(glm::vec3 position) {
     pair<int, int> ints ((int)xChunk, (int)zChunk);
     pair<pair<int, int>, Chunk*> p(ints, c);
     chunksToAdd.push_back(p);
+
+    //L-System generation
+    LSystem *l_system_delta = new LSystem(QString("FFFX"), x_boundary_start, x_boundary_end, -64, z_boundary_end);
+    drawLSystem(l_system_delta);
+
+    LSystem *l_system_linear = new LSystem(QString("FFFFFY"), x_boundary_start, x_boundary_end, 100, z_boundary_end);
+    drawLSystem(l_system_linear);
 }
 
 void Terrain::updateChunk(glm::vec3 position) {

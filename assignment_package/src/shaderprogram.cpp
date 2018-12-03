@@ -245,6 +245,46 @@ void ShaderProgram::drawT(Drawable &d)
     context->printGLErrorLog();
 }
 
+void ShaderProgram::drawPosNorCol(Drawable &d)
+{
+        useMe();
+        if(unifSampler2D != -1)
+        {
+            context->glUniform1i(unifSampler2D, 0);
+        }
+
+    // Each of the following blocks checks that:
+    //   * This shader has this attribute, and
+    //   * This Drawable has a vertex buffer for this attribute.
+    // If so, it binds the appropriate buffers to each attribute.
+
+        // Remember, by calling bindPos(), we call
+        // glBindBuffer on the Drawable's VBO for vertex position,
+        // meaning that glVertexAttribPointer associates vs_Pos
+        // (referred to by attrPos) with that VBO
+    if (attrPos != -1 && d.bindPosNorCol()) {
+        context->glEnableVertexAttribArray(attrPos);
+        context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, 12*sizeof(GL_FLOAT), 0);
+    }
+    if (attrNor != -1 && d.bindPosNorCol()) {
+        context->glEnableVertexAttribArray(attrNor);
+        context->glVertexAttribPointer(attrNor, 4, GL_FLOAT, false, 12*sizeof(GL_FLOAT), (GLvoid*)(4*sizeof(GL_FLOAT)));
+    }
+    if (attrCol != -1 && d.bindPosNorCol()) {
+        context->glEnableVertexAttribArray(attrCol);
+        context->glVertexAttribPointer(attrCol, 4, GL_FLOAT, false, 12*sizeof(GL_FLOAT), (GLvoid*)(8*sizeof(GL_FLOAT)));
+    }
+
+        d.bindIdxCol();
+        context->glDrawElements(d.drawMode(), d.elemCount(), GL_UNSIGNED_INT, 0);
+
+    if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
+    if (attrNor != -1) context->glDisableVertexAttribArray(attrNor);
+    if (attrCol != -1) context->glDisableVertexAttribArray(attrCol);
+
+    context->printGLErrorLog();
+}
+
 char* ShaderProgram::textFileRead(const char* fileName) {
     char* text;
 

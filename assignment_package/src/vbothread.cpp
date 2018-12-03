@@ -1,4 +1,7 @@
 #include "vbothread.h"
+#include <iostream>
+
+using namespace std;
 
 VBOThread::VBOThread(Chunk* ch, int x, int z, QHash<int64_t, Chunk*> map, QMutex* m)
     : c(ch), xChunk(x), zChunk(z), chunkMap(map), mutex(m)
@@ -10,71 +13,81 @@ void VBOThread::createVertexPosNorUV() {
     for(int x = 0; x < 16; x++) {
         for(int y = 0; y < 256; y++) {
             for(int z = 0; z < 16; z++) {
-                BlockType t;
-                if((t = c->getBlockType(x, y, z)) != EMPTY) {
+                currT = c->getBlockType(x, y, z);
+                if(currT != EMPTY) {
                     float cosinePow = 0.0f;
                     float isAnimate = 0;
                     bool isTransparent = false;
                     uvIndicator = 0;
-                    switch(t) {
+                    bool (VBOThread::*checkFunction)(BlockType);
+                    switch(currT) {
                     case DIRT:
                         uvIndicator = 1;
                         cosinePow = 90.0f;
                         isAnimate = 0;
                         isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
                         break;
                     case GRASS:
                         uvIndicator = 2;
                         cosinePow = 70.0f;
                         isAnimate = 0;
                         isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
                         break;
                     case STONE:
                         uvIndicator = 3;
                         cosinePow = 30.0f;
                         isAnimate = 0;
                         isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
                         break;
                     case WOOD:
                         uvIndicator = 4;
                         cosinePow = 90.0f;
                         isAnimate = 0;
                         isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
                         break;
                     case LEAF:
                         uvIndicator = 5;
                         cosinePow = 70.0f;
                         isAnimate = 0;
                         isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
                         break;
                     case BEDROCK:
                         uvIndicator = 6;
                         cosinePow = 50.0f;
                         isAnimate = 0;
                         isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
                         break;
                     case LAVA:
                         uvIndicator = 7;
                         cosinePow = 10.0f;
                         isAnimate = 1;
                         isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderTransp;
                         break;
                     case WATER:
                         uvIndicator = 8;
                         cosinePow = 10.0f;
                         isAnimate = 1;
                         isTransparent = true;
+                        checkFunction = &VBOThread::shouldRenderTransp;
                         break;
                     case ICE:
                         uvIndicator = 9;
                         cosinePow = 10.0f;
                         isAnimate = 0;
                         isTransparent = true;
+                        checkFunction = &VBOThread::shouldRenderTransp;
                         break;
                     }
 
                     // top
-                    if(checkEmpty(x, y+1, z)) {
+                    if(checkEmpty(x, y+1, z, checkFunction)) {
                         glm::vec2 uvPoint = getTexture(0); // get the top uv starting from top left vertex
                         glm::vec4 normal = glm::vec4(0, 1, 0, 0);
                         if (isTransparent) {
@@ -112,7 +125,7 @@ void VBOThread::createVertexPosNorUV() {
                         }
                     }
                     // bottom
-                    if(checkEmpty(x, y-1, z)) {
+                    if(checkEmpty(x, y-1, z, checkFunction)) {
                         glm::vec2 uvPoint = getTexture(1); // get the bottom uv starting from top left vertex
                         glm::vec4 normal = glm::vec4(0, -1, 0, 0);
                         if (isTransparent) {
@@ -150,7 +163,7 @@ void VBOThread::createVertexPosNorUV() {
                         }
                     }
                     //right
-                    if(checkEmpty(x+1, y, z)) {
+                    if(checkEmpty(x+1, y, z, checkFunction)) {
                         glm::vec2 uvPoint = getTexture(2); // get the bottom uv starting from top left vertex
                         glm::vec4 normal = glm::vec4(1, 0, 0, 0);
                         if (isTransparent) {
@@ -188,7 +201,7 @@ void VBOThread::createVertexPosNorUV() {
                         }
                     }
                     //left
-                    if(checkEmpty(x-1, y, z)) {
+                    if(checkEmpty(x-1, y, z, checkFunction)) {
                         glm::vec2 uvPoint = getTexture(2); // get the side uv starting from top left vertex
                         glm::vec4 normal = glm::vec4(-1, 0, 0, 0);
                         if (isTransparent) {
@@ -226,7 +239,7 @@ void VBOThread::createVertexPosNorUV() {
                         }
                     }
                     //front
-                    if(checkEmpty(x, y, z+1)) {
+                    if(checkEmpty(x, y, z+1, checkFunction)) {
                         glm::vec2 uvPoint = getTexture(2); // get the side uv starting from top left vertex
                         glm::vec4 normal = glm::vec4(0, 0, 1, 0);
                         if (isTransparent) {
@@ -264,7 +277,7 @@ void VBOThread::createVertexPosNorUV() {
                         }
                     }
                     //back
-                    if(checkEmpty(x, y, z-1)) {
+                    if(checkEmpty(x, y, z-1, checkFunction)) {
                         glm::vec2 uvPoint = getTexture(2); // get the side uv starting from top left vertex
                         glm::vec4 normal = glm::vec4(0, 0, -1, 0);
                         if (isTransparent) {
@@ -305,13 +318,6 @@ void VBOThread::createVertexPosNorUV() {
             }
         }
     }
-
-    //L-System generation
-//    LSystem *l_system_delta = new LSystem(QString("FFFX"), xChunk*16, (xChunk+1)*16, zChunk*16, (zChunk+1)*16);
-//    drawLSystem(l_system_delta);
-
-//    LSystem *l_system_linear = new LSystem(QString("FFFFFY"), xChunk*16, (xChunk+1)*16, zChunk*16, (zChunk+1)*16);
-//    drawLSystem(l_system_linear);
 }
 
 glm::vec2 VBOThread::getTexture(int faceNum)
@@ -350,29 +356,37 @@ glm::vec2 VBOThread::getTexture(int faceNum)
     }
 }
 
-bool VBOThread::checkEmpty(int x, int y, int z) {
+bool VBOThread::shouldRenderSolid(BlockType b) {
+    return b == EMPTY || b == WATER || b == ICE || b == LAVA;
+}
+
+bool VBOThread::shouldRenderTransp(BlockType b) {
+    return (b == EMPTY || ((b == WATER || b == ICE || b == LAVA) && b != currT));
+}
+
+bool VBOThread::checkEmpty(int x, int y, int z, bool (VBOThread::*checkFunc)(BlockType)) {
     if(x >= 0 && y >= 0 && z >= 0 && x < 16 && y < 256 && z < 16) {
-        return c->getBlockType(x, y, z) == EMPTY;
+        return (this->*checkFunc)(c->getBlockType(x, y, z));
     } else {
         if(x < 0) {
             if(chunkMap.contains(getKey(xChunk-1, zChunk, true))) {
-                return chunkMap[getKey(xChunk-1, zChunk, true)]->getBlockType(15, y, z%16) == EMPTY;
+                return (this->*checkFunc)(chunkMap[getKey(xChunk-1, zChunk, true)]->getBlockType(15, y, z%16));
             }
         } else if(y < 0) {
             return true; // under terrain, nothing there
         } else if(z < 0) {
             if(chunkMap.contains(getKey(xChunk, zChunk-1, true))) {
-                return chunkMap[getKey(xChunk, zChunk-1, true)]->getBlockType(x%16, y, 15) == EMPTY;
+                return (this->*checkFunc)(chunkMap[getKey(xChunk, zChunk-1, true)]->getBlockType(x%16, y, 15));
             }
         } else if(x >= 16) {
             if(chunkMap.contains(getKey(xChunk+1, zChunk, true))) {
-                return chunkMap[getKey(xChunk+1, zChunk, true)]->getBlockType(0, y, z%16) == EMPTY;
+                return (this->*checkFunc)(chunkMap[getKey(xChunk+1, zChunk, true)]->getBlockType(0, y, z%16));
             }
         } else if(y >= 256) {
             return true;
         } else {
             if(chunkMap.contains(getKey(xChunk, zChunk+1, true))) {
-                return chunkMap[getKey(xChunk, zChunk+1, true)]->getBlockType(x%16, y, 0) == EMPTY;
+                return (this->*checkFunc)(chunkMap[getKey(xChunk, zChunk+1, true)]->getBlockType(x%16, y, 0));
             }
         }
         return true;

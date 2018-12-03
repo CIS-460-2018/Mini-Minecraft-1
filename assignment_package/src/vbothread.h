@@ -10,6 +10,7 @@ private:
     Chunk* c;
     int xChunk;
     int zChunk;
+    BlockType currT;
     QHash<int64_t, Chunk*> chunkMap;
     QMutex* mutex;
     int uvIndicator;
@@ -19,6 +20,8 @@ public:
 
     void createVertexPosNorUV();
     glm::vec2 getTexture(int faceNum);
-    bool checkEmpty(int, int, int);
+    bool checkEmpty(int, int, int, bool (VBOThread::*checkFunc)(BlockType));
+    bool shouldRenderSolid(BlockType);
+    bool shouldRenderTransp(BlockType);
     int64_t getKey(int, int, bool) const;
 };

@@ -19,7 +19,8 @@ SOURCES += \
     $$PWD/player.cpp \
     $$PWD/lsystem.cpp \
     $$PWD/vbothread.cpp \
-    $$PWD/texture.cpp
+    $$PWD/texture.cpp \
+    $$PWD/quadrangle.cpp
 
 HEADERS += \
     $$PWD/la.h \
@@ -40,4 +41,5 @@ HEADERS += \
     $$PWD/player.h \
     $$PWD/lsystem.h \
     $$PWD/vbothread.h \
-    $$PWD/texture.h
+    $$PWD/texture.h \
+    $$PWD/quadrangle.h

@@ -10,6 +10,7 @@
 Player::Player(Camera *cam)
 {
     camera = cam;
+    inLiquid = false;
 }
 
 void Player::updateKey(QKeyEvent *e)
@@ -32,13 +33,21 @@ void Player::updateVelocity()
 {
     if (key != 0) {
         float amount = 2.0f;
+        if(inLiquid) {
+            amount = amount * 2 / 3;
+        }
         if (key == Qt::Key_Space) {
             // allow the player to jump only if standing on the ground
             if (grounded) {
                 velocity = glm::vec4(0, 7, 0, 1); // jump with speed of 7
                 acceleration = glm::vec4(0, -G, 0, 1);
-                grounded = false;
             }
+            if(inLiquid) {
+                velocity = glm::vec4(0, 2.5, 0, 1); // jump with speed of 7
+                acceleration = glm::vec4(0, -2.f / 3.f * G, 0, 1);
+            }
+
+            grounded = false;
         } else if (key == Qt::Key_W) {
             if (isFlyMode) {
                 camera->TranslateAlongLook(amount);
@@ -75,6 +84,9 @@ void Player::updateVelocity()
             if (isFlyMode) {
                 isFlyMode = false;
                 acceleration = glm::vec4(0, -G, 0, 1);
+                if(inLiquid) {
+                    acceleration = glm::vec4(0, -2 / 3 * G, 0, 1);
+                }
                 grounded = false;
             } else {
                 isFlyMode = true;
@@ -93,8 +105,26 @@ void Player::updateVelocity()
     }
 }
 
+bool Player::isLiquidBlock(BlockType b) {
+    return (b == WATER || b == LAVA);
+}
+
 void Player::checkCollision(float dt, Terrain* t)
 {
+    BlockType inBlock = t->getBlockAt(position.x, position.y, position.z);
+    if(isLiquidBlock(inBlock)) {
+        if(inLiquid == false) {
+            acceleration = glm::vec4(acceleration.x * 2 / 3, acceleration.y * 2 / 3, acceleration.z * 2 / 3, 1);
+            velocity = glm::vec4(velocity.x * 2 / 3, velocity.y * 2 / 3, velocity.z * 2 / 3, 1);
+            inLiquid = true;
+        }
+    } else {
+        if(inLiquid == true) {
+            acceleration = glm::vec4(acceleration.x * 3 / 2, acceleration.y * 3 / 2, acceleration.z * 3 / 2, 1);
+            velocity = glm::vec4(velocity.x * 3 / 2, velocity.y * 3 / 2, velocity.z * 3 / 2, 1);
+            inLiquid = false;
+        }
+    }
     velocity += glm::vec4(acceleration.x * dt, acceleration.y * dt, acceleration.z * dt, 1); // update the velocity with acceleration
     glm::vec4 posIncrease = velocity * (dt);
     posIncrease = glm::vec4(posIncrease.x, posIncrease.y, posIncrease.z, 1);
@@ -114,7 +144,7 @@ void Player::checkCollision(float dt, Terrain* t)
         for (glm::vec4 point : toCheck) {
             glm::vec4 potentialPos = point + curDist * dir;
             BlockType currBlock = t->getBlockAt(potentialPos.x, potentialPos.y, potentialPos.z);
-            if (currBlock != EMPTY) {
+            if (currBlock != EMPTY && !isLiquidBlock(currBlock)) {
                 if (!grounded) {
                     grounded = true;
                     velocity = glm::vec4(0, 0, 0, 1);
@@ -134,9 +164,14 @@ void Player::checkCollision(float dt, Terrain* t)
                 BlockType b2 = t->getBlockAt(corner2.x, corner2.y, corner2.z);
                 BlockType b3 = t->getBlockAt(corner3.x, corner3.y, corner3.z);
                 BlockType b4 = t->getBlockAt(corner4.x, corner4.y, corner4.z);
-                if (b1 == EMPTY && b2 == EMPTY && b3 == EMPTY && b4 == EMPTY) {
+                if ((b1 == EMPTY || isLiquidBlock(b1)) && (b2 == EMPTY || isLiquidBlock(b2)) &&
+                    (b3 == EMPTY || isLiquidBlock(b3)) && (b4 == EMPTY || isLiquidBlock(b4))) {
                     grounded = false;
-                    acceleration = glm::vec4(0, -G, 0, 1);
+                    if(b1 == EMPTY || b2 == EMPTY || b3 == EMPTY || b4 == EMPTY) {
+                        acceleration = glm::vec4(0, -G, 0, 1);
+                    } else {
+                        acceleration = glm::vec4(0, -2.f / 3.f * G, 0, 1);
+                    }
                 }
             }
         }

@@ -54,6 +54,13 @@ void Drawable::generateIdxT()
     context->glGenBuffers(1, &bufIdxT);
 }
 
+void Drawable::generateIdxPosNorCol()
+{
+    idxBoundCol = true;
+    // Create a VBO on our GPU and store its handle in bufIdx
+    context->glGenBuffers(1, &bufIdxCol);
+}
+
 void Drawable::generatePosNorUVOpaque()
 {
     posNorUVOpaqueBound = true;
@@ -66,6 +73,13 @@ void Drawable::generatePosNorUVTransparent()
     posNorUVTransparentBound = true;
     // Create a VBO on our GPU and store its handle in bufPosNorUVTransparent
     context->glGenBuffers(1, &bufPosNorUVTransparent);
+}
+
+void Drawable::generatePosNorCol()
+{
+    posNorColBound = true;
+    // Create a VBO on our GPU and store its handle in bufPosNorUVTransparent
+    context->glGenBuffers(1, &bufPosNorCol);
 }
 
 bool Drawable::bindIdx()
@@ -84,6 +98,14 @@ bool Drawable::bindIdxT()
     return idxBoundT;
 }
 
+bool Drawable::bindIdxCol()
+{
+    if(idxBoundCol) {
+        context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufIdxCol);
+    }
+    return idxBoundCol;
+}
+
 bool Drawable::bindPosNorUVOpaque()
 {
     if(posNorUVOpaqueBound){
@@ -98,4 +120,12 @@ bool Drawable::bindPosNorUVTransparent()
         context->glBindBuffer(GL_ARRAY_BUFFER, bufPosNorUVTransparent);
     }
     return posNorUVTransparentBound;
+}
+
+bool Drawable::bindPosNorCol()
+{
+    if(posNorColBound){
+        context->glBindBuffer(GL_ARRAY_BUFFER, bufPosNorCol);
+    }
+    return posNorColBound;
 }

@@ -11,7 +11,8 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       mp_geomCube(new Cube(this)), mp_worldAxes(new WorldAxes(this)),
       mp_progLambert(new ShaderProgram(this)), mp_progFlat(new ShaderProgram(this)),
-      mp_camera(new Camera()), mp_terrain(new Terrain(this)), mp_player(new Player(mp_camera)), mp_texture(new Texture(this))
+      mp_camera(new Camera()), mp_terrain(new Terrain(this)), mp_player(new Player(mp_camera)), mp_texture(new Texture(this)),
+      mp_progOverlay(new ShaderProgram(this)), overlay(new Quadrangle(this, EMPTY))
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -33,6 +34,7 @@ MyGL::~MyGL()
     delete mp_worldAxes;
     delete mp_progLambert;
     delete mp_progFlat;
+    delete mp_progOverlay;
     delete mp_camera;
     delete mp_terrain;
     delete mp_player;
@@ -60,6 +62,8 @@ void MyGL::initializeGL()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // Set the size with which points should be rendered
     glPointSize(5);
     // Set the color with which the screen is filled at the start of each render call.
@@ -73,10 +77,15 @@ void MyGL::initializeGL()
     //Create the instance of Cube
     mp_geomCube->create();
     mp_worldAxes->create();
+
+    overlay->create();
+
     // Create and set up the diffuse shader
     mp_progLambert->create(":/glsl/lambert.vert.glsl", ":/glsl/lambert.frag.glsl");
     // Create and set up the flat lighting shader
     mp_progFlat->create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
+    // Create and set up the overlay shader
+    mp_progOverlay->create(":/glsl/overlay.vert.glsl", ":/glsl/overlay.frag.glsl");
 
     // Set a color with which to draw geometry since you won't have one
     // defined until you implement the Node classes.
@@ -154,6 +163,7 @@ void MyGL::paintGL()
     glDisable(GL_DEPTH_TEST);
     mp_progFlat->setModelMatrix(glm::mat4());
     mp_progFlat->draw(*mp_worldAxes);
+
     glEnable(GL_DEPTH_TEST);
 }
 
@@ -184,6 +194,12 @@ void MyGL::GLDrawScene()
         mp_progLambert->setModelMatrix(glm::translate(glm::mat4(), glm::vec3(xChunk*16, 0, zChunk*16)));
         mp_progLambert->drawT(*c);
     }
+
+    BlockType inBlock = mp_terrain->getBlockAt(mp_player->position.x, mp_player->position.y, mp_player->position.z);
+    overlay->destroy();
+    overlay->setInBlock(inBlock);
+    overlay->create();
+    mp_progOverlay->drawPosNorCol(*overlay);
 }
 
 float distance3D(int x1, int y1, int z1, int x2, int y2, int z2)
@@ -222,29 +238,8 @@ void MyGL::placeBlock()
     glm::vec3 direction = mp_camera->look;
     float t = 0.1f;
 
-//    std::cout << pos.x << pos.y << pos.z << std::endl;
-//    for(int x = pos.x - 1; x <= pos.x + 1; x++) {
-//        for(int y = pos.y - 1; y <= pos.y + 1; y++) {
-//            for(int z = pos.z - 1; z <= pos.z + 1; z++) {
-//                std::cout << x << y << z << std::endl;
-//                mp_terrain->setBlockAt(x, y, z, STONE);
-//            }
-//        }
-//    }
-
-
     while(t < 20) {
         glm::vec3 new_pos = pos + t * direction;
-//        std::cout << new_pos.x << new_pos.y << new_pos.z << std::endl;
-//        for(int x = pos.x - 1; x <= pos.x + 1; x++) {
-//            for(int y = pos.y - 2; y <= pos.y + 1; y++) {
-//                for(int z = pos.z - 1; z <= pos.z + 1; z++) {
-//                    if(mp_terrain->getBlockAt(x, y, z) != EMPTY) {
-//                        mp_terrain->setBlockAt(x, y, z, EMPTY);
-//                    }
-//                }
-//            }
-//        }
         if(mp_terrain->getBlockAt(new_pos.x, new_pos.y, new_pos.z) != EMPTY) {
             int x_insert = INT_MAX;
             int y_insert = INT_MAX;

@@ -34,7 +34,7 @@ void main()
             if (u_Time % 80 != 0) {
                 int amount = u_Time % 80;
                 float incr = 1.0 / 256.0f;
-                if (amount > 47) {
+                if (fs_UV.x + amount * incr > 1) {
                     amount -= 32;
                     if (fs_UV.x + amount * incr > 1) {
                         amount -= 48;
