@@ -1,0 +1,6 @@
+Milestone 2 Textures Help Log
+
+Name: Gizem Dal
+
+- Used this tutorial link to understand how to make .qrc files: https://www.youtube.com/watch?v=CTbpS0PN-JQ&fbclid=IwAR3YWaKlOq8KM1muuXH5i-3F7olP5XSqo2qmY8sh-ZHRpylwZv08dyOont8
+- Referenced the shaderFun texture.cpp, texture.h and shader classes to implement creating, loading and binding textures. Also went over the OpenGL texture lecture slides to understand how the creation and load of texture works

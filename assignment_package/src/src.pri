@@ -18,7 +18,8 @@ SOURCES += \
     $$PWD/scene/chunk.cpp \
     $$PWD/player.cpp \
     $$PWD/lsystem.cpp \
-    $$PWD/vbothread.cpp
+    $$PWD/vbothread.cpp \
+    $$PWD/texture.cpp
 
 HEADERS += \
     $$PWD/la.h \
@@ -38,4 +39,5 @@ HEADERS += \
     $$PWD/blocktype.h \
     $$PWD/player.h \
     $$PWD/lsystem.h \
-    $$PWD/vbothread.h
+    $$PWD/vbothread.h \
+    $$PWD/texture.h

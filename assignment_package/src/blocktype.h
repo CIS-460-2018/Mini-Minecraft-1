@@ -2,5 +2,5 @@
 
 enum BlockType : unsigned char
 {
-    EMPTY, GRASS, DIRT, STONE, WATER_TEST
+    EMPTY, GRASS, DIRT, STONE, WOOD, LEAF, BEDROCK, LAVA, WATER, ICE
 };

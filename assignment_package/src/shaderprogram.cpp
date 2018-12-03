@@ -3,12 +3,14 @@
 #include <QStringBuilder>
 #include <QTextStream>
 #include <QDebug>
+#include <iostream>
 
 
 ShaderProgram::ShaderProgram(OpenGLContext *context)
     : vertShader(), fragShader(), prog(),
-      attrPos(-1), attrNor(-1), attrCol(-1),
+      attrPos(-1), attrNor(-1), attrCol(-1), attrUV(-1), attrCos(-1), attrAnimate(-1),
       unifModel(-1), unifModelInvTr(-1), unifViewProj(-1), unifColor(-1),
+      unifSampler2D(-1), unifTime(-1), unifDimensions(-1), unifView(-1),
       context(context)
 {}
 
@@ -63,11 +65,18 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     attrPos = context->glGetAttribLocation(prog, "vs_Pos");
     attrNor = context->glGetAttribLocation(prog, "vs_Nor");
     attrCol = context->glGetAttribLocation(prog, "vs_Col");
+    attrUV  = context->glGetAttribLocation(prog, "vs_UV");
+    attrCos = context->glGetAttribLocation(prog, "vs_Cos");
+    attrAnimate = context->glGetAttribLocation(prog, "vs_Animate");
 
     unifModel      = context->glGetUniformLocation(prog, "u_Model");
     unifModelInvTr = context->glGetUniformLocation(prog, "u_ModelInvTr");
     unifViewProj   = context->glGetUniformLocation(prog, "u_ViewProj");
     unifColor      = context->glGetUniformLocation(prog, "u_Color");
+    unifDimensions = context->glGetUniformLocation(prog, "u_Dimensions");
+    unifTime = context->glGetUniformLocation(prog, "u_Time");
+    unifSampler2D = context->glGetUniformLocation(prog, "u_RenderedTexture");
+    unifView = context->glGetUniformLocation(prog, "u_ViewVec");
 }
 
 void ShaderProgram::useMe()
@@ -137,6 +146,10 @@ void ShaderProgram::setGeometryColor(glm::vec4 color)
 void ShaderProgram::draw(Drawable &d)
 {
         useMe();
+        if(unifSampler2D != -1)
+        {
+            context->glUniform1i(unifSampler2D, 0);
+        }
 
     // Each of the following blocks checks that:
     //   * This shader has this attribute, and
@@ -147,29 +160,87 @@ void ShaderProgram::draw(Drawable &d)
         // glBindBuffer on the Drawable's VBO for vertex position,
         // meaning that glVertexAttribPointer associates vs_Pos
         // (referred to by attrPos) with that VBO
-    if (attrPos != -1 && d.bindPosNorCol()) {
+    if (attrPos != -1 && d.bindPosNorUVOpaque()) {
         context->glEnableVertexAttribArray(attrPos);
         context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, 12*sizeof(GL_FLOAT), 0);
     }
-
-    if (attrNor != -1 && d.bindPosNorCol()) {
+    if (attrNor != -1 && d.bindPosNorUVOpaque()) {
         context->glEnableVertexAttribArray(attrNor);
         context->glVertexAttribPointer(attrNor, 4, GL_FLOAT, false, 12*sizeof(GL_FLOAT), (GLvoid*)(4*sizeof(GL_FLOAT)));
     }
-
-    if (attrCol != -1 && d.bindPosNorCol()) {
-        context->glEnableVertexAttribArray(attrCol);
-        context->glVertexAttribPointer(attrCol, 4, GL_FLOAT, false, 12*sizeof(GL_FLOAT), (GLvoid*)(8*sizeof(GL_FLOAT)));
+    if (attrUV != -1 && d.bindPosNorUVOpaque()) {
+        context->glEnableVertexAttribArray(attrUV);
+        context->glVertexAttribPointer(attrUV, 2, GL_FLOAT, false, 12*sizeof(GL_FLOAT), (GLvoid*)(8*sizeof(GL_FLOAT)));
+    }
+    if (attrCos != -1 && d.bindPosNorUVOpaque()) {
+        context->glEnableVertexAttribArray(attrCos);
+        context->glVertexAttribPointer(attrCos, 1, GL_FLOAT, false, 12*sizeof(GL_FLOAT), (GLvoid*)(10*sizeof(GL_FLOAT)));
+    }
+    if (attrAnimate != -1 && d.bindPosNorUVOpaque()) {
+        context->glEnableVertexAttribArray(attrAnimate);
+        context->glVertexAttribPointer(attrAnimate, 1, GL_FLOAT, false, 12*sizeof(GL_FLOAT), (GLvoid*)(11*sizeof(GL_FLOAT)));
     }
 
-    // Bind the index buffer and then draw shapes from it.
-    // This invokes the shader program, which accesses the vertex buffers.
-    d.bindIdx();
-    context->glDrawElements(d.drawMode(), d.elemCount(), GL_UNSIGNED_INT, 0);
+        d.bindIdx();
+        context->glDrawElements(d.drawMode(), d.elemCount(), GL_UNSIGNED_INT, 0);
 
     if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
     if (attrNor != -1) context->glDisableVertexAttribArray(attrNor);
-    if (attrCol != -1) context->glDisableVertexAttribArray(attrCol);
+    if (attrUV != -1) context->glDisableVertexAttribArray(attrUV);
+    if (attrCos != -1) context->glDisableVertexAttribArray(attrCos);
+    if (attrAnimate != -1) context->glDisableVertexAttribArray(attrAnimate);
+
+    context->printGLErrorLog();
+}
+
+void ShaderProgram::drawT(Drawable &d)
+{
+        useMe();
+        if(unifSampler2D != -1)
+        {
+            context->glUniform1i(unifSampler2D, 0);
+        }
+
+    // Each of the following blocks checks that:
+    //   * This shader has this attribute, and
+    //   * This Drawable has a vertex buffer for this attribute.
+    // If so, it binds the appropriate buffers to each attribute.
+
+        // Remember, by calling bindPos(), we call
+        // glBindBuffer on the Drawable's VBO for vertex position,
+        // meaning that glVertexAttribPointer associates vs_Pos
+        // (referred to by attrPos) with that VBO
+        if (attrPos != -1 && d.bindPosNorUVTransparent()) {
+            context->glEnableVertexAttribArray(attrPos);
+            context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, 12*sizeof(GL_FLOAT), 0);
+        }
+        if (attrNor != -1 && d.bindPosNorUVTransparent()) {
+            context->glEnableVertexAttribArray(attrNor);
+            context->glVertexAttribPointer(attrNor, 4, GL_FLOAT, false, 12*sizeof(GL_FLOAT), (GLvoid*)(4*sizeof(GL_FLOAT)));
+        }
+        if (attrUV != -1 && d.bindPosNorUVTransparent()) {
+            context->glEnableVertexAttribArray(attrUV);
+            context->glVertexAttribPointer(attrUV, 2, GL_FLOAT, false, 12*sizeof(GL_FLOAT), (GLvoid*)(8*sizeof(GL_FLOAT)));
+        }
+        if (attrCos != -1 && d.bindPosNorUVTransparent()) {
+            context->glEnableVertexAttribArray(attrCos);
+            context->glVertexAttribPointer(attrCos, 1, GL_FLOAT, false, 12*sizeof(GL_FLOAT), (GLvoid*)(10*sizeof(GL_FLOAT)));
+        }
+        if (attrAnimate != -1 && d.bindPosNorUVTransparent()) {
+            context->glEnableVertexAttribArray(attrAnimate);
+            context->glVertexAttribPointer(attrAnimate, 1, GL_FLOAT, false, 12*sizeof(GL_FLOAT), (GLvoid*)(11*sizeof(GL_FLOAT)));
+        }
+
+        // Bind the index buffer and then draw shapes from it.
+        // This invokes the shader program, which accesses the vertex buffers.
+        d.bindIdxT();
+        context->glDrawElements(d.drawMode(), d.elemCountT(), GL_UNSIGNED_INT, 0);
+
+    if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
+    if (attrNor != -1) context->glDisableVertexAttribArray(attrNor);
+    if (attrUV != -1) context->glDisableVertexAttribArray(attrUV);
+    if (attrCos != -1) context->glDisableVertexAttribArray(attrCos);
+    if (attrAnimate != -1) context->glDisableVertexAttribArray(attrAnimate);
 
     context->printGLErrorLog();
 }
@@ -247,5 +318,34 @@ void ShaderProgram::printLinkInfoLog(int prog)
         context->glGetProgramInfoLog(prog, infoLogLen, &charsWritten, infoLog);
         qDebug() << "LinkInfoLog:" << endl << infoLog << endl;
         delete [] infoLog;
+    }
+}
+
+void ShaderProgram::setDimensions(glm::ivec2 dims)
+{
+    useMe();
+
+    if(unifDimensions != -1)
+    {
+        context->glUniform2i(unifDimensions, dims.x, dims.y);
+    }
+}
+
+void ShaderProgram::setTime(int t)
+{
+    useMe();
+
+    if(unifTime != -1)
+    {
+        context->glUniform1i(unifTime, t);
+    }
+}
+
+void ShaderProgram::setViewVector(glm::vec4 view) {
+    useMe();
+
+    if(unifView != -1)
+    {
+        context->glUniform4fv(unifView, 1, &view[0]);
     }
 }

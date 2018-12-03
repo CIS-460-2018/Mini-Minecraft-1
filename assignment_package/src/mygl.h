@@ -10,6 +10,7 @@
 #include <scene/terrain.h>
 #include "blocktype.h"
 #include "player.h"
+#include "texture.h"
 
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
@@ -29,12 +30,14 @@ private:
 
     Camera* mp_camera;
     Terrain* mp_terrain;
+    Texture* mp_texture;
 
     Player* mp_player; // player instance
     int64_t startTime; // initial elapsed time
 
     /// Timer linked to timerUpdate(). Fires approx. 60 times per second
     QTimer timer;
+    int m_time;
 
     void MoveMouseToCenter(); // Forces the mouse position to the screen's center. You should call this
                               // from within a mouse move event after reading the mouse movement so that

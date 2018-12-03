@@ -9,11 +9,18 @@ class Drawable
 {
 protected:
     int count;     // The number of indices stored in bufIdx.
+    int countT;     // The number of indices stored in bufIdx transparent.
     GLuint bufIdx; // A Vertex Buffer Object that we will use to store triangle indices (GLuints)
-    GLuint bufPosNorCol; // A Vertex Buffer Object that we will use to store mesh vertices, normals, and colors (vec4s)
+    GLuint bufIdxT; // A Vertex Buffer Object that we will use to store triangle indices (GLuints) transparent
+    GLuint bufPosNorUVOpaque; // A Vertex Buffer Object that we will use to store mesh vertices, normals, and uvs for opaque blocks
+    GLuint bufPosNorUVTransparent; // A Vertex Buffer Object that we will use to store mesh vertices, normals, and uvs for transparent blocks
+   // GLuint bufPosNorCol;
 
     bool idxBound; // Set to TRUE by generateIdx(), returned by bindIdx().
-    bool posNorColBound;
+    bool idxBoundT;
+   // bool posNorColBound;
+    bool posNorUVOpaqueBound;
+    bool posNorUVTransparentBound;
 
     OpenGLContext* context; // Since Qt's OpenGL support is done through classes like QOpenGLFunctions_3_2_Core,
                           // we need to pass our OpenGL context to the Drawable in order to call GL functions
@@ -30,12 +37,19 @@ public:
     // Getter functions for various GL data
     virtual GLenum drawMode();
     int elemCount();
+    int elemCountT();
 
     // Call these functions when you want to call glGenBuffers on the buffers stored in the Drawable
     // These will properly set the values of idxBound etc. which need to be checked in ShaderProgram::draw()
     void generateIdx();
-    void generatePosNorCol();
+    void generateIdxT();
+    //void generatePosNorCol();
+    void generatePosNorUVOpaque();
+    void generatePosNorUVTransparent();
 
     bool bindIdx();
-    bool bindPosNorCol();
+    bool bindIdxT();
+    //bool bindPosNorCol();
+    bool bindPosNorUVOpaque();
+    bool bindPosNorUVTransparent();
 };

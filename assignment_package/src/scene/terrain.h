@@ -24,6 +24,7 @@ class Terrain
 private:
     int64_t getKey(int x, int y, bool chunked) const;
     OpenGLContext* context;
+
 public:
     QHash<int64_t, Chunk*> chunkMap;
 
@@ -45,12 +46,16 @@ public:
                                                            // given type.
     void CreateTestScene();
 
-    void updateScene();                                // Creates the VBOS for every chunk. Should only be called after all 16x256x16 blocks are assigned a blocktype
-                                                           // and you are ready to set a VBO
+
     void updateChunk(glm::vec3 position);
-    void createVertexPosNorCol(Chunk* c, int xChunk, int zChunk);
 
     bool checkEmpty(int x, int y, int z, Chunk* c, int xChunk, int zChunk);
+    void updateScene(); // creates the VBOS for every chunk. Should only be called after all 16x256x16 blocks are assigned a blocktype
+                        // and you are ready to set a VBO
+    void createVertexPosNorUV(Chunk* c, int xChunk, int zChunk);
+
+    glm::vec2 getTexture(int faceNum); // return the corresponding uv coordinate for the top left face corner
+//    vec2 randomfunc(vec2 p);
 
     void drawRoute(Turtle startTurtle, Turtle nextTurtle);
     void drawLSystem(LSystem *l_system);
