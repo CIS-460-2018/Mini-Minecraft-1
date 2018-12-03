@@ -2,9 +2,10 @@
 #include <iostream>
 
 LSystem::LSystem()
-    :axiom(QString("FX")), turtle(Turtle()), turtleHistory(), savedStates()
+    :axiom(QString("FFFXY")), turtle(Turtle()), turtleHistory(), savedStates()
 {
-    expansionOperations.insert('X', QString("FX"));
+    expansionOperations.insert('X', QString("C[AFFBFFX]BFFBFFX"));
+    expansionOperations.insert('Y', QString("C[AFFFFFY]BFAFFAFFFAFFF"));
     turtleHistory.push(turtle);
 //    Rule = &Rule1;
 //    void (*LSystem::Rule)(void) = &drawLine;
@@ -16,7 +17,7 @@ LSystem::LSystem(QString axiom, int x_boundary_start, int x_boundary_end, int z_
     :axiom(axiom), turtle(Turtle(glm::vec2(x_boundary_start, z_boundary_start), glm::vec2(1.0, 0.0), 1)), turtleHistory(), savedStates()
 {
     expansionOperations.insert('X', QString("C[AFFBFFX]BFFBFFX"));
-    expansionOperations.insert('Y', QString("C[AFFY]BFAFFAFFY"));
+    expansionOperations.insert('Y', QString("C[AFFFFFY]BFAFFAFFFAFFF"));
     turtleHistory.push(turtle);
 }
 

@@ -9,8 +9,7 @@ using namespace std;
 
 Terrain::Terrain(OpenGLContext* c)
     : context(c), dimensions(64, 256, 64), x_boundary_start(-192), y_boundary_start(0), z_boundary_start(-128),
-      x_boundary_end(128), y_boundary_end(256),
-      z_boundary_end(128)
+      x_boundary_end(128), y_boundary_end(256), z_boundary_end(256)
 {}
 
 Terrain::Terrain(OpenGLContext* c, int x_boundary_end, int y_boundary_end, int z_boundary_end)
