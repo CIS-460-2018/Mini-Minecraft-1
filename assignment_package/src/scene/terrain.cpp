@@ -220,7 +220,7 @@ void Terrain::drawRoute(Turtle startTurtle, Turtle nextTurtle) {
             }
 
             //To smooth edges of the river
-            for(int d = -width * 2; d <= width * 2; d++) {
+            for(int d = -width * 4; d <= width * 4; d++) {
                 if(d < -width || d > width)
                 {
                     if(start_x + (i * x_incr) + d < x_boundary_end && start_x + (i * x_incr) + d > x_boundary_start && start_z + (i * z_incr) + d < z_boundary_end && start_z + (i * z_incr) + d > z_boundary_start) {

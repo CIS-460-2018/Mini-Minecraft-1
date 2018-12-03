@@ -14,7 +14,7 @@ Storing Chunk in QHash
 - I didn't see the purpose of checking all the boxes around a person when one could simply trace the ray until a box was found in the correct direction. So I chose to implement ray tracing in this much simpler way.
 - I faced difficulty when trying to understand how to generate new terrain once an edge was reached - whether I should be generating a new terrain instance or simply extending the dimensions of my current terrain, and further, how to ensure that it was added in the correct direction based on my position. I was also unable to change the m_blocks array to accommodate more blocks and wasn't sure how to proceed.
 
-Game Engine and Player Physics (Gizem Dal):
+3. Game Engine and Player Physics (Gizem Dal):
 
 - A "player" controlled by first-person camera controls
 - Usage of mouse cursor to determine player orientation
@@ -33,3 +33,20 @@ Note: There were some merging issues so we submitted the branch link for the pla
 
 Update:
 - All the bugs from the previous part are fixed and merged with master.
+
+
+Milestone 2:
+
+1. L-Systems - Yamir Tainwala
+- I used the l-system header files provided in class to model my l-system
+- Once I rendered the terrain, I calculated the river l-systems and cut into the terrain based on the path traced by the turtle
+- I used depth as a parameter to determine the width for that arm of the river, and manually generated a slope from twice the width down to the edge of the river (at its width)
+- I used a probability condition based on a random function to decide whether to branch or not, if yes, then the turtle state is saved and if not then the grammar pertaining to that branch is removed from the axiom using string matching
+- I used a second QStack to save turtle state for each branch encountered, and once a close bracket is encountered, the last saved state is popped off and used as the starting point for the next section of the axiom's grammar
+- I used orientation to represent positive and negative x and z directions and case matched orientation during a rotation of the turtle to get the new orientation
+- Each change in state of the turtle is saved to the turtleHistory QStack, but only drawLine() (forward movement of the turtle) increments the depth of the turtle. By checking that I call a draw function only if the next turtle state is at an incremented depth, I ensure that arbitrary lines are not drawn from some future state to a previously saved state, and further that nothing is drawn except during a forward motion of the turtle.
+- 
+
+Difficulties:
+- I was unable to understand the design of function pointers and instead used if-else matching to check the character and execute the corresponding rule implemented as member functions of the l-system class
+- It took me a significant amount of time to figure out how to implement branching logic. I finally decided to use a second QStack to save turtle state at each branch and to pop it off and set the this turtle to be the popped off turtle once the branch was completed.
