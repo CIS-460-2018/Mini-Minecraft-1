@@ -16,7 +16,8 @@ SOURCES += \
     $$PWD/scene/terrain.cpp \
     $$PWD/scene/worldaxes.cpp \
     $$PWD/scene/chunk.cpp \
-    $$PWD/player.cpp
+    $$PWD/player.cpp \
+    $$PWD/vbothread.cpp
 
 HEADERS += \
     $$PWD/la.h \
@@ -34,4 +35,5 @@ HEADERS += \
     $$PWD/scene/worldaxes.h \
     $$PWD/scene/chunk.h \
     $$PWD/blocktype.h \
-    $$PWD/player.h
+    $$PWD/player.h \
+    $$PWD/vbothread.h

@@ -23,14 +23,6 @@ BlockType* Chunk::getBlockTypeRef(int x, int y, int z) {
     return &(m_blocks[z * (256 * 16) + y * 16 + x]);
 }
 
-int64_t getKey(int x, int z) {
-    int64_t xz = 0xffffffffffffffff;
-    x = (x << 32) | 0x00000000ffffffff;
-    z = z | 0xffffffff00000000;
-    xz = z & x;
-    return xz;
-}
-
 void Chunk::createIndices(vector<GLuint> &idx) {
     for(int i = 0; i < faces; i++){
         idx.push_back(i*4);
