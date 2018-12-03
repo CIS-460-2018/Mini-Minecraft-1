@@ -197,7 +197,7 @@ void Terrain::drawRoute(Turtle startTurtle, Turtle nextTurtle) {
     float distance = sqrt(pow(end_x - start_x, 2) + pow(end_z - start_z, 2));
     float x_incr = (end_x - start_x) / distance;
     float z_incr = (end_z - start_z) / distance;
-    int width = std::max(7 - nextTurtle.depth/5, 2);
+    int width = std::max(7 - nextTurtle.depth/3, 2);
 
     for(int i = 1; i <= distance; i++) {
         //Check within boundary that has been rendered

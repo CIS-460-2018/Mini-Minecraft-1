@@ -16,7 +16,7 @@ LSystem::LSystem()
 LSystem::LSystem(QString axiom, int x_boundary_start, int x_boundary_end, int z_boundary_start, int z_boundary_end)
     :axiom(axiom), turtle(Turtle(glm::vec2(x_boundary_start, z_boundary_start), glm::vec2(1.0, 0.0), 1)), turtleHistory(), savedStates()
 {
-    expansionOperations.insert('X', QString("C[AFFBFFX]BFFBFFX"));
+    expansionOperations.insert('X', QString("C[AFFFBFFX]BFFBFFX"));
     expansionOperations.insert('Y', QString("C[AFFFFFY]BFAFFAFFFAFFF"));
     turtleHistory.push(turtle);
 }
