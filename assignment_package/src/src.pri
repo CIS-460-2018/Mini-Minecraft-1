@@ -17,7 +17,8 @@ SOURCES += \
     $$PWD/scene/worldaxes.cpp \
     $$PWD/scene/chunk.cpp \
     $$PWD/player.cpp \
-    $$PWD/lsystem.cpp
+    $$PWD/lsystem.cpp \
+    $$PWD/vbothread.cpp
 
 HEADERS += \
     $$PWD/la.h \
@@ -36,4 +37,5 @@ HEADERS += \
     $$PWD/scene/chunk.h \
     $$PWD/blocktype.h \
     $$PWD/player.h \
-    $$PWD/lsystem.h
+    $$PWD/lsystem.h \
+    $$PWD/vbothread.h

@@ -3,6 +3,8 @@
 #include <random>
 #include <iostream>
 #include <math.h>
+#include "vbothread.h"
+#include <QThreadPool>
 
 using namespace glm;
 using namespace std;
@@ -21,7 +23,6 @@ Terrain::Terrain(OpenGLContext* c, int x_boundary_end, int y_boundary_end, int z
 float rand(vec2 n) {
     return (fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453));
 }
-
 
 float interpNoise2D(float x, float y) {
     float intX = floor(x);
@@ -238,7 +239,77 @@ void Terrain::drawRoute(Turtle startTurtle, Turtle nextTurtle) {
 
 }
 
+void Terrain::createNewChunk(glm::vec3 position) {
+    int64_t xz = getKey(position.x, position.z, false);
+    int64_t zChunk = xz & 0x00000000ffffffff;
+    if(zChunk & 0x0000000080000000) {
+        zChunk = zChunk | 0xffffffff00000000;
+    }
+    int64_t xChunk = (xz >> 32);
+    Chunk* c = new Chunk(context);
+    for(int x = 0; x < 16; ++x)
+    {
+        for(int z = 0; z < 16; ++z)
+        {
+            float height = fbm(xChunk*16 + x, zChunk*16 + z);
+            height = 128 + height * 32;
+            //height = 116 + height * 10;
+
+            if (height < 128) {
+                height = 128.f;
+            }
+            else if (height > 256) {
+                height = 256.f;
+            }
+            for(int y = 0; y < 256; y++) {
+                if(y < height) {
+                    if(y == ceil(height) - 1) {
+                        *(c->getBlockTypeRef(x, y, z)) = GRASS;
+                    }
+                    else if(y >= 128) {
+                        *(c->getBlockTypeRef(x, y, z)) = DIRT;
+                    }
+                    else {
+                        *(c->getBlockTypeRef(x, y, z)) = STONE;
+                    }
+                } else {
+                    *(c->getBlockTypeRef(x, y, z)) = EMPTY;
+                }
+            }
+        }
+    }
+
+    //L-System generation
+    LSystem *l_system_delta = new LSystem(QString("FFFX"), xChunk*16, (xChunk+1)*16, zChunk*16, (zChunk+1)*16);
+    drawLSystem(l_system_delta);
+
+//    LSystem *l_system_linear = new LSystem(QString("FFFFFY"), x_boundary_start, x_boundary_end, 100, z_boundary_end);
+//    drawLSystem(l_system_linear);
+
+    pair<int, int> ints ((int)xChunk, (int)zChunk);
+    pair<pair<int, int>, Chunk*> p(ints, c);
+    chunksToAdd.push_back(p);
+}
+
+
+void Terrain::updateChunk(glm::vec3 position) {
+    QMutex mutex;
+    int64_t xz = getKey(position.x, position.z, false);
+    Chunk* c = chunkMap[xz];
+    c->destroy();
+    int64_t zChunk = xz & 0x00000000ffffffff;
+    if(zChunk & 0x0000000080000000) {
+        zChunk = zChunk | 0xffffffff00000000;
+    }
+    int64_t xChunk = (xz >> 32);
+    VBOThread* thread = new VBOThread(c, (int)xChunk, (int)zChunk, chunkMap, &mutex);
+    QThreadPool::globalInstance()->start(thread);
+    QThreadPool::globalInstance()->waitForDone();
+    c->create();
+}
+
 void Terrain::updateScene() {
+    QMutex mutex;
     for(int64_t xz: chunkMap.keys()) {
         Chunk* c = chunkMap[xz];
         c->destroy();
@@ -247,164 +318,30 @@ void Terrain::updateScene() {
             zChunk = zChunk | 0xffffffff00000000;
         }
         int64_t xChunk = (xz >> 32);
-        createVertexPosNorCol(c, (int)xChunk, (int)zChunk);
+        VBOThread* thread = new VBOThread(c, (int)xChunk, (int)zChunk, chunkMap, &mutex);
+        QThreadPool::globalInstance()->start(thread);
+    }
+    QThreadPool::globalInstance()->waitForDone();
+    for(int64_t xz: chunkMap.keys()) {
+        Chunk* c = chunkMap[xz];
         c->create();
     }
 }
 
-void Terrain::createVertexPosNorCol(Chunk* c, int xChunk, int zChunk) {
-    c->c_vert_pos_nor_col.clear();
-    for(int x = 0; x < 16; x++) {
-        for(int y = 0; y < 256; y++) {
-            for(int z = 0; z < 16; z++) {
-                BlockType t;
-                if((t = c->getBlockType(x, y, z)) != EMPTY) {
-                    glm::vec4 col;
-                    switch(t) {
-                    case DIRT:
-                        col = (glm::vec4(121.f, 85.f, 58.f, 255.f) / 255.f);
-                        break;
-                    case GRASS:
-                        col = (glm::vec4(95.f, 159.f, 53.f, 255.f) / 255.f);
-                        break;
-                    case STONE:
-                        col = (glm::vec4(0.5f));
-                        break;
-                    case WATER_TEST:
-                        col = (glm::vec4(0.f, 123.f, 174.f, 255.f) / 255.f);
-                        break;
-                    }
-
-                    // top
-                    if(checkEmpty(x, y+1, z, c, xChunk, zChunk)) {
-                        glm::vec4 normal = glm::vec4(0, 1, 0, 0);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y+1, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y+1, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y+1, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y+1, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                    }
-                    // bottom
-                    if(checkEmpty(x, y-1, z, c, xChunk, zChunk)) {
-                        glm::vec4 normal = glm::vec4(0, -1, 0, 0);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                    }
-                    //right
-                    if(checkEmpty(x+1, y, z, c, xChunk, zChunk)) {
-                        glm::vec4 normal = glm::vec4(1, 0, 0, 0);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y+1, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y+1, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                    }
-                    //left
-                    if(checkEmpty(x-1, y, z, c, xChunk, zChunk)) {
-                        glm::vec4 normal = glm::vec4(-1, 0, 0, 0);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y+1, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y+1, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                    }
-                    //front
-                    if(checkEmpty(x, y, z+1, c, xChunk, zChunk)) {
-                        glm::vec4 normal = glm::vec4(0, 0, 1, 0);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y+1, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y+1, z+1, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                    }
-                    //back
-                    if(checkEmpty(x, y, z-1, c, xChunk, zChunk)) {
-                        glm::vec4 normal = glm::vec4(0, 0, -1, 0);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x+1, y+1, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                        c->c_vert_pos_nor_col.push_back(glm::vec4(x, y+1, z, 1.0f));
-                        c->c_vert_pos_nor_col.push_back(normal);
-                        c->c_vert_pos_nor_col.push_back(col);
-                    }
-                }
-            }
-        }
+void Terrain::addChunks() {
+    QMutex mutex;
+    for(pair<pair<int, int>, Chunk*> p: chunksToAdd) {
+        VBOThread* thread = new VBOThread(p.second, p.first.first, p.first.second, chunkMap, &mutex);
+        QThreadPool::globalInstance()->start(thread);
     }
-    c->faces = c->c_vert_pos_nor_col.size()/12;
+    QThreadPool::globalInstance()->waitForDone();
+    for(pair<pair<int, int>, Chunk*> p: chunksToAdd) {
+        chunkMap[getKey(p.first.first, p.first.second, true)] = p.second;
+    }
+    chunksToAdd.clear();
 }
 
-bool Terrain::checkEmpty(int x, int y, int z, Chunk* c, int xChunk, int zChunk) {
-    if(x >= 0 && y >= 0 && z >= 0 && x < 16 && y < 256 && z < 16) {
-        return c->getBlockType(x, y, z) == EMPTY;
-    } else {
-        if(x < 0) {
-            if(chunkMap.contains(getKey(xChunk-1, zChunk, true))) {
-                return chunkMap[getKey(xChunk-1, zChunk, true)]->getBlockType(15, y, z%16) == EMPTY;
-            }
-        } else if(y < 0) {
-            return true; // under terrain, nothing there
-        } else if(z < 0) {
-            if(chunkMap.contains(getKey(xChunk, zChunk-1, true))) {
-                return chunkMap[getKey(xChunk, zChunk-1, true)]->getBlockType(x%16, y, 15) == EMPTY;
-            }
-        } else if(x >= 16) {
-            if(chunkMap.contains(getKey(xChunk+1, zChunk, true))) {
-                return chunkMap[getKey(xChunk+1, zChunk, true)]->getBlockType(0, y, z%16) == EMPTY;
-            }
-        } else if(y >= 256) {
-            return true;
-        } else {
-            if(chunkMap.contains(getKey(xChunk, zChunk+1, true))) {
-                return chunkMap[getKey(xChunk, zChunk+1, true)]->getBlockType(x%16, y, 0) == EMPTY;
-            }
-        }
-        return true;
-    }
+bool Terrain::hasChunk(int x, int z) {
+    int64_t key = getKey(x, z, false);
+    return chunkMap.contains(key);
 }
-
-

@@ -9,6 +9,7 @@
 #include "lsystem.h"
 
 using namespace glm;
+using namespace std;
 
 // C++ 11 allows us to define the size of an enum. This lets us use only one byte
 // of memory to store our different block types. By default, the size of a C++ enum
@@ -25,6 +26,11 @@ private:
     OpenGLContext* context;
 public:
     QHash<int64_t, Chunk*> chunkMap;
+
+    // Multithreading
+    bool hasChunk(int x, int z);
+    void createNewChunk(glm::vec3 position);
+
     glm::ivec3 dimensions;
     int x_boundary_start, x_boundary_end, y_boundary_start, y_boundary_end, z_boundary_start, z_boundary_end;
 
@@ -41,12 +47,15 @@ public:
 
     void updateScene();                                // Creates the VBOS for every chunk. Should only be called after all 16x256x16 blocks are assigned a blocktype
                                                            // and you are ready to set a VBO
+    void updateChunk(glm::vec3 position);
     void createVertexPosNorCol(Chunk* c, int xChunk, int zChunk);
 
     bool checkEmpty(int x, int y, int z, Chunk* c, int xChunk, int zChunk);
 
     void drawRoute(Turtle startTurtle, Turtle nextTurtle);
-
     void drawLSystem(LSystem *l_system);
 
+    // Multithreading
+    QList<pair<pair<int, int>, Chunk*>> chunksToAdd;
+    void addChunks();
 };

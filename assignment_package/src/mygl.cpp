@@ -124,6 +124,9 @@ void MyGL::timerUpdate()
     mp_camera->RecomputeAttributes();
     startTime = now;
     mp_player->resetKey();
+
+    mp_terrain->addChunks();
+
     update();
 }
 
@@ -150,6 +153,7 @@ void MyGL::GLDrawScene()
 {
     for(int64_t xz: mp_terrain->chunkMap.keys()) {
         Chunk* c = mp_terrain->chunkMap[xz];
+        c->destroy();
         int64_t zChunk = xz & 0x00000000ffffffff;
         if(zChunk & 0x0000000080000000) {
             zChunk = zChunk | 0xffffffff00000000;
@@ -269,30 +273,17 @@ void MyGL::placeBlock()
 //renders the quadrant you need rendered rather than the whole scene again
 void MyGL::checkBoundary()
 {
+
+    // TODO: refactor this code to go in a double for loop instead
     glm::vec3 pos = mp_camera->eye;
-    if(fabs(pos.x - mp_terrain->x_boundary_start) <= 20) {
-        mp_terrain->x_boundary_start = mp_terrain->x_boundary_start - 64;
-        mp_terrain->CreateTestScene();
-        mp_terrain->updateScene();
-    }
-
-    if(fabs(pos.x - mp_terrain->x_boundary_end) <= 20) {
-
-        mp_terrain->x_boundary_end = mp_terrain->x_boundary_end + 64;
-        mp_terrain->CreateTestScene();
-        mp_terrain->updateScene();
-    }
-
-    if(fabs(pos.z - mp_terrain->z_boundary_start) <= 20) {
-        mp_terrain->z_boundary_start = mp_terrain->z_boundary_start - 64;
-        mp_terrain->CreateTestScene();
-        mp_terrain->updateScene();
-    }
-
-    if(fabs(pos.z - mp_terrain->z_boundary_end) <= 20) {
-        mp_terrain->z_boundary_end = mp_terrain->z_boundary_end + 64;
-        mp_terrain->CreateTestScene();
-        mp_terrain->updateScene();
+    int radius = 2;
+    for(int numChunksX = -radius; numChunksX < 1 + radius*2; numChunksX++) {
+        for(int numChunksZ = -radius; numChunksZ < 1 + radius*2; numChunksZ++) {
+            if(!mp_terrain->hasChunk(pos.x + numChunksX*16, pos.z + numChunksZ*16)) {
+                glm::vec3 newPos = glm::vec3(pos.x + numChunksX*16, pos.y, pos.z + numChunksZ*16);
+                mp_terrain->createNewChunk(newPos);
+            }
+        }
     }
 }
 
@@ -303,7 +294,7 @@ void MyGL::mousePressEvent(QMouseEvent *e)
     } else if(e->buttons() == Qt::RightButton) {
         placeBlock();
     }
-    mp_terrain->updateScene();
+    mp_terrain->updateChunk(mp_camera->eye);
 }
 
 void MyGL::mouseMoveEvent(QMouseEvent *e)
