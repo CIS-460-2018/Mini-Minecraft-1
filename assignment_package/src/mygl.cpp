@@ -277,7 +277,7 @@ void MyGL::placeBlock()
             }
 
             if(min_distance != FLT_MAX) {
-                mp_terrain->setBlockAt(x_insert, y_insert, z_insert, WATER);
+                mp_terrain->setBlockAt(x_insert, y_insert, z_insert, STONE);
             }
             break;
         }
@@ -329,9 +329,9 @@ void MyGL::checkBoundary()
 void MyGL::mousePressEvent(QMouseEvent *e)
 {
     if(e->buttons() == Qt::LeftButton) {
-        placeBlock();
-    } else if(e->buttons() == Qt::RightButton) {
         removeBlock();
+    } else if(e->buttons() == Qt::RightButton) {
+        placeBlock();
     }
     mp_terrain->updateScene();
 }
