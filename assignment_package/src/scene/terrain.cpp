@@ -150,23 +150,25 @@ void Terrain::CreateTestScene()
         }
     }
 
-
     //L-System generation
-    LSystem *l_system = new LSystem(x_boundary_start, x_boundary_end, z_boundary_start, z_boundary_end);
+    LSystem *l_system_1 = new LSystem(QString("FFFX"), x_boundary_start, x_boundary_end, -64, z_boundary_end);
+    drawLSystem(l_system_1);
 
+    LSystem *l_system_2 = new LSystem(QString("FFFFFY"), x_boundary_start, x_boundary_end, 100, z_boundary_end);
+    drawLSystem(l_system_2);
 
+}
+
+void Terrain::drawLSystem(LSystem *l_system) {
     //Expanding the axiom for n iterations
     for(int i = 0; i < 5; i++) {
         l_system->axiom = l_system->expandGrammar(l_system->axiom);
     }
 
-    std::cout << "Final axiom string" << std::endl;
-    std::cout << l_system->axiom.toStdString() << std::endl;
-
     //Match rules to each character in the axiom (defined in lsystems.cpp)
     int count = 0;
     while (count < l_system->axiom.length()) {
-        l_system->executeRule(l_system->axiom.at(count));
+        l_system->executeRule(l_system->axiom.at(count), count);
         count = count + 1;
     }
 
@@ -185,26 +187,10 @@ void Terrain::CreateTestScene()
         }
         start = nextTurtle;
     }
-
-
-
-
 }
 
 
 void Terrain::drawRoute(Turtle startTurtle, Turtle nextTurtle) {
-//    for(int x = start_x; x < end_x && x < x_boundary_end; x++) {
-//        for(int width = start_z; width <= start_z + 8; width++)
-//        {
-//            setBlockAt(x, 128, width, STONE);
-//            for(int y = 129; y < 256; y++) {
-//                setBlockAt(x, y , width, EMPTY);
-//            }
-
-//        }
-//    }
-
-
     int start_x = startTurtle.pos.x;
     int end_x = nextTurtle.pos.x;
     int start_z = startTurtle.pos.y;
@@ -217,8 +203,6 @@ void Terrain::drawRoute(Turtle startTurtle, Turtle nextTurtle) {
     for(int i = 1; i <= distance; i++) {
         //Check within boundary that has been rendered
         if(start_x + (i * x_incr) < x_boundary_end && start_x + (i * x_incr) > x_boundary_start && start_z + (i * z_incr) < z_boundary_end && start_z + (i * z_incr) > z_boundary_start) {
-//            setBlockAt(start_x + (i * x_incr), 128, start_z + (i * z_incr), WATER_TEST);
-
             //Increment x and z values by the width and setBlockAt those positions as well to give the river some thickness
             for(int d = -width; d <= width; d++) {
                 if(start_x + (i * x_incr) + d < x_boundary_end && start_x + (i * x_incr) + d > x_boundary_start && start_z + (i * z_incr) + d < z_boundary_end && start_z + (i * z_incr) + d > z_boundary_start) {
@@ -226,7 +210,6 @@ void Terrain::drawRoute(Turtle startTurtle, Turtle nextTurtle) {
                     setBlockAt(start_x + (i * x_incr) + d, 128, start_z + (i * z_incr), WATER_TEST);
                     setBlockAt(start_x + (i * x_incr), 128, start_z + (i * z_incr) + d, WATER_TEST);
                     setBlockAt(start_x + (i * x_incr) + d, 128, start_z + (i * z_incr) + d, WATER_TEST);
-    //                setBlockAt(start_x + (i * x_incr), 128, start_z + (i * z_incr) + d, WATER_TEST);
                     //Set all blocks above the river to be empty
                     for(int y = 129; y < 256; y++) {
                         setBlockAt(start_x + (i * x_incr) + d, y, start_z + (i * z_incr), EMPTY);
@@ -237,7 +220,7 @@ void Terrain::drawRoute(Turtle startTurtle, Turtle nextTurtle) {
             }
 
             //To smooth edges of the river
-            for(int d = -width *2; d <= width*2; d++) {
+            for(int d = -width * 2; d <= width * 2; d++) {
                 if(d < -width || d > width)
                 {
                     if(start_x + (i * x_incr) + d < x_boundary_end && start_x + (i * x_incr) + d > x_boundary_start && start_z + (i * z_incr) + d < z_boundary_end && start_z + (i * z_incr) + d > z_boundary_start) {

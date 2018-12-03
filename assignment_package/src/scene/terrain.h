@@ -47,4 +47,6 @@ public:
 
     void drawRoute(Turtle startTurtle, Turtle nextTurtle);
 
+    void drawLSystem(LSystem *l_system);
+
 };

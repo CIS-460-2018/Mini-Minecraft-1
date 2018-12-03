@@ -35,8 +35,6 @@ public:
 
     LSystem();
 
-    LSystem(int x_boundary_start, int x_boundary_end, int z_boundary_start, int z_boundary_end);
-
     LSystem(QString axiom, int x_boundary_start, int x_boundary_end, int z_boundary_start, int z_boundary_end);
 
     QString expandGrammar(const QString& s) const; // Iterate over each character in the axiom
@@ -48,9 +46,8 @@ public:
     void saveTurtleState(); // Push the turtle's current state onto turtleHistory
     void popTurtleState(); // Pop the turtleHistory stack and set turtle's members to that Turtle's members
 
-    void executeRule(const QChar s);
+    void executeRule(const QChar s, const int index);
 
-    void branchTurtleCCW();
-    void branchTurtleCW();
+    void removeGrammar(const int index);
 };
 

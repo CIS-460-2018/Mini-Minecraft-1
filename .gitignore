@@ -1,4 +1,6 @@
 build-miniMinecraft-Desktop_Qt_5_9_1_clang_64bit-Debug/
+assignment_package/lsystem.o
+assignment_package/src/src.pri
 assignment_package/.qmake.stash
 assignment_package/Makefile
 assignment_package/MiniMinecraft.app/

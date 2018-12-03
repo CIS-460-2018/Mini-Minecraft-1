@@ -11,17 +11,12 @@ LSystem::LSystem()
 //    drawingOperations.insert('X', LSystem::drawLine());
 }
 
-LSystem::LSystem(int x_boundary_start, int x_boundary_end, int z_boundary_start, int z_boundary_end)
-    :axiom(QString("FFX")), turtle(Turtle(glm::vec2(x_boundary_start, 0), glm::vec2(1.0, 0.0), 1)), turtleHistory(), savedStates()
-{
-    expansionOperations.insert('X', QString("C[AFFBFFX]BFFBFFX"));
-    turtleHistory.push(turtle);
-}
 
 LSystem::LSystem(QString axiom, int x_boundary_start, int x_boundary_end, int z_boundary_start, int z_boundary_end)
-    :axiom(axiom), turtle(Turtle(glm::vec2(x_boundary_start, 0), glm::vec2(1.0, 0.0), 1)), turtleHistory(), savedStates()
+    :axiom(axiom), turtle(Turtle(glm::vec2(x_boundary_start, z_boundary_start), glm::vec2(1.0, 0.0), 1)), turtleHistory(), savedStates()
 {
-    expansionOperations.insert('X', QString("FX"));
+    expansionOperations.insert('X', QString("C[AFFBFFX]BFFBFFX"));
+    expansionOperations.insert('Y', QString("C[AFFY]BFAFFAFFY"));
     turtleHistory.push(turtle);
 }
 
@@ -41,8 +36,7 @@ QString LSystem::expandGrammar(const QString& s) const {
     return new_s;
 }
 
-void LSystem::executeRule(const QChar s) {
-//    std::cout << "executing rule" << std::endl;
+void LSystem::executeRule(const QChar s, const int index) {
     if(s == QChar('F')) {
         drawLine();
     }
@@ -53,36 +47,48 @@ void LSystem::executeRule(const QChar s) {
         rotateTurtleCCW();
     }
     if(s == 'C') {
-        savedStates.push_back(turtleHistory.last());
+        //Use some probability function to determine whether to branch or not
+        if(rand() % 100 < 90) {
+            //If we decide to branch, save the turtle state until a close bracket is encountered
+            savedStates.push_back(turtleHistory.last());
+        }
+        else {
+            //If we decide not to branch, remove the branching grammar from the axiom
+            removeGrammar(index);
+        }
     }
+    //If close bracket encountered pop off the last saved turtle state and proceed from there
     if(s == ']') {
         Turtle saved = savedStates.last();
         savedStates.pop_back();
         turtleHistory.push_back(saved);
         this->turtle = saved;
-//        std::cout << turtle.pos.x << " " << turtle.pos.y << std::endl;
     }
 }
 
+void LSystem::removeGrammar(const int index) {
+    int count = 0;
+    int end_index;
+    for(int i = index + 1; i < axiom.length(); i++) {
+        if(axiom.at(i) == '[') {
+            count = count + 1;
+        }
+        if(axiom.at(i) == ']') {
+            count = count - 1;
+            if(count == 0) {
+                end_index = i;
+            }
+        }
+    }
+    std::string new_axiom = axiom.toStdString().substr(0, index) + axiom.toStdString().substr(end_index);
+    axiom = QString::fromStdString(new_axiom);
+}
+
 void LSystem::drawLine() {
-//    std::cout << "Drawing line" << std::endl;
     turtle.pos.x += 30 * turtle.orient.x;
     turtle.pos.y += 30 * turtle.orient.y;
     turtle.depth += 1;
     turtleHistory.push_back(turtle);
-//    std::cout << "Depth " << turtle.depth << std::endl;
-}
-
-//void LSystem::branchTurtle() {
-
-
-//}
-
-void LSystem::branchTurtleCCW() {
-    QStack<Turtle> new_history = turtleHistory;
-    Turtle old_turtle = new_history.first();
-
-    new_history.push_front(Turtle());
 }
 
 void LSystem::rotateTurtleCW() {
