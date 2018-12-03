@@ -59,6 +59,7 @@ float fbm(float x, float y) {
 
 BlockType Terrain::getBlockAt(int x, int y, int z) const
 {
+    int64_t key = getKey(x, z, false);
     int originalX = x;
     int originalZ = z;
     x = abs(x)%16;
@@ -69,7 +70,10 @@ BlockType Terrain::getBlockAt(int x, int y, int z) const
     if(originalZ < 0 && z != 0) {
         z = 16 - z;
     }
-    return chunkMap[getKey(x, z, false)]->getBlockType(x, y, z);
+    if(!chunkMap.contains(key)) {
+        return EMPTY;
+    }
+    return chunkMap[key]->getBlockType(x, y, z);
 }
 
 int64_t Terrain::getKey(int x, int z, bool chunked) const {
@@ -113,9 +117,9 @@ void Terrain::setBlockAt(int x, int y, int z, BlockType t)
 void Terrain::CreateTestScene()
 {
     // Create the basic terrain floor
-    for(int x = -64; x < 32; ++x)
+    for(int x = x_boundary_start; x < x_boundary_end; ++x)
     {
-        for(int z = -64; z < 32; ++z)
+        for(int z = z_boundary_start; z < z_boundary_end; ++z)
         {
             float height = fbm(x, z);
 

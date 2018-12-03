@@ -269,44 +269,34 @@ void MyGL::placeBlock()
     }
 }
 
+//Can make this more efficient by replacing createTestScene with a function that only
+//renders the quadrant you need rendered rather than the whole scene again
 void MyGL::checkBoundary()
 {
     glm::vec3 pos = mp_camera->eye;
-    if(pos.x < 10) {
-
+    if(fabs(pos.x - mp_terrain->x_boundary_start) <= 20) {
+        mp_terrain->x_boundary_start = mp_terrain->x_boundary_start - 64;
+        mp_terrain->CreateTestScene();
+        mp_terrain->updateScene();
     }
 
-    if(fabs(pos.x - mp_terrain->x_boundary_end) >= 10) {
-//    if(mp_terrain->dimensions[0] == 64) {
-//        mp_terrain->dimensions[0] += 64;
-//        mp_terrain->x_boundary_end += 64;
-//        BlockType new_blocks [128][256][64];
+    if(fabs(pos.x - mp_terrain->x_boundary_end) <= 20) {
 
-//        for(int x = 0; x < 64; x++) {
-//            for(int y = 0; y < 128; y++) {
-//                for(int z = 0; z < 64; z++) {
-//                    new_blocks[x][y][z] = mp_terrain->getBlockAt(x, y, z);
-//                }
-//            }
-//        }
-
-//        mp_terrain->m_blocks = new_blocks;
-//        for(int x = 64; x < 128; x++) {
-//            for(int y = 0; y < 128; y++) {
-//                for(int z = 0; z < 64; z++) {
-//                    mp_terrain->setBlockAt(x, y, z, STONE);
-//                }
-//            }
-//        }
-
+        mp_terrain->x_boundary_end = mp_terrain->x_boundary_end + 64;
+        mp_terrain->CreateTestScene();
+        mp_terrain->updateScene();
     }
 
-    if(pos.z < 10) {
-
+    if(fabs(pos.z - mp_terrain->z_boundary_start) <= 20) {
+        mp_terrain->z_boundary_start = mp_terrain->z_boundary_start - 64;
+        mp_terrain->CreateTestScene();
+        mp_terrain->updateScene();
     }
 
-    if(fabs(pos.z - mp_terrain->z_boundary_end) >= 10) {
-
+    if(fabs(pos.z - mp_terrain->z_boundary_end) <= 20) {
+        mp_terrain->z_boundary_end = mp_terrain->z_boundary_end + 64;
+        mp_terrain->CreateTestScene();
+        mp_terrain->updateScene();
     }
 }
 
@@ -329,4 +319,5 @@ void MyGL::mouseMoveEvent(QMouseEvent *e)
 void MyGL::keyPressEvent(QKeyEvent *e)
 {
     mp_player->updateKey(e);
+    checkBoundary();
 }
