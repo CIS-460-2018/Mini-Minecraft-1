@@ -1,1 +1,3 @@
-Used the lecture slides for noise and fractal brownian motion functions.
+Used the lecture slides for noise and fractal brownian motion functions (Yamir)
+Used the lsystems header code provided on Piazza (Yamir)
+
