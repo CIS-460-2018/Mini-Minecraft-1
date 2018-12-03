@@ -51,3 +51,14 @@ Milestone 2:
 Difficulties:
 - I was unable to understand the design of function pointers and instead used if-else matching to check the character and execute the corresponding rule implemented as member functions of the l-system class
 - It took me a significant amount of time to figure out how to implement branching logic. I finally decided to use a second QStack to save turtle state at each branch and to pop it off and set the this turtle to be the popped off turtle once the branch was completed.
+
+2. Multithreading and Swimming - Prateek Agarwal
+- I added a new glsl file to handle creating a blue or red filter over the screen
+- Created a new Quadrangle class that makes a quadrangle with the correct color that spans the entire screen in NDC space
+- Created a VBOThread class to handle creating VBOs for new chunks on different threads
+- Adjusted updateScene to use VBOThread to generate VBOs for every chunk on a separate thread, decreasing the time needed to generate new terrain
+- Created new functionality to only render chunks that are changed by placeBlock or removeBlock as well as only generating the VBOs for new chunks rather than the entire terrain.
+
+Difficulties:
+- Debugging glsl to realize that I didn't set my count variable in my Drawable Quadrangle
+- I spent some time figuring out what exactly needed to be on a separate thread, and figured out the hard way how passing variables to the GPU (chunk->create()) had to be done on the main thread.

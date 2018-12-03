@@ -1,3 +1,4 @@
 Used the lecture slides for noise and fractal brownian motion functions (Yamir)
 Used the lsystems header code provided on Piazza (Yamir)
 
+Went to Office Hours December 1 where Adam helped fix a bug from the previous milestone regarding adding chunks in the negative direction (Prateek)
