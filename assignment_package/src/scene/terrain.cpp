@@ -151,11 +151,11 @@ void Terrain::CreateTestScene()
     }
 
     //L-System generation
-    LSystem *l_system_1 = new LSystem(QString("FFFX"), x_boundary_start, x_boundary_end, -64, z_boundary_end);
-    drawLSystem(l_system_1);
+    LSystem *l_system_delta = new LSystem(QString("FFFX"), x_boundary_start, x_boundary_end, -64, z_boundary_end);
+    drawLSystem(l_system_delta);
 
-    LSystem *l_system_2 = new LSystem(QString("FFFFFY"), x_boundary_start, x_boundary_end, 100, z_boundary_end);
-    drawLSystem(l_system_2);
+    LSystem *l_system_linear = new LSystem(QString("FFFFFY"), x_boundary_start, x_boundary_end, 100, z_boundary_end);
+    drawLSystem(l_system_linear);
 
 }
 

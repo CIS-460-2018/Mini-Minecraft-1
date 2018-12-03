@@ -21,7 +21,7 @@ void Player::updateMouse(QMouseEvent *e)
 {
     mouse = e;
     glm::vec2 pos(e->pos().x(), e->pos().y());
-    glm::vec2 diff = 0.2f * (pos - m_mousePosPrev);
+    glm::vec2 diff = 0.4f * (pos - m_mousePosPrev);
     m_mousePosPrev = pos;
     camera->RotateAboutUp(-diff.x);
     camera->RotateAboutRight(-diff.y);
