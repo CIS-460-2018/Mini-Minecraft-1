@@ -313,4 +313,10 @@ bool Terrain::checkEmpty(int x, int y, int z, Chunk* c, int xChunk, int zChunk) 
     }
 }
 
-
+void Terrain::addChunks() {
+    while(!chunksToAdd.empty()) {
+        Chunk* ch = chunksToAdd.first();
+        chunksToAdd.pop_front();
+        // populate VBO for ch in separate thread here
+    }
+}

@@ -124,6 +124,9 @@ void MyGL::timerUpdate()
     mp_camera->RecomputeAttributes();
     startTime = now;
     mp_player->resetKey();
+
+    mp_terrain->addChunks();
+
     update();
 }
 
@@ -150,6 +153,7 @@ void MyGL::GLDrawScene()
 {
     for(int64_t xz: mp_terrain->chunkMap.keys()) {
         Chunk* c = mp_terrain->chunkMap[xz];
+        c->destroy();
         int64_t zChunk = xz & 0x00000000ffffffff;
         if(zChunk & 0x0000000080000000) {
             zChunk = zChunk | 0xffffffff00000000;

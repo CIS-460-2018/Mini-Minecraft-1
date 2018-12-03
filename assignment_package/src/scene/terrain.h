@@ -43,6 +43,10 @@ public:
                         // and you are ready to set a VBO
     void createVertexPosNorCol(Chunk* c, int xChunk, int zChunk);
     bool checkEmpty(int x, int y, int z, Chunk* c, int xChunk, int zChunk);
+
+    QList<Chunk*> chunksToAdd;
+    void addChunks();
+
 //    vec2 randomfunc(vec2 p);
 
 //    float interpNoise2D(float x, float y);
