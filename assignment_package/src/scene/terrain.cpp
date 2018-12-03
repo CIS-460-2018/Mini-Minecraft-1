@@ -8,9 +8,9 @@ using namespace glm;
 using namespace std;
 
 Terrain::Terrain(OpenGLContext* c)
-    : context(c), dimensions(64, 256, 64), x_boundary_start(0), y_boundary_start(0), z_boundary_start(0),
-      x_boundary_end(64), y_boundary_end(256),
-      z_boundary_end(64)
+    : context(c), dimensions(64, 256, 64), x_boundary_start(-192), y_boundary_start(0), z_boundary_start(-128),
+      x_boundary_end(128), y_boundary_end(256),
+      z_boundary_end(128)
 {}
 
 Terrain::Terrain(OpenGLContext* c, int x_boundary_end, int y_boundary_end, int z_boundary_end)
@@ -149,6 +149,111 @@ void Terrain::CreateTestScene()
             }
         }
     }
+
+
+    //L-System generation
+    LSystem *l_system = new LSystem(x_boundary_start, x_boundary_end, z_boundary_start, z_boundary_end);
+
+
+    //Expanding the axiom for n iterations
+    for(int i = 0; i < 5; i++) {
+        l_system->axiom = l_system->expandGrammar(l_system->axiom);
+    }
+
+    std::cout << "Final axiom string" << std::endl;
+    std::cout << l_system->axiom.toStdString() << std::endl;
+
+    //Match rules to each character in the axiom (defined in lsystems.cpp)
+    int count = 0;
+    while (count < l_system->axiom.length()) {
+        l_system->executeRule(l_system->axiom.at(count));
+        count = count + 1;
+    }
+
+    //Trace the turtle's route and update blocks correspondingly from the states stored in the turtleHistory stack
+    Turtle start = l_system->turtleHistory.first();
+    l_system->turtleHistory.pop_front();
+
+    while(l_system->turtleHistory.size() > 1) {
+        Turtle nextTurtle = l_system->turtleHistory.first();
+        l_system->turtleHistory.pop_front();
+        //Only drawRoute if depth of next turtle is 1 more than start turtle
+        //This facilitates branching logic and prevents rotations from being drawn
+        if(nextTurtle.depth == start.depth + 1)
+        {
+            drawRoute(start, nextTurtle);
+        }
+        start = nextTurtle;
+    }
+
+
+
+
+}
+
+
+void Terrain::drawRoute(Turtle startTurtle, Turtle nextTurtle) {
+//    for(int x = start_x; x < end_x && x < x_boundary_end; x++) {
+//        for(int width = start_z; width <= start_z + 8; width++)
+//        {
+//            setBlockAt(x, 128, width, STONE);
+//            for(int y = 129; y < 256; y++) {
+//                setBlockAt(x, y , width, EMPTY);
+//            }
+
+//        }
+//    }
+
+
+    int start_x = startTurtle.pos.x;
+    int end_x = nextTurtle.pos.x;
+    int start_z = startTurtle.pos.y;
+    int end_z = nextTurtle.pos.y;
+    float distance = sqrt(pow(end_x - start_x, 2) + pow(end_z - start_z, 2));
+    float x_incr = (end_x - start_x) / distance;
+    float z_incr = (end_z - start_z) / distance;
+    int width = std::max(7 - nextTurtle.depth/5, 2);
+
+    for(int i = 1; i <= distance; i++) {
+        //Check within boundary that has been rendered
+        if(start_x + (i * x_incr) < x_boundary_end && start_x + (i * x_incr) > x_boundary_start && start_z + (i * z_incr) < z_boundary_end && start_z + (i * z_incr) > z_boundary_start) {
+//            setBlockAt(start_x + (i * x_incr), 128, start_z + (i * z_incr), WATER_TEST);
+
+            //Increment x and z values by the width and setBlockAt those positions as well to give the river some thickness
+            for(int d = -width; d <= width; d++) {
+                if(start_x + (i * x_incr) + d < x_boundary_end && start_x + (i * x_incr) + d > x_boundary_start && start_z + (i * z_incr) + d < z_boundary_end && start_z + (i * z_incr) + d > z_boundary_start) {
+
+                    setBlockAt(start_x + (i * x_incr) + d, 128, start_z + (i * z_incr), WATER_TEST);
+                    setBlockAt(start_x + (i * x_incr), 128, start_z + (i * z_incr) + d, WATER_TEST);
+                    setBlockAt(start_x + (i * x_incr) + d, 128, start_z + (i * z_incr) + d, WATER_TEST);
+    //                setBlockAt(start_x + (i * x_incr), 128, start_z + (i * z_incr) + d, WATER_TEST);
+                    //Set all blocks above the river to be empty
+                    for(int y = 129; y < 256; y++) {
+                        setBlockAt(start_x + (i * x_incr) + d, y, start_z + (i * z_incr), EMPTY);
+                        setBlockAt(start_x + (i * x_incr), y, start_z + (i * z_incr) + d, EMPTY);
+                        setBlockAt(start_x + (i * x_incr) + d, y, start_z + (i * z_incr) + d, EMPTY);
+                    }
+                }
+            }
+
+            //To smooth edges of the river
+            for(int d = -width *2; d <= width*2; d++) {
+                if(d < -width || d > width)
+                {
+                    if(start_x + (i * x_incr) + d < x_boundary_end && start_x + (i * x_incr) + d > x_boundary_start && start_z + (i * z_incr) + d < z_boundary_end && start_z + (i * z_incr) + d > z_boundary_start) {
+                        for(int y = 129 + fabs(d) - width; y < 256; y++) {
+                            setBlockAt(start_x + (i * x_incr) + d, y, start_z + (i * z_incr), EMPTY);
+                            setBlockAt(start_x + (i * x_incr), y, start_z + (i * z_incr) + d, EMPTY);
+                            setBlockAt(start_x + (i * x_incr) + d, y, start_z + (i * z_incr) + d, EMPTY);
+                        }
+                    }
+                }
+            }
+
+
+        }
+    }//for each increment of distance from start to next turtle
+
 }
 
 void Terrain::updateScene() {
@@ -182,6 +287,9 @@ void Terrain::createVertexPosNorCol(Chunk* c, int xChunk, int zChunk) {
                         break;
                     case STONE:
                         col = (glm::vec4(0.5f));
+                        break;
+                    case WATER_TEST:
+                        col = (glm::vec4(0.f, 123.f, 174.f, 255.f) / 255.f);
                         break;
                     }
 
