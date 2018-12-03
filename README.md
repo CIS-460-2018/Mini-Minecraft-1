@@ -35,6 +35,8 @@ Update:
 - All the bugs from the previous part are fixed and merged with master.
 
 
+
+
 Milestone 2:
 
 1. L-Systems - Yamir Tainwala
@@ -45,7 +47,6 @@ Milestone 2:
 - I used a second QStack to save turtle state for each branch encountered, and once a close bracket is encountered, the last saved state is popped off and used as the starting point for the next section of the axiom's grammar
 - I used orientation to represent positive and negative x and z directions and case matched orientation during a rotation of the turtle to get the new orientation
 - Each change in state of the turtle is saved to the turtleHistory QStack, but only drawLine() (forward movement of the turtle) increments the depth of the turtle. By checking that I call a draw function only if the next turtle state is at an incremented depth, I ensure that arbitrary lines are not drawn from some future state to a previously saved state, and further that nothing is drawn except during a forward motion of the turtle.
-- 
 
 Difficulties:
 - I was unable to understand the design of function pointers and instead used if-else matching to check the character and execute the corresponding rule implemented as member functions of the l-system class
