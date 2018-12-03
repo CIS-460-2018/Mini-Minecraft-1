@@ -22,6 +22,9 @@ void VBOThread::createVertexPosNorCol() {
                     case STONE:
                         col = (glm::vec4(0.5f));
                         break;
+                    case WATER_TEST:
+                        col = (glm::vec4(0.f, 123.f, 174.f, 255.f) / 255.f);
+                        break;
                     }
 
                     // top

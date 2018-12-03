@@ -283,8 +283,8 @@ void Terrain::createNewChunk(glm::vec3 position) {
     LSystem *l_system_delta = new LSystem(QString("FFFX"), xChunk*16, (xChunk+1)*16, zChunk*16, (zChunk+1)*16);
     drawLSystem(l_system_delta);
 
-//    LSystem *l_system_linear = new LSystem(QString("FFFFFY"), x_boundary_start, x_boundary_end, 100, z_boundary_end);
-//    drawLSystem(l_system_linear);
+    LSystem *l_system_linear = new LSystem(QString("FFFFFY"), xChunk*16, (xChunk+1)*16, zChunk*16, (zChunk+1)*16);
+    drawLSystem(l_system_linear);
 
     pair<int, int> ints ((int)xChunk, (int)zChunk);
     pair<pair<int, int>, Chunk*> p(ints, c);
