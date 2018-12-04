@@ -266,8 +266,7 @@ void Terrain::createNewChunk(glm::vec3 position) {
     pair<pair<int, int>, Chunk*> p(ints, c);
     chunksToAdd.push_back(p);
 
-
-    //L-System generation
+//    //L-System generation
 //    LSystem *l_system_delta = new LSystem(QString("FFFX"), x_boundary_start, x_boundary_end, -64, z_boundary_end);
 //    drawLSystem(l_system_delta);
 

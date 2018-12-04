@@ -1,5 +1,9 @@
 build-miniMinecraft-Desktop_Qt_5_9_1_clang_64bit-Debug/
 assignment_package/lsystem.o
+assignment_package/qrc_texture.o
+assignment_package/quadrangle.o
+assignment_package/texture.o
+assignment_package/vbothread.o
 assignment_package/src/src.pri
 assignment_package/.qmake.stash
 assignment_package/Makefile
