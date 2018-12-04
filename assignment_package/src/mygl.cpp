@@ -11,7 +11,7 @@ MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       mp_geomCube(new Cube(this)), mp_worldAxes(new WorldAxes(this)),
       mp_progLambert(new ShaderProgram(this)), mp_progFlat(new ShaderProgram(this)),
-      mp_camera(new Camera()), mp_terrain(new Terrain(this)), mp_player(new Player(mp_camera)), mp_texture(new Texture(this)),
+      mp_camera(new Camera()), mp_player(new Player(mp_camera)), mp_terrain(new Terrain(this)), mp_texture(new Texture(this)),
       mp_progOverlay(new ShaderProgram(this)), overlay(new Quadrangle(this, EMPTY))
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
@@ -21,7 +21,7 @@ MyGL::MyGL(QWidget *parent)
     setFocusPolicy(Qt::ClickFocus);
 
     setMouseTracking(true); // MyGL will track the mouse's movements even if a mouse button is not pressed
-    //setCursor(Qt::BlankCursor); // Make the cursor invisible
+    setCursor(Qt::CrossCursor);
 }
 
 MyGL::~MyGL()
@@ -117,7 +117,7 @@ void MyGL::resizeGL(int w, int h)
 
     mp_progLambert->setViewProjMatrix(viewproj);
     mp_progFlat->setViewProjMatrix(viewproj);
-    mp_progLambert->setViewVector(glm::vec4(mp_camera->eye, 0));
+    mp_progLambert->setViewVector(glm::vec4(mp_camera->look, 0));
 
     printGLErrorLog();
 }
@@ -152,11 +152,10 @@ void MyGL::paintGL()
 
     mp_progFlat->setViewProjMatrix(mp_camera->getViewProj());
     mp_progLambert->setViewProjMatrix(mp_camera->getViewProj());
-    mp_progLambert->setViewVector(glm::vec4(mp_camera->eye, 0));
+    mp_progLambert->setViewVector(glm::vec4(mp_camera->look, 0));
     mp_progLambert->setTime(m_time);
     mp_progFlat->setTime(m_time);
     m_time++;
-
     mp_texture->bind(0);
     GLDrawScene();
 
@@ -314,6 +313,13 @@ void MyGL::mousePressEvent(QMouseEvent *e)
 void MyGL::mouseMoveEvent(QMouseEvent *e)
 {
     mp_player->updateMouse(e);
+    glm::vec2 pos(e->pos().x(), e->pos().y());
+    glm::vec2 center(width() / 2, height() / 2);
+    glm::vec2 diff = 0.4f * (pos - center);
+    mp_camera->RotateAboutUp(-diff.x);
+    mp_camera->RotateAboutRight(-diff.y);
+    mp_camera->RecomputeAttributes();
+    MoveMouseToCenter();
 }
 
 void MyGL::keyPressEvent(QKeyEvent *e)

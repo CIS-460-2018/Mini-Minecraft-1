@@ -34,8 +34,10 @@ private:
     Camera* mp_camera;
     Terrain* mp_terrain;
     Texture* mp_texture;
+    glm::vec2 m_mousePosPrev;
 
     Player* mp_player; // player instance
+
     int64_t startTime; // initial elapsed time
 
     /// Timer linked to timerUpdate(). Fires approx. 60 times per second

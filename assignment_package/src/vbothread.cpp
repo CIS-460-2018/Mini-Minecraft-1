@@ -23,63 +23,63 @@ void VBOThread::createVertexPosNorUV() {
                     switch(currT) {
                     case DIRT:
                         uvIndicator = 1;
-                        cosinePow = 90.0f;
+                        cosinePow = 1.75f;
                         isAnimate = 0;
                         isTransparent = false;
                         checkFunction = &VBOThread::shouldRenderSolid;
                         break;
                     case GRASS:
                         uvIndicator = 2;
-                        cosinePow = 70.0f;
+                        cosinePow = 1.75f;
                         isAnimate = 0;
                         isTransparent = false;
                         checkFunction = &VBOThread::shouldRenderSolid;
                         break;
                     case STONE:
                         uvIndicator = 3;
-                        cosinePow = 30.0f;
+                        cosinePow = 1.0f;
                         isAnimate = 0;
                         isTransparent = false;
                         checkFunction = &VBOThread::shouldRenderSolid;
                         break;
                     case WOOD:
                         uvIndicator = 4;
-                        cosinePow = 90.0f;
+                        cosinePow = 3.0f;
                         isAnimate = 0;
                         isTransparent = false;
                         checkFunction = &VBOThread::shouldRenderSolid;
                         break;
                     case LEAF:
                         uvIndicator = 5;
-                        cosinePow = 70.0f;
+                        cosinePow = 2.0f;
                         isAnimate = 0;
                         isTransparent = false;
                         checkFunction = &VBOThread::shouldRenderSolid;
                         break;
                     case BEDROCK:
                         uvIndicator = 6;
-                        cosinePow = 50.0f;
+                        cosinePow = 1.0f;
                         isAnimate = 0;
                         isTransparent = false;
                         checkFunction = &VBOThread::shouldRenderSolid;
                         break;
                     case LAVA:
                         uvIndicator = 7;
-                        cosinePow = 10.0f;
+                        cosinePow = 2.0f;
                         isAnimate = 1;
                         isTransparent = false;
                         checkFunction = &VBOThread::shouldRenderTransp;
                         break;
                     case WATER:
                         uvIndicator = 8;
-                        cosinePow = 10.0f;
+                        cosinePow = 0.75f;
                         isAnimate = 1;
                         isTransparent = true;
                         checkFunction = &VBOThread::shouldRenderTransp;
                         break;
                     case ICE:
                         uvIndicator = 9;
-                        cosinePow = 10.0f;
+                        cosinePow = 0.5f;
                         isAnimate = 0;
                         isTransparent = true;
                         checkFunction = &VBOThread::shouldRenderTransp;

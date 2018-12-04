@@ -235,8 +235,6 @@ void Terrain::drawRoute(Turtle startTurtle, Turtle nextTurtle) {
                     }
                 }
             }
-
-
         }
     }//for each increment of distance from start to next turtle
 

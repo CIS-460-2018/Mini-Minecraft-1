@@ -18,10 +18,11 @@ uniform int u_Time;
 // their specific values without knowing the vertices that contributed to them
 in vec4 fs_Nor;
 in vec4 fs_LightVec;
-in vec4 fs_ViewVec;
+uniform vec4 u_ViewVec;
 //in vec4 fs_Col;
 in vec2 fs_UV;
 in float fs_Cos;
+in vec4 fs_Pos;
 in float fs_Animate;
 out vec4 out_Col; // This is the final output color that you will see on your
                   // screen for the pixel that is currently being processed.
@@ -49,17 +50,21 @@ void main()
         }
         //out_Col = texture(u_RenderedTexture, fs_UV);
         // Calculate the diffuse term for Lambert shading
-        float diffuseTerm = dot(normalize(fs_Nor), normalize(fs_LightVec));
+        float diffuseTerm = dot(normalize(fs_Nor), fs_LightVec);
         // Avoid negative lighting values
         diffuseTerm = clamp(diffuseTerm, 0, 1);
 
+        vec3 halfVec = normalize((fs_LightVec - u_ViewVec).xyz);
+
         float ambientTerm = 0.2;
 
-        float lightIntensity = diffuseTerm + ambientTerm;   //Add a small float value to the color multiplier
+        float lightIntensity = 0.8 * diffuseTerm + ambientTerm;   //Add a small float value to the color multiplier
                                                             //to simulate ambient lighting. This ensures that faces that are not
                                                             //lit by our point light are not completely black.
 
-        float specularIntensity = max(pow(dot((fs_LightVec + fs_ViewVec) / 2, fs_Nor), fs_Cos), 0);
+        float specularIntensity = max(pow(dot(vec4(halfVec, 0) / 2.0, fs_Nor), fs_Cos), 0);
+
         // Compute final shaded color
-        out_Col = vec4(diffuseColor.rgb * lightIntensity + specularIntensity, diffuseColor.a);
+        out_Col = vec4(diffuseColor.rgb * lightIntensity + vec3(specularIntensity), diffuseColor.a);
+        //out_Col = vec4(normalize(u_ViewVec.xyz - fs_Pos.xyz), 1.0);
 }
