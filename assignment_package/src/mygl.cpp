@@ -196,7 +196,7 @@ void MyGL::removeBlock()
     glm::vec3 pos = mp_camera->eye;
     glm::vec3 direction = mp_camera->look;
     float t = 0.1f;
-    while(t < 20) {
+    while(t < 30) {
         glm::vec3 new_pos = pos + t * direction;
 //        std::cout << new_pos.x << new_pos.y << new_pos.z << std::endl;
 //        for(int x = pos.x - 1; x <= pos.x + 1; x++) {
@@ -233,7 +233,7 @@ void MyGL::placeBlock()
 //    }
 
 
-    while(t < 20) {
+    while(t < 30) {
         glm::vec3 new_pos = pos + t * direction;
 //        std::cout << new_pos.x << new_pos.y << new_pos.z << std::endl;
 //        for(int x = pos.x - 1; x <= pos.x + 1; x++) {
@@ -301,6 +301,9 @@ void MyGL::checkBoundary()
             if(!mp_terrain->hasChunk(pos.x + numChunksX*16, pos.z + numChunksZ*16)) {
                 glm::vec3 newPos = glm::vec3(pos.x + numChunksX*16, pos.y, pos.z + numChunksZ*16);
                 mp_terrain->createNewChunk(newPos);
+//                mp_terrain->drawRemainderLSystem(mp_terrain->l_system_delta);
+//                mp_terrain->drawRemainderLSystem(mp_terrain->l_system_linear);
+
             }
         }
     }

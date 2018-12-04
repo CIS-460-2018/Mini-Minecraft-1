@@ -26,6 +26,8 @@ private:
     OpenGLContext* context;
 
 public:
+    LSystem *l_system_delta;
+    LSystem *l_system_linear;
     QHash<int64_t, Chunk*> chunkMap;
 
     // Multithreading
@@ -61,6 +63,7 @@ public:
 
     void drawRoute(Turtle startTurtle, Turtle nextTurtle);
     void drawLSystem(LSystem *l_system);
+    void drawRemainderLSystem(LSystem *l_system);
 
     // Multithreading
     QList<pair<pair<int, int>, Chunk*>> chunksToAdd;

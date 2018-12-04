@@ -151,17 +151,17 @@ void Terrain::CreateTestScene()
     }
 
     //L-System generation
-    LSystem *l_system_delta = new LSystem(QString("FFFX"), x_boundary_start, x_boundary_end, -64, z_boundary_end);
+    this->l_system_delta = new LSystem(QString("FFFX"), x_boundary_start, x_boundary_end, -64, z_boundary_end);
     drawLSystem(l_system_delta);
 
-    LSystem *l_system_linear = new LSystem(QString("FFFFFY"), x_boundary_start, x_boundary_end, 100, z_boundary_end);
+    this->l_system_linear = new LSystem(QString("FFFFFY"), x_boundary_start, x_boundary_end, 100, z_boundary_end);
     drawLSystem(l_system_linear);
 
 }
 
 void Terrain::drawLSystem(LSystem *l_system) {
     //Expanding the axiom for n iterations
-    for(int i = 0; i < 5; i++) {
+    for(int i = 0; i < 7; i++) {
         l_system->axiom = l_system->expandGrammar(l_system->axiom);
     }
 
@@ -179,7 +179,7 @@ void Terrain::drawLSystem(LSystem *l_system) {
     while(count > 0) {
         Turtle nextTurtle = l_system->turtleHistory.first();
         l_system->turtleHistory.pop_front();
-        if(withinChunks(nextTurtle.pos.x, nextTurtle.pos.y) && withinChunks(start.pos.x, start.pos.y))
+        if(hasChunk(nextTurtle.pos.x, nextTurtle.pos.y) && hasChunk(start.pos.x, start.pos.y))
         {
             //Only drawRoute if depth of next turtle is 1 more than start turtle
             //This facilitates branching logic and prevents rotations from being drawn
@@ -188,11 +188,64 @@ void Terrain::drawLSystem(LSystem *l_system) {
                 drawRoute(start, nextTurtle);
             }
         }
-//        else {
-//            l_system->turtleHistory.push_back(nextTurtle);
-//        }
+        else if(hasChunk(start.pos.x, start.pos.y)) {
+            if(nextTurtle.depth == start.depth + 1)
+            {
+                drawRoute(start, nextTurtle);
+            }
+            l_system->turtleHistory.push_back(start);
+            l_system->turtleHistory.push_back(nextTurtle);
+        }
+        else {
+            l_system->turtleHistory.push_back(nextTurtle);
+        }
+//        drawRoute(start, nextTurtle);
         start = nextTurtle;
         count = count - 1;
+    }
+
+//    std::cout << l_system->turtleHistory.size() << std::endl;
+}
+
+void Terrain::drawRemainderLSystem(LSystem *l_system) {
+    if(l_system->turtleHistory.size() > 0)
+    //Trace the turtle's route and update blocks correspondingly from the states stored in the turtleHistory stack
+    {
+//        std::cout << "Entered" << std::endl;
+        Turtle start = l_system->turtleHistory.first();
+        l_system->turtleHistory.pop_front();
+        int count = l_system->turtleHistory.size() - 1;
+        while(count > 0) {
+            Turtle nextTurtle = l_system->turtleHistory.first();
+            l_system->turtleHistory.pop_front();
+            if(hasChunk(nextTurtle.pos.x, nextTurtle.pos.y) && hasChunk(start.pos.x, start.pos.y))
+            {
+//                std::cout << "Entered has chunk" << std::endl;
+                //Only drawRoute if depth of next turtle is 1 more than start turtle
+                //This facilitates branching logic and prevents rotations from being drawn
+                if(nextTurtle.depth == start.depth + 1)
+                {
+//                    std::cout << "Entered draw route" << std::endl;
+                    drawRoute(start, nextTurtle);
+                }
+            }
+            else if(hasChunk(start.pos.x, start.pos.y)) {
+                if(nextTurtle.depth == start.depth + 1)
+                {
+//                    std::cout << "Entered draw route" << std::endl;
+                    drawRoute(start, nextTurtle);
+                }
+                l_system->turtleHistory.push_back(start);
+                l_system->turtleHistory.push_back(nextTurtle);
+            }
+            else {
+                l_system->turtleHistory.push_back(nextTurtle);
+            }
+            start = nextTurtle;
+            count = count - 1;
+        }
+//        std::cout << "Exited" << std::endl;
+
     }
 }
 
@@ -208,15 +261,18 @@ void Terrain::drawRoute(Turtle startTurtle, Turtle nextTurtle) {
     float distance = sqrt(pow(end_x - start_x, 2) + pow(end_z - start_z, 2));
     float x_incr = (end_x - start_x) / distance;
     float z_incr = (end_z - start_z) / distance;
-    int width = std::max(7 - nextTurtle.depth/3, 2);
+    int width = std::max(7 - nextTurtle.depth/3, 3);
 
-    for(int i = 1; i <= distance; i++) {
+    for(int i = 0; i <= distance; i++) {
         //Check within boundary that has been rendered
-        if(start_x + (i * x_incr) < x_boundary_end && start_x + (i * x_incr) > x_boundary_start && start_z + (i * z_incr) < z_boundary_end && start_z + (i * z_incr) > z_boundary_start) {
+//        if(start_x + (i * x_incr) < x_boundary_end && start_x + (i * x_incr) > x_boundary_start && start_z + (i * z_incr) < z_boundary_end && start_z + (i * z_incr) > z_boundary_start) {
+        if(hasChunk(int(start_x + (i * x_incr)),  int(start_z + (i * z_incr)))) {
+//            std::cout << "Drawing" << std::endl;
             //Increment x and z values by the width and setBlockAt those positions as well to give the river some thickness
             for(int d = -width; d <= width; d++) {
-                if(start_x + (i * x_incr) + d < x_boundary_end && start_x + (i * x_incr) + d > x_boundary_start && start_z + (i * z_incr) + d < z_boundary_end && start_z + (i * z_incr) + d > z_boundary_start) {
-
+//                if(start_x + (i * x_incr) + d < x_boundary_end && start_x + (i * x_incr) + d > x_boundary_start && start_z + (i * z_incr) + d < z_boundary_end && start_z + (i * z_incr) + d > z_boundary_start) {
+                if(hasChunk(int(start_x + (i * x_incr) + d),  int(start_z + (i * z_incr) + d))) {
+//                    std::cout << "Setting blocks" << std::endl;
                     setBlockAt(start_x + (i * x_incr) + d, 128, start_z + (i * z_incr), WATER);
                     setBlockAt(start_x + (i * x_incr), 128, start_z + (i * z_incr) + d, WATER);
                     setBlockAt(start_x + (i * x_incr) + d, 128, start_z + (i * z_incr) + d, WATER);
@@ -230,11 +286,14 @@ void Terrain::drawRoute(Turtle startTurtle, Turtle nextTurtle) {
             }
 
             //To smooth edges of the river
-            for(int d = -width * 4; d <= width * 4; d++) {
+//            for(int d = -20; d <= 20; d++) {
+//            for(int d = std::min(-width*3, -15); d <= std::max(width*3, 15); d++) {
+            for(int d = -width*3; d <= 3*width; d++){
                 if(d < -width || d > width)
                 {
-                    if(start_x + (i * x_incr) + d < x_boundary_end && start_x + (i * x_incr) + d > x_boundary_start && start_z + (i * z_incr) + d < z_boundary_end && start_z + (i * z_incr) + d > z_boundary_start) {
-                        for(int y = 129 + fabs(d) - width; y < 256; y++) {
+//                    if(start_x + (i * x_incr) + d < x_boundary_end && start_x + (i * x_incr) + d > x_boundary_start && start_z + (i * z_incr) + d < z_boundary_end && start_z + (i * z_incr) + d > z_boundary_start) {
+                    if(hasChunk(int(start_x + (i * x_incr) + d),  int(start_z + (i * z_incr) + d))) {
+                    for(int y = 129 + fabs(d) - width; y < 256; y++) {
                             setBlockAt(start_x + (i * x_incr) + d, y, start_z + (i * z_incr), EMPTY);
                             setBlockAt(start_x + (i * x_incr), y, start_z + (i * z_incr) + d, EMPTY);
                             setBlockAt(start_x + (i * x_incr) + d, y, start_z + (i * z_incr) + d, EMPTY);
@@ -292,6 +351,17 @@ void Terrain::createNewChunk(glm::vec3 position) {
     pair<int, int> ints ((int)xChunk, (int)zChunk);
     pair<pair<int, int>, Chunk*> p(ints, c);
     chunksToAdd.push_back(p);
+
+//    //L-System generation
+//    LSystem *l_system_delta = new LSystem(QString("FFFX"), x_boundary_start, x_boundary_end, -64, z_boundary_end);
+//    drawLSystem(l_system_delta);
+
+//    LSystem *l_system_linear = new LSystem(QString("FFFFFY"), x_boundary_start, x_boundary_end, 100, z_boundary_end);
+//    drawLSystem(l_system_linear);
+
+//    drawRemainderLSystem(this->l_system_delta);
+//    drawRemainderLSystem(this->l_system_linear);
+    CreateTestScene();
 }
 
 void Terrain::updateChunk(glm::vec3 position) {
