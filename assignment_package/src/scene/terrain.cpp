@@ -4,6 +4,7 @@
 #include <iostream>
 #include <math.h>
 #include "vbothread.h"
+#include "fbmthread.h"
 #include <QThreadPool>
 
 using namespace glm;
@@ -250,48 +251,28 @@ void Terrain::createNewChunk(glm::vec3 position) {
     }
     int64_t xChunk = (xz >> 32);
     Chunk* c = new Chunk(context);
+    QMutex mutex;
     for(int x = 0; x < 16; ++x)
     {
         for(int z = 0; z < 16; ++z)
         {
-            float height = fbm(xChunk*16 + x, zChunk*16 + z);
-            height = 128 + height * 32;
-            //height = 116 + height * 10;
-
-            if (height < 128) {
-                height = 128.f;
-            }
-            else if (height > 256) {
-                height = 256.f;
-            }
-            for(int y = 0; y < 256; y++) {
-                if(y < height) {
-                    if(y == ceil(height) - 1) {
-                        *(c->getBlockTypeRef(x, y, z)) = GRASS;
-                    }
-                    else if(y >= 128) {
-                        *(c->getBlockTypeRef(x, y, z)) = DIRT;
-                    }
-                    else {
-                        *(c->getBlockTypeRef(x, y, z)) = STONE;
-                    }
-                } else {
-                    *(c->getBlockTypeRef(x, y, z)) = EMPTY;
-                }
-            }
+            FBMThread* thread = new FBMThread(c, x, z, (int)xChunk, (int)zChunk, &fbm, &mutex);
+            QThreadPool::globalInstance()->start(thread);
         }
     }
 
+    QThreadPool::globalInstance()->waitForDone();
     pair<int, int> ints ((int)xChunk, (int)zChunk);
     pair<pair<int, int>, Chunk*> p(ints, c);
     chunksToAdd.push_back(p);
 
-    //L-System generation
-    LSystem *l_system_delta = new LSystem(QString("FFFX"), x_boundary_start, x_boundary_end, -64, z_boundary_end);
-    drawLSystem(l_system_delta);
 
-    LSystem *l_system_linear = new LSystem(QString("FFFFFY"), x_boundary_start, x_boundary_end, 100, z_boundary_end);
-    drawLSystem(l_system_linear);
+    //L-System generation
+//    LSystem *l_system_delta = new LSystem(QString("FFFX"), x_boundary_start, x_boundary_end, -64, z_boundary_end);
+//    drawLSystem(l_system_delta);
+
+//    LSystem *l_system_linear = new LSystem(QString("FFFFFY"), x_boundary_start, x_boundary_end, 100, z_boundary_end);
+//    drawLSystem(l_system_linear);
 }
 
 void Terrain::updateChunk(glm::vec3 position) {
