@@ -179,7 +179,7 @@ void Terrain::drawLSystem(LSystem *l_system) {
     while(count > 0) {
         Turtle nextTurtle = l_system->turtleHistory.first();
         l_system->turtleHistory.pop_front();
-        if(withinChunks(nextTurtle.pos.x, nextTurtle.pos.y))
+        if(withinChunks(nextTurtle.pos.x, nextTurtle.pos.y) && withinChunks(start.pos.x, start.pos.y))
         {
             //Only drawRoute if depth of next turtle is 1 more than start turtle
             //This facilitates branching logic and prevents rotations from being drawn
@@ -187,11 +187,11 @@ void Terrain::drawLSystem(LSystem *l_system) {
             {
                 drawRoute(start, nextTurtle);
             }
-            start = nextTurtle;
         }
-        else {
-            l_system->turtleHistory.push_back(nextTurtle);
-        }
+//        else {
+//            l_system->turtleHistory.push_back(nextTurtle);
+//        }
+        start = nextTurtle;
         count = count - 1;
     }
 }
