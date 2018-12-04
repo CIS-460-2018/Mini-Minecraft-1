@@ -57,6 +57,8 @@ public:
     glm::vec2 getTexture(int faceNum); // return the corresponding uv coordinate for the top left face corner
 //    vec2 randomfunc(vec2 p);
 
+    bool withinChunks(const int x, const int z);
+
     void drawRoute(Turtle startTurtle, Turtle nextTurtle);
     void drawLSystem(LSystem *l_system);
 

@@ -175,20 +175,30 @@ void Terrain::drawLSystem(LSystem *l_system) {
     //Trace the turtle's route and update blocks correspondingly from the states stored in the turtleHistory stack
     Turtle start = l_system->turtleHistory.first();
     l_system->turtleHistory.pop_front();
-
-    while(l_system->turtleHistory.size() > 1) {
+    count = l_system->turtleHistory.size() - 1;
+    while(count > 0) {
         Turtle nextTurtle = l_system->turtleHistory.first();
         l_system->turtleHistory.pop_front();
-        //Only drawRoute if depth of next turtle is 1 more than start turtle
-        //This facilitates branching logic and prevents rotations from being drawn
-        if(nextTurtle.depth == start.depth + 1)
+        if(withinChunks(nextTurtle.pos.x, nextTurtle.pos.y))
         {
-            drawRoute(start, nextTurtle);
+            //Only drawRoute if depth of next turtle is 1 more than start turtle
+            //This facilitates branching logic and prevents rotations from being drawn
+            if(nextTurtle.depth == start.depth + 1)
+            {
+                drawRoute(start, nextTurtle);
+            }
+            start = nextTurtle;
         }
-        start = nextTurtle;
+        else {
+            l_system->turtleHistory.push_back(nextTurtle);
+        }
+        count = count - 1;
     }
 }
 
+bool Terrain::withinChunks(const int x, const int z) {
+    return true;
+}
 
 void Terrain::drawRoute(Turtle startTurtle, Turtle nextTurtle) {
     int start_x = startTurtle.pos.x;
