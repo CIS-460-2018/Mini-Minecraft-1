@@ -19,7 +19,6 @@ private:
     bool inLiquid; // in lava or water
     bool grounded = false;
 
-    glm::vec2 m_mousePosPrev;
 public:
     Player(Camera* cam);
 

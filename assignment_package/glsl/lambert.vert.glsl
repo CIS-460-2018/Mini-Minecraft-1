@@ -40,8 +40,9 @@ out vec2 fs_UV;
 out float fs_Cos;
 out float fs_Animate;
 out vec4 fs_ViewVec;
+out vec4 fs_Pos;
 
-const vec4 lightDir = vec4(1,1,1,0);  // The direction of our virtual light, which is used to compute the shading of
+const vec4 lightVec = vec4(normalize(vec3(1,1,1)),0);  // The direction of our virtual light, which is used to compute the shading of
                                         // the geometry in the fragment shader.
 
 void main()
@@ -59,10 +60,11 @@ void main()
     fs_Cos = vs_Cos;
     fs_Animate = vs_Animate;
     fs_ViewVec = u_ViewVec;
+    fs_Pos = u_Model * vs_Pos;
 
     vec4 modelposition = u_Model * vs_Pos;   // Temporarily store the transformed vertex positions for use below
 
-    fs_LightVec = (lightDir);  // Compute the direction in which the light source lies
+    fs_LightVec = lightVec;  // Compute the direction in which the light source lies
 
     gl_Position = u_ViewProj * modelposition;// gl_Position is a built-in variable of OpenGL which is
                                              // used to render the final positions of the geometry's vertices

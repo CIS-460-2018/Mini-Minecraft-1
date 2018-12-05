@@ -21,7 +21,8 @@ SOURCES += \
     $$PWD/vbothread.cpp \
     $$PWD/texture.cpp \
     $$PWD/quadrangle.cpp \
-    $$PWD/fbmthread.cpp
+    $$PWD/fbmthread.cpp \
+    $$PWD/cursor.cpp
 
 HEADERS += \
     $$PWD/la.h \
@@ -44,4 +45,5 @@ HEADERS += \
     $$PWD/vbothread.h \
     $$PWD/texture.h \
     $$PWD/quadrangle.h \
-    $$PWD/fbmthread.h
+    $$PWD/fbmthread.h \
+    $$PWD/cursor.h

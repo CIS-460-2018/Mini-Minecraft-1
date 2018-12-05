@@ -7,11 +7,8 @@
 #include <type_traits>
 #include <algorithm>
 
-Player::Player(Camera *cam)
-{
-    camera = cam;
-    inLiquid = false;
-}
+Player::Player(Camera *cam) : camera(cam), inLiquid(false)
+{}
 
 void Player::updateKey(QKeyEvent *e)
 {
@@ -21,12 +18,6 @@ void Player::updateKey(QKeyEvent *e)
 void Player::updateMouse(QMouseEvent *e)
 {
     mouse = e;
-    glm::vec2 pos(e->pos().x(), e->pos().y());
-    glm::vec2 diff = 0.4f * (pos - m_mousePosPrev);
-    m_mousePosPrev = pos;
-    camera->RotateAboutUp(-diff.x);
-    camera->RotateAboutRight(-diff.y);
-    camera->RecomputeAttributes();
 }
 
 void Player::updateVelocity()

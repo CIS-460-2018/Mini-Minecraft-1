@@ -12,7 +12,7 @@ MyGL::MyGL(QWidget *parent)
       mp_geomCube(new Cube(this)), mp_worldAxes(new WorldAxes(this)),
       mp_progLambert(new ShaderProgram(this)), mp_progFlat(new ShaderProgram(this)),
       mp_camera(new Camera()), mp_terrain(new Terrain(this)), mp_player(new Player(mp_camera)), mp_texture(new Texture(this)),
-      mp_progOverlay(new ShaderProgram(this)), overlay(new Quadrangle(this, EMPTY))
+      mp_progOverlay(new ShaderProgram(this)), overlay(new Quadrangle(this, EMPTY)), cur(new Cursor(this))
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -21,7 +21,7 @@ MyGL::MyGL(QWidget *parent)
     setFocusPolicy(Qt::ClickFocus);
 
     setMouseTracking(true); // MyGL will track the mouse's movements even if a mouse button is not pressed
-    //setCursor(Qt::BlankCursor); // Make the cursor invisible
+    setCursor(Qt::BlankCursor); // Make the cursor invisible
 }
 
 MyGL::~MyGL()
@@ -39,6 +39,8 @@ MyGL::~MyGL()
     delete mp_terrain;
     delete mp_player;
     delete mp_texture;
+    delete cur;
+    delete overlay;
 }
 
 void MyGL::MoveMouseToCenter()
@@ -77,7 +79,7 @@ void MyGL::initializeGL()
     //Create the instance of Cube
     mp_geomCube->create();
     mp_worldAxes->create();
-
+    cur->create();
     overlay->create();
 
     // Create and set up the diffuse shader
@@ -117,7 +119,7 @@ void MyGL::resizeGL(int w, int h)
 
     mp_progLambert->setViewProjMatrix(viewproj);
     mp_progFlat->setViewProjMatrix(viewproj);
-    mp_progLambert->setViewVector(glm::vec4(mp_camera->eye, 0));
+    mp_progLambert->setViewVector(glm::vec4(mp_camera->look, 0));
 
     printGLErrorLog();
 }
@@ -152,7 +154,7 @@ void MyGL::paintGL()
 
     mp_progFlat->setViewProjMatrix(mp_camera->getViewProj());
     mp_progLambert->setViewProjMatrix(mp_camera->getViewProj());
-    mp_progLambert->setViewVector(glm::vec4(mp_camera->eye, 0));
+    mp_progLambert->setViewVector(glm::vec4(mp_camera->look, 0));
     mp_progLambert->setTime(m_time);
     mp_progFlat->setTime(m_time);
     m_time++;
@@ -162,8 +164,13 @@ void MyGL::paintGL()
 
     glDisable(GL_DEPTH_TEST);
     mp_progFlat->setModelMatrix(glm::mat4());
-    mp_progFlat->draw(*mp_worldAxes);
-
+    mp_progFlat->drawPosNorCol(*mp_worldAxes);
+    cur->destroy();
+    cur->create();
+    cur->setCenter(glm::vec4(mp_camera->ref, 1.0f));
+    cur->setRight(glm::vec4(mp_camera->right, 0.0f));
+    cur->setUp(glm::vec4(mp_camera->up, 0.0f));
+    mp_progFlat->drawPosNorCol(*cur);
     glEnable(GL_DEPTH_TEST);
 }
 
@@ -314,6 +321,13 @@ void MyGL::mousePressEvent(QMouseEvent *e)
 void MyGL::mouseMoveEvent(QMouseEvent *e)
 {
     mp_player->updateMouse(e);
+    glm::vec2 pos(e->pos().x(), e->pos().y());
+    glm::vec2 center(width() / 2, height() / 2);
+    glm::vec2 diff = 0.4f * (pos - center);
+    mp_camera->RotateAboutUp(-diff.x);
+    mp_camera->RotateAboutRight(-diff.y);
+    mp_camera->RecomputeAttributes();
+    MoveMouseToCenter();
 }
 
 void MyGL::keyPressEvent(QKeyEvent *e)
