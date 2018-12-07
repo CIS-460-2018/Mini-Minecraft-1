@@ -328,6 +328,7 @@ void Terrain::updateChunk(glm::vec3 position) {
     QThreadPool::globalInstance()->start(thread);
     QThreadPool::globalInstance()->waitForDone();
     c->create();
+    c->createTransparent();
 }
 
 void Terrain::updateScene() {
@@ -347,6 +348,10 @@ void Terrain::updateScene() {
     for(int64_t xz: chunkMap.keys()) {
         Chunk* c = chunkMap[xz];
         c->create();
+    }
+    for(int64_t xz: chunkMap.keys()) {
+        Chunk* c = chunkMap[xz];
+        c->createTransparent();
     }
 }
 

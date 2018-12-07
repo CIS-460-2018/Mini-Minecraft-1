@@ -176,13 +176,11 @@ void MyGL::GLDrawScene()
     // first draw the opaques
     for(int64_t xz: mp_terrain->chunkMap.keys()) {
         Chunk* c = mp_terrain->chunkMap[xz];
-        c->destroy();
         int64_t zChunk = xz & 0x00000000ffffffff;
         if(zChunk & 0x0000000080000000) {
             zChunk = zChunk | 0xffffffff00000000;
         }
         int64_t xChunk = xz >> 32;
-        c->create();
         mp_progLambert->setModelMatrix(glm::translate(glm::mat4(), glm::vec3(xChunk*16, 0, zChunk*16)));
         mp_progLambert->draw(*c);
     }
@@ -194,15 +192,17 @@ void MyGL::GLDrawScene()
             zChunk = zChunk | 0xffffffff00000000;
         }
         int64_t xChunk = xz >> 32;
-        c->createTransparent();
         mp_progLambert->setModelMatrix(glm::translate(glm::mat4(), glm::vec3(xChunk*16, 0, zChunk*16)));
         mp_progLambert->drawT(*c);
     }
 
     BlockType inBlock = mp_terrain->getBlockAt(mp_player->position.x, mp_player->position.y, mp_player->position.z);
-    overlay->destroy();
-    overlay->setInBlock(inBlock);
-    overlay->create();
+    if(overlay->inBlock != inBlock) {
+        overlay->setInBlock(inBlock);
+        overlay->destroy();
+        overlay->create();
+    }
+
     mp_progOverlay->drawPosNorCol(*overlay);
 }
 
@@ -218,16 +218,6 @@ void MyGL::removeBlock()
     float t = 0.1f;
     while(t < 20) {
         glm::vec3 new_pos = pos + t * direction;
-//        std::cout << new_pos.x << new_pos.y << new_pos.z << std::endl;
-//        for(int x = pos.x - 1; x <= pos.x + 1; x++) {
-//            for(int y = pos.y - 2; y <= pos.y + 1; y++) {
-//                for(int z = pos.z - 1; z <= pos.z + 1; z++) {
-//                    if(mp_terrain->getBlockAt(x, y, z) != EMPTY) {
-//                        mp_terrain->setBlockAt(x, y, z, EMPTY);
-//                    }
-//                }
-//            }
-//        }
         if(mp_terrain->getBlockAt(new_pos.x, new_pos.y, new_pos.z) != EMPTY) {
             mp_terrain->setBlockAt(new_pos.x, new_pos.y, new_pos.z, EMPTY);
             break;
