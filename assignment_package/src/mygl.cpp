@@ -5,7 +5,11 @@
 #include <QApplication>
 #include <QKeyEvent>
 #include <QDateTime>
+#include<QFileDialog>
+#include<QImage>
+#include<QRgb>
 
+using namespace std;
 
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
@@ -318,7 +322,39 @@ void MyGL::mouseMoveEvent(QMouseEvent *e)
 
 void MyGL::keyPressEvent(QKeyEvent *e)
 {
-    mp_player->updateKey(e);
-    checkBoundary();
+    if((e->key() != 0) && (e->key() == Qt::Key_G)) {
+        QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Choose greyscale image"),
+                                                    "/",
+                                                    tr("Image Files (*.png *.jpg *.bmp)"));
+        if(fileName.length() > 1) {
+            QImage* img = new QImage(fileName);
+            int sizeLimit = 256;
+            *img = img->scaled(QSize(sizeLimit, sizeLimit), Qt::KeepAspectRatio, Qt::FastTransformation);
+            int w = img->width();
+            int h = img->height();
+
+            vector<vector<float>> newHeight;
+            bool greyscale = img->allGray();
+            float pixCounter = 0;
+            for(int i = 0; i < w; i++) {
+                newHeight.push_back(vector<float>());
+                for(float j = 0; j < h; j++) {
+                    QColor p = img->pixel(i, j);
+                    if(greyscale) {
+                        newHeight[i].push_back(p.red() / 255.f * 32.f + 127);
+                    } else {
+                        float col = .2126 * p.red() + .7152 * p.green() + .0722 * p.blue();
+                        newHeight[i].push_back(col / 255.f * 32.f + 127);
+                    }
+                }
+            }
+            mp_terrain->updatePictureArea(mp_player->getPosition().x, mp_player->getPosition().z, newHeight);
+            mp_terrain->updateScene();
+        }
+    } else {
+        mp_player->updateKey(e);
+        checkBoundary();
+    }
 }
 

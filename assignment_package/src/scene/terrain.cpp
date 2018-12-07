@@ -160,6 +160,46 @@ void Terrain::CreateTestScene()
 
 }
 
+void Terrain::updatePictureArea(int playerX, int playerZ, vector<vector<float>> newHeight) {
+    int imgStartX = playerX - (newHeight[0].size()/2.f);
+    int imgStartZ = playerZ - (newHeight.size()/2);
+    for(int x = 0; x < newHeight.size(); ++x)
+    {
+        for(int z = 0; z < newHeight[0].size(); ++z)
+        {
+            if(!hasChunk(imgStartX + x, imgStartZ + z)) {
+                createNewChunk(glm::vec3(imgStartX + x, 0, imgStartZ + z));
+                QThreadPool::globalInstance()->waitForDone();
+                addChunks();
+            }
+            float height = newHeight[x][z];
+
+            if (height < 128) {
+                height = 128.f;
+            }
+            else if (height > 256) {
+                height = 256.f;
+            }
+            for(int y = 0; y < 256; y++) {
+                if(y < height) {
+                    if(y == ceil(height) - 1) {
+                        setBlockAt(imgStartX + x, y, imgStartZ + z, GRASS);
+                    }
+                    else if(y >= 128) {
+                        setBlockAt(imgStartX + x, y, imgStartZ + z, DIRT);
+                    }
+                    else {
+                        setBlockAt(imgStartX + x, y, imgStartZ + z, STONE);
+                    }
+                } else {
+                    setBlockAt(imgStartX + x, y, imgStartZ + z, EMPTY);
+                }
+            }
+        }
+    }
+}
+
+
 void Terrain::drawLSystem(LSystem *l_system) {
     //Expanding the axiom for n iterations
     for(int i = 0; i < 5; i++) {
