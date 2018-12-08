@@ -165,11 +165,7 @@ void MyGL::paintGL()
     glDisable(GL_DEPTH_TEST);
     mp_progFlat->setModelMatrix(glm::mat4());
     mp_progFlat->drawPosNorCol(*mp_worldAxes);
-    cur->destroy();
-    cur->create();
-    cur->setCenter(glm::vec4(mp_camera->ref, 1.0f));
-    cur->setRight(glm::vec4(mp_camera->right, 0.0f));
-    cur->setUp(glm::vec4(mp_camera->up, 0.0f));
+    mp_progFlat->setViewProjMatrix(glm::mat4());
     mp_progFlat->drawPosNorCol(*cur);
     glEnable(GL_DEPTH_TEST);
 }

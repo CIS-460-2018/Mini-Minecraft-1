@@ -20,10 +20,6 @@ public:
     virtual ~Cursor(){}
     void create() override;
     GLenum drawMode() override;
-
-    void setCenter(glm::vec4 look);
-    void setRight(glm::vec4 right);
-    void setUp(glm::vec4 up);
 };
 
 #endif // CURSOR_H

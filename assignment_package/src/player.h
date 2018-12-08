@@ -5,6 +5,7 @@
 #include "scene/terrain.h"
 #include <QKeyEvent>
 #include <QMouseEvent>
+#include <QSound>
 
 class Player
 {
@@ -18,6 +19,10 @@ private:
     bool isFlyMode; // determine the fly/gravity mode
     bool inLiquid; // in lava or water
     bool grounded = false;
+
+    QSound* footstep;
+    QSound* underwater;
+    QSound* splash;
 
 public:
     Player(Camera* cam);
@@ -41,6 +46,8 @@ public:
     glm::vec4 getPosition();
 
     void resetKey();
+
+    void playSound();
 };
 
 #endif // PLAYER_H

@@ -9,10 +9,10 @@ void Cursor::create()
         idx[i] = i;
     }
 
-    glm::vec4 pos[8] = {center + right, center + (right * 5.0f),
-                        center + up, center + (up * 5.0f),
-                        center - right, center - (right * 5.0f),
-                        center - up, center - (up * 5.0f)};
+    glm::vec4 pos[8] = {glm::vec4(0, 0, 0, 1), glm::vec4(0, 0.2, 0, 1),
+                        glm::vec4(0, 0, 0, 1), glm::vec4(0, -0.2, 0, 1),
+                        glm::vec4(0, 0, 0, 1), glm::vec4(0.15, 0, 0, 1),
+                        glm::vec4(0, 0, 0, 1), glm::vec4(-0.15, 0, 0, 1)};
     glm::vec4 col[8] = {glm::vec4(1,1,1,1), glm::vec4(1,1,1,1),
                         glm::vec4(1,1,1,1), glm::vec4(1,1,1,1),
                         glm::vec4(1,1,1,1), glm::vec4(1,1,1,1),
@@ -45,20 +45,4 @@ void Cursor::create()
 GLenum Cursor::drawMode()
 {
     return GL_LINES;
-}
-
-void Cursor::setCenter(glm::vec4 look)
-{
-    center = look;
-    //center.z += 10.0f;
-}
-
-void Cursor::setRight(glm::vec4 right)
-{
-    this->right = right;
-}
-
-void Cursor::setUp(glm::vec4 up)
-{
-    this->up = up;
 }
