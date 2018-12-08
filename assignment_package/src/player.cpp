@@ -7,10 +7,9 @@
 #include <type_traits>
 #include <algorithm>
 
-Player::Player(Camera *cam)
+Player::Player(Camera *cam) : camera(cam), inLiquid(false), footstep(new QSound(":/sounds/footstep.wav")),
+                              splash(new QSound(":/sounds/splash.wav")), underwater(new QSound(":/sounds/underwater.wav"))
 {
-    camera = cam;
-    inLiquid = false;
 }
 
 void Player::updateKey(QKeyEvent *e)
@@ -21,12 +20,6 @@ void Player::updateKey(QKeyEvent *e)
 void Player::updateMouse(QMouseEvent *e)
 {
     mouse = e;
-    glm::vec2 pos(e->pos().x(), e->pos().y());
-    glm::vec2 diff = 0.4f * (pos - m_mousePosPrev);
-    m_mousePosPrev = pos;
-    camera->RotateAboutUp(-diff.x);
-    camera->RotateAboutRight(-diff.y);
-    camera->RecomputeAttributes();
 }
 
 void Player::updateVelocity()
@@ -46,7 +39,6 @@ void Player::updateVelocity()
                 velocity = glm::vec4(0, 2.5, 0, 1); // jump with speed of 7
                 acceleration = glm::vec4(0, -2.f / 3.f * G, 0, 1);
             }
-
             grounded = false;
         } else if (key == Qt::Key_W) {
             if (isFlyMode) {
@@ -246,4 +238,9 @@ glm::vec4 Player::getPosition()
 void Player::resetKey()
 {
     key = 0;
+}
+
+void Player::playSound()
+{
+    splash->play();
 }

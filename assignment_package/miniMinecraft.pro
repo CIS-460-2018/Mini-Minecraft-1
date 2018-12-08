@@ -1,4 +1,5 @@
 QT += core widgets
+QT += multimedia
 
 TARGET = MiniMinecraft
 TEMPLATE = app
@@ -20,7 +21,8 @@ FORMS += forms/mainwindow.ui \
     forms/cameracontrolshelp.ui
 
 RESOURCES += glsl.qrc \
-    texture.qrc
+    texture.qrc \
+    sounds.qrc
 
 *-clang*|*-g++* {
     message("Enabling additional warnings")

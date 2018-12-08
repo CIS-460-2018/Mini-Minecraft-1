@@ -5,6 +5,7 @@
 #include "scene/terrain.h"
 #include <QKeyEvent>
 #include <QMouseEvent>
+#include <QSound>
 
 class Player
 {
@@ -19,7 +20,10 @@ private:
     bool inLiquid; // in lava or water
     bool grounded = false;
 
-    glm::vec2 m_mousePosPrev;
+    QSound* footstep;
+    QSound* underwater;
+    QSound* splash;
+
 public:
     Player(Camera* cam);
 
@@ -42,6 +46,8 @@ public:
     glm::vec4 getPosition();
 
     void resetKey();
+
+    void playSound();
 };
 
 #endif // PLAYER_H

@@ -22,11 +22,11 @@ void WorldAxes::create()
 
     count = 6;
 
-    generateIdx();
-    context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufIdx);
+    generateIdxPosNorCol();
+    context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufIdxCol);
     context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(GLuint), idx, GL_STATIC_DRAW);
-    generatePosNorUVOpaque();
-    context->glBindBuffer(GL_ARRAY_BUFFER, bufPosNorUVOpaque);
+    generatePosNorCol();
+    context->glBindBuffer(GL_ARRAY_BUFFER, bufPosNorCol);
     context->glBufferData(GL_ARRAY_BUFFER, count * 3 * sizeof(glm::vec4), posNorCol, GL_STATIC_DRAW);
 }
 

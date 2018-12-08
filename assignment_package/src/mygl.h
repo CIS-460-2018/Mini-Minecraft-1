@@ -12,6 +12,7 @@
 #include "player.h"
 #include "texture.h"
 #include "quadrangle.h"
+#include "cursor.h"
 
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
@@ -27,6 +28,7 @@ private:
     ShaderProgram* mp_progFlat;// A shader program that uses "flat" reflection (no shadowing at all)
     ShaderProgram* mp_progOverlay; // A shader program that covers the entire screen with a transluscent quadrangle (under water or lava)
     Quadrangle* overlay;
+    Cursor* cur;
 
     GLuint vao; // A handle for our vertex array object. This will store the VBOs created in our geometry classes.
                 // Don't worry too much about this. Just know it is necessary in order to render geometry.
