@@ -11,8 +11,8 @@ using namespace glm;
 using namespace std;
 
 Terrain::Terrain(OpenGLContext* c)
-    : context(c), dimensions(64, 256, 64), x_boundary_start(-192), y_boundary_start(0), z_boundary_start(-128),
-      x_boundary_end(128), y_boundary_end(256), z_boundary_end(256)
+    : context(c), dimensions(64, 256, 64), x_boundary_start(-128), y_boundary_start(0), z_boundary_start(-128),
+      x_boundary_end(256), y_boundary_end(256), z_boundary_end(256)
 {}
 
 Terrain::Terrain(OpenGLContext* c, int x_boundary_end, int y_boundary_end, int z_boundary_end)
@@ -158,6 +158,38 @@ void Terrain::CreateTestScene()
     LSystem *l_system_linear = new LSystem(QString("FFFFFY"), x_boundary_start, x_boundary_end, 100, z_boundary_end);
     drawLSystem(l_system_linear);
 
+
+    drawBuilding(100, 110, 20, 3);
+
+
+}
+
+void Terrain::drawBuilding(int start, int end, int gradient_start, int gradient_delta) {
+
+    int x_gradient = gradient_start;
+
+    for(int x = start+1; x <= end; x++) {
+        int z_gradient = gradient_start;
+        for(int z = start+1; z <= end; z++) {
+            for(int height = 128; height < 128 + x_gradient + z_gradient; height ++) {
+                setBlockAt(x, height, z, STONE);
+            }
+            if(z <= start + (end-start)/2) {
+                z_gradient += gradient_delta;
+            }
+            else {
+                z_gradient -= gradient_delta;
+            }
+
+        }
+        if(x <= start + (end-start)/2) {
+            x_gradient += gradient_delta;
+        }
+        else {
+            x_gradient -= gradient_delta;
+        }
+
+    }
 }
 
 void Terrain::drawLSystem(LSystem *l_system) {
