@@ -159,36 +159,124 @@ void Terrain::CreateTestScene()
     drawLSystem(l_system_linear);
 
 
-    drawBuilding(100, 110, 20, 3);
+//    drawBuilding(100, 110, 100, 110, 20, 3);
+
+//    drawSpiralBuilding(0, 8, 0, 8, 20, 2);
+
+    drawBuilding(0, 10, 0, 10, 30, 3);
+
+    drawSpiralBuilding(101, 108, 101, 108, 10, 2);
 
 
 }
 
-void Terrain::drawBuilding(int start, int end, int gradient_start, int gradient_delta) {
+void Terrain::drawBuilding(int x_start, int x_end, int z_start, int z_end, int gradient_start, int gradient_delta) {
 
     int x_gradient = gradient_start;
+    int x_gradient_delta = gradient_delta;
 
-    for(int x = start+1; x <= end; x++) {
+    for(int x = x_start + 1; x <= x_end; x++) {
         int z_gradient = gradient_start;
-        for(int z = start+1; z <= end; z++) {
+        int z_gradient_delta = gradient_delta;
+        for(int z = z_start + 1; z <= z_end; z++) {
+            if(x == x_start + (x_end-x_start)/2 + 1 && z == z_start + (z_end-z_start)/2 + 1) {
+                x_gradient += 3;
+                z_gradient += 3;
+            }
             for(int height = 128; height < 128 + x_gradient + z_gradient; height ++) {
+
                 setBlockAt(x, height, z, STONE);
             }
-            if(z <= start + (end-start)/2) {
+            if(x == x_start + (x_end-x_start)/2 + 1 && z == z_start + (z_end-z_start)/2 + 1) {
+                x_gradient -= 3;
+                z_gradient -= 3;
+            }
+            if(z <= z_start + (z_end-z_start)/2) {
                 z_gradient += gradient_delta;
+                z_gradient_delta += 3;
             }
             else {
                 z_gradient -= gradient_delta;
+                z_gradient_delta -= 3;
             }
 
         }
-        if(x <= start + (end-start)/2) {
+        if(x <= x_start + (x_end-x_start)/2) {
             x_gradient += gradient_delta;
+            x_gradient_delta += 3;
         }
         else {
             x_gradient -= gradient_delta;
+            x_gradient_delta -= 3;
         }
 
+    }
+}
+
+void Terrain::drawSpiralBuilding(int x_start, int x_end, int z_start, int z_end, int gradient_start, int gradient_delta) {
+
+    while(x_start < x_end && z_start < z_end) {
+        for(int i = z_start; i < z_end; i++) {
+            for(int y = 128; y < 256; y++) {
+                if(y < 128 + gradient_start)
+                {
+                    setBlockAt(x_start, y, i, STONE);
+                }
+                else {
+                    setBlockAt(x_start, y, i, EMPTY);
+
+                }
+            }
+            gradient_start += gradient_delta;
+        }
+        z_start++;
+        for(int i = x_start; i < x_end; i++) {
+            for(int y = 128; y < 256; y++) {
+                if(y < 128 + gradient_start)
+                {
+                    setBlockAt(i, y, z_end-1, STONE);
+                }
+                else {
+                    setBlockAt(i, y, z_end-1, EMPTY);
+
+                }
+            }
+            gradient_start += gradient_delta;
+        }
+        x_start++;
+        if(x_start < x_end) {
+            for(int i = z_end - 2; i >= z_start - 1; i--) {
+                for(int y = 128; y < 256; y++) {
+                    if(y < 128 + gradient_start)
+                    {
+                        setBlockAt(x_end - 1, y, i, STONE);                    }
+                    else {
+                        setBlockAt(x_end - 1, y, i, EMPTY);
+                    }
+
+                }
+                gradient_start += gradient_delta;
+            }
+            z_end--;
+        }
+        if(z_start < z_end) {
+            for(int i = x_end - 2; i >= x_start - 1; i--) {
+                for(int y = 128; y < 256; y++) {
+                    if(y < 128 + gradient_start)
+                    {
+                        setBlockAt(i, y, z_start - 1, STONE);
+                    }
+                    else {
+                        setBlockAt(i, y, z_start - 1, EMPTY);
+
+                    }
+                }
+                gradient_start += gradient_delta;
+            }
+            x_end--;
+        }
+        if(x_start % 2 == 0)
+        {gradient_delta ++;}
     }
 }
 
