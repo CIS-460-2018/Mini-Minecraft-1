@@ -141,7 +141,7 @@ void MyGL::timerUpdate()
     mp_player->checkCollision(dt, mp_terrain);
     mp_camera->RecomputeAttributes();
     startTime = now;
-    mp_player->resetKey();
+    //mp_player->resetKey();
 
     mp_terrain->addChunks();
 
@@ -356,5 +356,12 @@ void MyGL::keyPressEvent(QKeyEvent *e)
         mp_player->updateKey(e);
         checkBoundary();
     }
+}
+
+void MyGL::keyReleaseEvent(QKeyEvent *event)
+{
+    mp_player->stopFootstep();
+    mp_player->updateKey(event);
+    mp_player->resetKey();
 }
 
