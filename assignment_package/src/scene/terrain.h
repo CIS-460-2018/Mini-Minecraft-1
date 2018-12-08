@@ -45,7 +45,7 @@ public:
                                                            // values) set the block at that point in space to the
                                                            // given type.
     void CreateTestScene();
-
+    void updatePictureArea(int playerX, int playerZ, vector<vector<float>> newHeight);
 
     void updateChunk(glm::vec3 position);
 

@@ -58,6 +58,7 @@ public:
     void paintGL();
 
     void GLDrawScene();
+    void createScene();
 
     void removeBlock();
 

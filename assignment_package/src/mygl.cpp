@@ -5,7 +5,11 @@
 #include <QApplication>
 #include <QKeyEvent>
 #include <QDateTime>
+#include<QFileDialog>
+#include<QImage>
+#include<QRgb>
 
+using namespace std;
 
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
@@ -175,13 +179,11 @@ void MyGL::GLDrawScene()
     // first draw the opaques
     for(int64_t xz: mp_terrain->chunkMap.keys()) {
         Chunk* c = mp_terrain->chunkMap[xz];
-        c->destroy();
         int64_t zChunk = xz & 0x00000000ffffffff;
         if(zChunk & 0x0000000080000000) {
             zChunk = zChunk | 0xffffffff00000000;
         }
         int64_t xChunk = xz >> 32;
-        c->create();
         mp_progLambert->setModelMatrix(glm::translate(glm::mat4(), glm::vec3(xChunk*16, 0, zChunk*16)));
         mp_progLambert->draw(*c);
     }
@@ -193,15 +195,17 @@ void MyGL::GLDrawScene()
             zChunk = zChunk | 0xffffffff00000000;
         }
         int64_t xChunk = xz >> 32;
-        c->createTransparent();
         mp_progLambert->setModelMatrix(glm::translate(glm::mat4(), glm::vec3(xChunk*16, 0, zChunk*16)));
         mp_progLambert->drawT(*c);
     }
 
     BlockType inBlock = mp_terrain->getBlockAt(mp_player->position.x, mp_player->position.y, mp_player->position.z);
-    overlay->destroy();
-    overlay->setInBlock(inBlock);
-    overlay->create();
+    if(overlay->inBlock != inBlock) {
+        overlay->setInBlock(inBlock);
+        overlay->destroy();
+        overlay->create();
+    }
+
     mp_progOverlay->drawPosNorCol(*overlay);
 }
 
@@ -217,16 +221,6 @@ void MyGL::removeBlock()
     float t = 0.1f;
     while(t < 20) {
         glm::vec3 new_pos = pos + t * direction;
-//        std::cout << new_pos.x << new_pos.y << new_pos.z << std::endl;
-//        for(int x = pos.x - 1; x <= pos.x + 1; x++) {
-//            for(int y = pos.y - 2; y <= pos.y + 1; y++) {
-//                for(int z = pos.z - 1; z <= pos.z + 1; z++) {
-//                    if(mp_terrain->getBlockAt(x, y, z) != EMPTY) {
-//                        mp_terrain->setBlockAt(x, y, z, EMPTY);
-//                    }
-//                }
-//            }
-//        }
         if(mp_terrain->getBlockAt(new_pos.x, new_pos.y, new_pos.z) != EMPTY) {
             mp_terrain->setBlockAt(new_pos.x, new_pos.y, new_pos.z, EMPTY);
             break;
@@ -328,7 +322,39 @@ void MyGL::mouseMoveEvent(QMouseEvent *e)
 
 void MyGL::keyPressEvent(QKeyEvent *e)
 {
-    mp_player->updateKey(e);
-    checkBoundary();
+    if((e->key() != 0) && (e->key() == Qt::Key_G)) {
+        QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Choose greyscale image"),
+                                                    "/",
+                                                    tr("Image Files (*.png *.jpg *.bmp)"));
+        if(fileName.length() > 1) {
+            QImage* img = new QImage(fileName);
+            int sizeLimit = 256;
+            *img = img->scaled(QSize(sizeLimit, sizeLimit), Qt::KeepAspectRatio, Qt::FastTransformation);
+            int w = img->width();
+            int h = img->height();
+
+            vector<vector<float>> newHeight;
+            bool greyscale = img->allGray();
+            float pixCounter = 0;
+            for(int i = 0; i < w; i++) {
+                newHeight.push_back(vector<float>());
+                for(float j = 0; j < h; j++) {
+                    QColor p = img->pixel(i, j);
+                    if(greyscale) {
+                        newHeight[i].push_back(p.red() / 255.f * 32.f + 127);
+                    } else {
+                        float col = .2126 * p.red() + .7152 * p.green() + .0722 * p.blue();
+                        newHeight[i].push_back(col / 255.f * 32.f + 127);
+                    }
+                }
+            }
+            mp_terrain->updatePictureArea(mp_player->getPosition().x, mp_player->getPosition().z, newHeight);
+            mp_terrain->updateScene();
+        }
+    } else {
+        mp_player->updateKey(e);
+        checkBoundary();
+    }
 }
 
