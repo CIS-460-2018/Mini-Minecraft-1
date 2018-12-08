@@ -62,8 +62,10 @@ public:
     bool withinChunks(const int x, const int z);
 
     void drawRoute(Turtle startTurtle, Turtle nextTurtle);
+    void drawRemainderRoute(Turtle startTurtle, Turtle nextTurtle, Chunk* c);
     void drawLSystem(LSystem *l_system);
     void drawRemainderLSystem(LSystem *l_system);
+    void drawRemainderLSystem(LSystem *l_system, Chunk* c);
 
     // Multithreading
     QList<pair<pair<int, int>, Chunk*>> chunksToAdd;

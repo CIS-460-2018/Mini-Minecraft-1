@@ -161,7 +161,7 @@ void Terrain::CreateTestScene()
 
 void Terrain::drawLSystem(LSystem *l_system) {
     //Expanding the axiom for n iterations
-    for(int i = 0; i < 7; i++) {
+    for(int i = 0; i < 10; i++) {
         l_system->axiom = l_system->expandGrammar(l_system->axiom);
     }
 
@@ -207,7 +207,7 @@ void Terrain::drawLSystem(LSystem *l_system) {
 //    std::cout << l_system->turtleHistory.size() << std::endl;
 }
 
-void Terrain::drawRemainderLSystem(LSystem *l_system) {
+void Terrain::drawRemainderLSystem(LSystem *l_system, Chunk* c) {
     if(l_system->turtleHistory.size() > 0)
     //Trace the turtle's route and update blocks correspondingly from the states stored in the turtleHistory stack
     {
@@ -226,14 +226,14 @@ void Terrain::drawRemainderLSystem(LSystem *l_system) {
                 if(nextTurtle.depth == start.depth + 1)
                 {
 //                    std::cout << "Entered draw route" << std::endl;
-                    drawRoute(start, nextTurtle);
+                    drawRemainderRoute(start, nextTurtle, c);
                 }
             }
             else if(hasChunk(start.pos.x, start.pos.y)) {
                 if(nextTurtle.depth == start.depth + 1)
                 {
 //                    std::cout << "Entered draw route" << std::endl;
-                    drawRoute(start, nextTurtle);
+                    drawRemainderRoute(start, nextTurtle, c);
                 }
                 l_system->turtleHistory.push_back(start);
                 l_system->turtleHistory.push_back(nextTurtle);
@@ -244,8 +244,6 @@ void Terrain::drawRemainderLSystem(LSystem *l_system) {
             start = nextTurtle;
             count = count - 1;
         }
-//        std::cout << "Exited" << std::endl;
-
     }
 }
 
@@ -276,6 +274,7 @@ void Terrain::drawRoute(Turtle startTurtle, Turtle nextTurtle) {
                     setBlockAt(start_x + (i * x_incr) + d, 128, start_z + (i * z_incr), WATER);
                     setBlockAt(start_x + (i * x_incr), 128, start_z + (i * z_incr) + d, WATER);
                     setBlockAt(start_x + (i * x_incr) + d, 128, start_z + (i * z_incr) + d, WATER);
+
                     //Set all blocks above the river to be empty
                     for(int y = 129; y < 256; y++) {
                         setBlockAt(start_x + (i * x_incr) + d, y, start_z + (i * z_incr), EMPTY);
@@ -301,6 +300,88 @@ void Terrain::drawRoute(Turtle startTurtle, Turtle nextTurtle) {
                     }
                 }
             }
+
+
+        }
+    }//for each increment of distance from start to next turtle
+
+}
+
+void Terrain::drawRemainderRoute(Turtle startTurtle, Turtle nextTurtle, Chunk* c) {
+    int start_x = startTurtle.pos.x;
+    int end_x = nextTurtle.pos.x;
+    int start_z = startTurtle.pos.y;
+    int end_z = nextTurtle.pos.y;
+    float distance = sqrt(pow(end_x - start_x, 2) + pow(end_z - start_z, 2));
+    float x_incr = (end_x - start_x) / distance;
+    float z_incr = (end_z - start_z) / distance;
+    int width = std::max(7 - nextTurtle.depth/3, 3);
+
+    std::cout << "Entered drawRemainderRoute" << std::endl;
+
+    for(int i = 0; i <= distance; i++) {
+        //Check within boundary that has been rendered
+//        if(start_x + (i * x_incr) < x_boundary_end && start_x + (i * x_incr) > x_boundary_start && start_z + (i * z_incr) < z_boundary_end && start_z + (i * z_incr) > z_boundary_start) {
+        if(hasChunk(int(start_x + (i * x_incr)),  int(start_z + (i * z_incr)))) {
+//            std::cout << "Drawing" << std::endl;
+            //Increment x and z values by the width and setBlockAt those positions as well to give the river some thickness
+            for(int d = 0; d < 16; d++) {
+//                if(start_x + (i * x_incr) + d < x_boundary_end && start_x + (i * x_incr) + d > x_boundary_start && start_z + (i * z_incr) + d < z_boundary_end && start_z + (i * z_incr) + d > z_boundary_start) {
+                if(hasChunk(int(start_x + (i * x_incr) + d),  int(start_z + (i * z_incr) + d))) {
+//                    std::cout << "Setting blocks" << std::endl;
+//                    setBlockAt(start_x + (i * x_incr) + d, 128, start_z + (i * z_incr), WATER);
+//                    setBlockAt(start_x + (i * x_incr), 128, start_z + (i * z_incr) + d, WATER);
+//                    setBlockAt(start_x + (i * x_incr) + d, 128, start_z + (i * z_incr) + d, WATER);
+//                    std::cout << "Before setting blocks" << std::endl;
+                    int64_t xz1 = getKey(start_x + (i * x_incr) + d,start_z + (i * z_incr), false);
+                    Chunk* c1 = chunkMap[xz1];
+                    int64_t xz2 = getKey(start_x + (i * x_incr), start_z + (i * z_incr) + d, false);
+                    Chunk* c2 = chunkMap[xz2];
+                    int64_t xz3 = getKey(start_x + (i * x_incr) + d, start_z + (i * z_incr) + d, false);
+                    Chunk* c3 = chunkMap[xz3];
+
+//                    *(c1->getBlockTypeRef(start_x + (i * x_incr) + d, 128, start_z + (i * z_incr))) = WATER;
+//                    *(c2->getBlockTypeRef(start_x + (i * x_incr), 128, start_z + (i * z_incr) + d)) = WATER;
+//                    *(c3->getBlockTypeRef(start_x + (i * x_incr) + d, 128, start_z + (i * z_incr) + d)) = WATER;
+//                    *(c1->getBlockTypeRef(0+d, 128, 0)) = WATER;
+//                    *(c2->getBlockTypeRef(0, 128, 0+d)) = WATER;
+//                    *(c3->getBlockTypeRef(0+d, 128, 0+d)) = WATER;
+//                    std::cout << "Setting chunk" << std::endl;
+                    *(c->getBlockTypeRef(0+d, 128, 0+d)) = WATER;
+
+                    //Set all blocks above the river to be empty
+                    for(int y = 129; y < 256; y++) {
+//                        setBlockAt(start_x + (i * x_incr) + d, y, start_z + (i * z_incr), EMPTY);
+//                        setBlockAt(start_x + (i * x_incr), y, start_z + (i * z_incr) + d, EMPTY);
+//                        setBlockAt(start_x + (i * x_incr) + d, y, start_z + (i * z_incr) + d, EMPTY);
+
+//                        *(c1->getBlockTypeRef(start_x + (i * x_incr) + d, y, start_z + (i * z_incr))) = EMPTY;
+//                        *(c2->getBlockTypeRef(start_x + (i * x_incr), y, start_z + (i * z_incr) + d)) = EMPTY;
+//                        *(c3->getBlockTypeRef(start_x + (i * x_incr) + d, y, start_z + (i * z_incr) + d)) = EMPTY;
+//                        *(c1->getBlockTypeRef(0+d, y, 0)) = EMPTY;
+//                        *(c2->getBlockTypeRef(0, y, 0+d)) = EMPTY;
+//                        *(c3->getBlockTypeRef(0+d, y, 0+d)) = EMPTY;
+                        *(c->getBlockTypeRef(0+d, y, 0+d)) = EMPTY;
+                    }
+                }
+            }
+
+            //To smooth edges of the river
+//            for(int d = -20; d <= 20; d++) {
+//            for(int d = std::min(-width*3, -15); d <= std::max(width*3, 15); d++) {
+//            for(int d = -width*3; d <= 3*width; d++){
+//                if(d < -width || d > width)
+//                {
+////                    if(start_x + (i * x_incr) + d < x_boundary_end && start_x + (i * x_incr) + d > x_boundary_start && start_z + (i * z_incr) + d < z_boundary_end && start_z + (i * z_incr) + d > z_boundary_start) {
+//                    if(hasChunk(int(start_x + (i * x_incr) + d),  int(start_z + (i * z_incr) + d))) {
+//                    for(int y = 129 + fabs(d) - width; y < 256; y++) {
+//                            setBlockAt(start_x + (i * x_incr) + d, y, start_z + (i * z_incr), EMPTY);
+//                            setBlockAt(start_x + (i * x_incr), y, start_z + (i * z_incr) + d, EMPTY);
+//                            setBlockAt(start_x + (i * x_incr) + d, y, start_z + (i * z_incr) + d, EMPTY);
+//                        }
+//                    }
+//                }
+//            }
 
 
         }
@@ -348,9 +429,14 @@ void Terrain::createNewChunk(glm::vec3 position) {
         }
     }
 
+    drawRemainderLSystem(this->l_system_delta, c);
+    drawRemainderLSystem(this->l_system_linear, c);
+
+
     pair<int, int> ints ((int)xChunk, (int)zChunk);
     pair<pair<int, int>, Chunk*> p(ints, c);
     chunksToAdd.push_back(p);
+
 
 //    //L-System generation
 //    LSystem *l_system_delta = new LSystem(QString("FFFX"), x_boundary_start, x_boundary_end, -64, z_boundary_end);
@@ -360,9 +446,11 @@ void Terrain::createNewChunk(glm::vec3 position) {
 //    drawLSystem(l_system_linear);
 
 //    drawRemainderLSystem(this->l_system_delta);
-//    drawRemainderLSystem(this->l_system_linear);
-    CreateTestScene();
+//    drawRemainderLSystem(this->l_system_linear;
+
+//    CreateTestScene();
 }
+
 
 void Terrain::updateChunk(glm::vec3 position) {
     QMutex mutex;
