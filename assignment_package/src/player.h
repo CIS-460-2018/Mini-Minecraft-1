@@ -35,8 +35,6 @@ public:
 
     void updateMouse(QMouseEvent* e); // updates the most recently clicked mouse key
 
-    void move(); // move the player by the given amount
-
     void updateVelocity(); // update the velocity of the player
 
     void checkCollision(float dt, Terrain *t);

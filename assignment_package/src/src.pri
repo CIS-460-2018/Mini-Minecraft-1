@@ -22,7 +22,8 @@ SOURCES += \
     $$PWD/texture.cpp \
     $$PWD/quadrangle.cpp \
     $$PWD/fbmthread.cpp \
-    $$PWD/cursor.cpp
+    $$PWD/cursor.cpp \
+    $$PWD/npc.cpp
 
 HEADERS += \
     $$PWD/la.h \
@@ -46,4 +47,5 @@ HEADERS += \
     $$PWD/texture.h \
     $$PWD/quadrangle.h \
     $$PWD/fbmthread.h \
-    $$PWD/cursor.h
+    $$PWD/cursor.h \
+    $$PWD/npc.h
