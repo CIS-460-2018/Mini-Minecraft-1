@@ -247,13 +247,13 @@ void Terrain::drawRoute(Turtle startTurtle, Turtle nextTurtle) {
             for(int d = -width; d <= width; d++) {
                 if(start_x + (i * x_incr) + d < x_boundary_end && start_x + (i * x_incr) + d > x_boundary_start && start_z + (i * z_incr) + d < z_boundary_end && start_z + (i * z_incr) + d > z_boundary_start) {
 
-                    setBlockAt(start_x + (i * x_incr) + d, 128, start_z + (i * z_incr), LAVA);
-                    setBlockAt(start_x + (i * x_incr), 128, start_z + (i * z_incr) + d, LAVA);
-                    setBlockAt(start_x + (i * x_incr) + d, 128, start_z + (i * z_incr) + d, LAVA);
+                    setBlockAt(start_x + (i * x_incr) + d, 128, start_z + (i * z_incr), WATER);
+                    setBlockAt(start_x + (i * x_incr), 128, start_z + (i * z_incr) + d, WATER);
+                    setBlockAt(start_x + (i * x_incr) + d, 128, start_z + (i * z_incr) + d, WATER);
 
-                    setBlockAt(start_x + (i * x_incr) + d, 129, start_z + (i * z_incr), LAVA);
-                    setBlockAt(start_x + (i * x_incr), 129, start_z + (i * z_incr) + d, LAVA);
-                    setBlockAt(start_x + (i * x_incr) + d, 129, start_z + (i * z_incr) + d, LAVA);
+                    setBlockAt(start_x + (i * x_incr) + d, 129, start_z + (i * z_incr), WATER);
+                    setBlockAt(start_x + (i * x_incr), 129, start_z + (i * z_incr) + d, WATER);
+                    setBlockAt(start_x + (i * x_incr) + d, 129, start_z + (i * z_incr) + d, WATER);
                     //Set all blocks above the river to be empty
                     for(int y = 130; y < 256; y++) {
                         setBlockAt(start_x + (i * x_incr) + d, y, start_z + (i * z_incr), EMPTY);
