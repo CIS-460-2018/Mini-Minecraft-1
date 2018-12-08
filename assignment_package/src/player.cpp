@@ -8,7 +8,7 @@
 #include <algorithm>
 
 Player::Player(Camera *cam) : camera(cam), inLiquid(false), footstep(new QSound(":/sounds/footstep.wav")),
-                              splash(new QSound(":/sounds/splash.wav")), underwater(new QSound(":/sounds/underwater.wav"))
+                              splash(new QSound(":/sounds/splash.wav")), underwater(new QSound(":/sounds/underwater.wav")), isFootStep(false)
 {
 }
 
@@ -25,11 +25,13 @@ void Player::updateMouse(QMouseEvent *e)
 void Player::updateVelocity()
 {
     if (key != 0) {
+        footstep->setLoops(QSound::Infinite);
         float amount = 2.0f;
         if(inLiquid) {
             amount = amount * 2 / 3;
         }
         if (key == Qt::Key_Space) {
+            footstep->stop();
             // allow the player to jump only if standing on the ground
             if (grounded) {
                 velocity = glm::vec4(0, 7, 0, 1); // jump with speed of 7
@@ -45,32 +47,48 @@ void Player::updateVelocity()
                 camera->TranslateAlongLook(amount);
             } else {
                 glm::vec3 v = amount * camera->look;
-                v.y = 0;
-                velocity += glm::vec4(v, 1);
+                v.y = velocity.y;
+                velocity = glm::vec4(v, 1);
+                if (!isFootStep && grounded) {
+                   footstep->play();
+                   isFootStep = true;
+                }
             }
         } else if (key == Qt::Key_S) {
             if (isFlyMode) {
                 camera->TranslateAlongLook(-amount);
             } else {
                 glm::vec3 v = -amount * camera->look;
-                v.y = 0;
-                velocity += glm::vec4(v, 1);
+                v.y = velocity.y;
+                velocity = glm::vec4(v, 1);
+                if (!isFootStep && grounded) {
+                   footstep->play();
+                   isFootStep = true;
+                }
             }
         } else if (key == Qt::Key_D) {
             if (isFlyMode) {
                 camera->TranslateAlongRight(amount);
             } else {
                 glm::vec3 v = amount * camera->right;
-                v.y = 0;
-                velocity += glm::vec4(v, 1);
+                v.y = velocity.y;
+                velocity = glm::vec4(v, 1);
+                if (!isFootStep && grounded) {
+                   footstep->play();
+                   isFootStep = true;
+                }
             }
         } else if (key == Qt::Key_A) {
             if (isFlyMode) {
                 camera->TranslateAlongRight(-amount);
             } else {
                 glm::vec3 v = -amount * camera->right;
-                v.y = 0;
-                velocity += glm::vec4(v, 1);
+                v.y = velocity.y;
+                velocity = glm::vec4(v, 1);
+                if (!isFootStep && grounded) {
+                   footstep->play();
+                   isFootStep = true;
+                }
             }
         } else if (key == Qt::Key_F) {
             if (isFlyMode) {
@@ -85,6 +103,7 @@ void Player::updateVelocity()
                 position += 5.0f;
                 camera->TranslateAlongUp(5.0f);
             }
+            resetKey();
         } else if (key == Qt::Key_E) {
             if (isFlyMode) {
                 camera->TranslateAlongUp(amount);
@@ -109,12 +128,16 @@ void Player::checkCollision(float dt, Terrain* t)
             acceleration = glm::vec4(acceleration.x * 2 / 3, acceleration.y * 2 / 3, acceleration.z * 2 / 3, 1);
             velocity = glm::vec4(velocity.x * 2 / 3, velocity.y * 2 / 3, velocity.z * 2 / 3, 1);
             inLiquid = true;
+            splash->play();
+            underwater->setLoops(QSound::Infinite);
+            underwater->play();
         }
     } else {
         if(inLiquid == true) {
             acceleration = glm::vec4(acceleration.x * 3 / 2, acceleration.y * 3 / 2, acceleration.z * 3 / 2, 1);
             velocity = glm::vec4(velocity.x * 3 / 2, velocity.y * 3 / 2, velocity.z * 3 / 2, 1);
             inLiquid = false;
+            underwater->stop();
         }
     }
     velocity += glm::vec4(acceleration.x * dt, acceleration.y * dt, acceleration.z * dt, 1); // update the velocity with acceleration
@@ -138,9 +161,13 @@ void Player::checkCollision(float dt, Terrain* t)
             BlockType currBlock = t->getBlockAt(potentialPos.x, potentialPos.y, potentialPos.z);
             if (currBlock != EMPTY && !isLiquidBlock(currBlock)) {
                 if (!grounded) {
-                    grounded = true;
                     velocity = glm::vec4(0, 0, 0, 1);
-                    acceleration = glm::vec4(0, 0, 0, 1);
+                    if (dir.y > 0) {
+                        // head bump check
+                    } else {
+                        grounded = true;
+                        acceleration = glm::vec4(0, 0, 0, 1);
+                    }
                 }
                 curDist -= 0.25f;
                 isColFound = true;
@@ -175,6 +202,9 @@ void Player::checkCollision(float dt, Terrain* t)
     camera->ref += glm::vec3(incrPos.x, incrPos.y, incrPos.z);
     if (grounded) {
         velocity = glm::vec4(0, 0, 0, 1);
+    } else {
+        velocity.x = 0;
+        velocity.z = 0;
     }
 }
 
@@ -240,7 +270,8 @@ void Player::resetKey()
     key = 0;
 }
 
-void Player::playSound()
+void Player::stopFootstep()
 {
-    splash->play();
+    footstep->stop();
+    isFootStep = false;
 }

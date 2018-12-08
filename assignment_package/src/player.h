@@ -24,6 +24,8 @@ private:
     QSound* underwater;
     QSound* splash;
 
+    bool isFootStep;
+
 public:
     Player(Camera* cam);
 
@@ -47,7 +49,7 @@ public:
 
     void resetKey();
 
-    void playSound();
+    void stopFootstep();
 };
 
 #endif // PLAYER_H
