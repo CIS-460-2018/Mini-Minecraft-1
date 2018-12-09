@@ -16,7 +16,8 @@ MyGL::MyGL(QWidget *parent)
       mp_geomCube(new Cube(this)), mp_worldAxes(new WorldAxes(this)),
       mp_progLambert(new ShaderProgram(this)), mp_progFlat(new ShaderProgram(this)),
       mp_camera(new Camera()), mp_terrain(new Terrain(this)), mp_player(new Player(mp_camera)), mp_texture(new Texture(this)),
-      mp_progOverlay(new ShaderProgram(this)), overlay(new Quadrangle(this, EMPTY)), cur(new Cursor(this))
+      mp_progOverlay(new ShaderProgram(this)), overlay(new Quadrangle(this, EMPTY)), cur(new Cursor(this)),
+      mp_sheep(new NPC(mp_terrain, this))
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -45,6 +46,7 @@ MyGL::~MyGL()
     delete mp_texture;
     delete cur;
     delete overlay;
+    delete mp_sheep;
 }
 
 void MyGL::MoveMouseToCenter()
@@ -85,6 +87,7 @@ void MyGL::initializeGL()
     mp_worldAxes->create();
     cur->create();
     overlay->create();
+    mp_sheep->create();
 
     // Create and set up the diffuse shader
     mp_progLambert->create(":/glsl/lambert.vert.glsl", ":/glsl/lambert.frag.glsl");
@@ -164,6 +167,7 @@ void MyGL::paintGL()
     m_time++;
 
     mp_texture->bind(0);
+    mp_progLambert->draw(*mp_sheep);
     GLDrawScene();
 
     glDisable(GL_DEPTH_TEST);

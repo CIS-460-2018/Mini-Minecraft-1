@@ -13,6 +13,7 @@
 #include "texture.h"
 #include "quadrangle.h"
 #include "cursor.h"
+#include "npc.h"
 
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
@@ -39,6 +40,7 @@ private:
 
     Player* mp_player; // player instance
     int64_t startTime; // initial elapsed time
+    NPC* mp_sheep;
 
     /// Timer linked to timerUpdate(). Fires approx. 60 times per second
     QTimer timer;

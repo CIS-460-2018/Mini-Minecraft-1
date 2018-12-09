@@ -7,7 +7,7 @@
 class NPC : public Drawable
 {
 private:
-    glm::vec4 position = glm::vec4(0, 0, 0, 1);
+    glm::vec4 position = glm::vec4(30, 200, 30, 1);
     glm::vec4 velocity = glm::vec4(0, 0, 0, 1); // npc's velocity in 3D space, initially zero
     const float G = 9.81f; // gravitational constant
     glm::vec4 acceleration = glm::vec4(0, -G, 0, 1);
