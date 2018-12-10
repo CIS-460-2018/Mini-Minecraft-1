@@ -17,7 +17,7 @@ MyGL::MyGL(QWidget *parent)
       mp_progLambert(new ShaderProgram(this)), mp_progFlat(new ShaderProgram(this)),
       mp_camera(new Camera()), mp_terrain(new Terrain(this)), mp_player(new Player(mp_camera)), mp_texture(new Texture(this)),
       mp_progOverlay(new ShaderProgram(this)), overlay(new Quadrangle(this, EMPTY)), cur(new Cursor(this)),
-      mp_sheep(new NPC(mp_terrain, this)), mp_postProcess(new ShaderProgram(this)), m_geomQuad(this)
+      mp_sheep(new NPC(mp_terrain, this)), sheepTexture(new Texture(this))
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -34,7 +34,6 @@ MyGL::~MyGL()
     makeCurrent();
     glDeleteVertexArrays(1, &vao);
     mp_geomCube->destroy();
-    //m_geomQuad.destroy();
 
     delete mp_geomCube;
     delete mp_worldAxes;
@@ -45,6 +44,7 @@ MyGL::~MyGL()
     delete mp_terrain;
     delete mp_player;
     delete mp_texture;
+    delete sheepTexture;
     delete cur;
     delete overlay;
     delete mp_sheep;
@@ -117,14 +117,12 @@ void MyGL::initializeGL()
         printGLErrorLog();
     }
 
-    //m_geomQuad.create();
-
     //Create the instance of Cube
     mp_geomCube->create();
     mp_worldAxes->create();
     cur->create();
     overlay->create();
-    //mp_sheep->create();
+    mp_sheep->create();
 
     // Create and set up the diffuse shader
     mp_progLambert->create(":/glsl/lambert.vert.glsl", ":/glsl/lambert.frag.glsl");
@@ -132,7 +130,6 @@ void MyGL::initializeGL()
     mp_progFlat->create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
     // Create and set up the overlay shader
     mp_progOverlay->create(":/glsl/overlay.vert.glsl", ":/glsl/overlay.frag.glsl");
-    mp_postProcess->create(":/glsl/postprocess.vert.glsl", ":/glsl/postprocess.frag.glsl");
 
     // Set a color with which to draw geometry since you won't have one
     // defined until you implement the Node classes.
@@ -148,7 +145,9 @@ void MyGL::initializeGL()
     mp_terrain->CreateTestScene();
     mp_terrain->updateScene();
     mp_texture->create(":/minecraft_textures_all/minecraft_textures_all.png");
+    sheepTexture->create(":/minecraft_textures_all/sheep.png");
     mp_texture->load(0);
+    sheepTexture->load(1);
 
     startTime = QDateTime::currentMSecsSinceEpoch(); // set start time
 }
@@ -166,7 +165,19 @@ void MyGL::resizeGL(int w, int h)
     mp_progLambert->setViewProjMatrix(viewproj);
     mp_progFlat->setViewProjMatrix(viewproj);
     mp_progLambert->setViewVector(glm::vec4(mp_camera->look, 0));
-    mp_postProcess->setDimensions(glm::ivec2(w, h));
+    mp_progOverlay->setDimensions(glm::ivec2(w, h));
+    glBindFramebuffer(GL_FRAMEBUFFER, m_frameBuffer);
+    // Bind our texture so that all functions that deal with textures will interact with this one
+    glBindTexture(GL_TEXTURE_2D, m_renderedTexture);
+    // Give an empty image to OpenGL ( the last "0" )
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio(), 0, GL_RGB, GL_UNSIGNED_BYTE, (void*)0);
+    // Set the render settings for the texture we've just created.
+    // Essentially zero filtering on the "texture" so it appears exactly as rendered
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    // Clamp the colors at the edge of our texture
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     printGLErrorLog();
 }
@@ -180,10 +191,10 @@ void MyGL::timerUpdate()
     // update the velocity
     dt /= 1000.0f;
     mp_player->updateVelocity();
-    //mp_sheep->updateVelocity();
+    mp_sheep->updateVelocity();
     // check for collisions
     mp_player->checkCollision(dt, mp_terrain);
-    //mp_sheep->checkCollision(dt);
+    mp_sheep->checkCollision(dt);
     mp_camera->RecomputeAttributes();
     startTime = now;
     //mp_player->resetKey();
@@ -199,7 +210,14 @@ void MyGL::timerUpdate()
 void MyGL::paintGL()
 {
     // Clear the screen so that we only see newly drawn images
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_frameBuffer);
+    // Render on the whole framebuffer, complete from the lower left corner to the upper right
+    glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
+    // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_renderedTexture);
 
     mp_progFlat->setViewProjMatrix(mp_camera->getViewProj());
     mp_progLambert->setViewProjMatrix(mp_camera->getViewProj());
@@ -207,13 +225,15 @@ void MyGL::paintGL()
     mp_progLambert->setPlayerPos(mp_player->getPosition());
     mp_progLambert->setTime(m_time);
     mp_progFlat->setTime(m_time);
-    mp_postProcess->setTime(m_time);
+    mp_progOverlay->setTime(m_time);
     m_time++;
 
     mp_texture->bind(0);
-    //mp_sheep->destroy();
-    //mp_sheep->create();
-    //mp_progLambert->draw(*mp_sheep);
+    sheepTexture->bind(1);
+    mp_progLambert->setModelMatrix(glm::mat4());
+    mp_sheep->destroy();
+    mp_sheep->create();
+    mp_progLambert->draw(*mp_sheep, 1);
     GLDrawScene();
 
     glDisable(GL_DEPTH_TEST);
@@ -223,15 +243,21 @@ void MyGL::paintGL()
     mp_progFlat->drawPosNorCol(*cur);
     glEnable(GL_DEPTH_TEST);
 
-    /*glBindFramebuffer(GL_FRAMEBUFFER, this->defaultFramebufferObject());
+    glBindFramebuffer(GL_FRAMEBUFFER, this->defaultFramebufferObject());
     // Render on the whole framebuffer, complete from the lower left corner to the upper right
     glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, m_renderedTexture);
-
-    mp_postProcess->drawOverlay(m_geomQuad);*/
+    if (mp_terrain->getBlockAt(mp_player->getPosition().x, mp_player->getPosition().y, mp_player->getPosition().z) == WATER) {
+        mp_progOverlay->setUnifMode(1);
+    } else if (mp_terrain->getBlockAt(mp_player->getPosition().x, mp_player->getPosition().y, mp_player->getPosition().z) == LAVA) {
+        mp_progOverlay->setUnifMode(2);
+    } else {
+        mp_progOverlay->setUnifMode(0);
+    }
+    mp_progOverlay->drawOverlay(*overlay);
 }
 
 void MyGL::GLDrawScene()
@@ -245,7 +271,7 @@ void MyGL::GLDrawScene()
         }
         int64_t xChunk = xz >> 32;
         mp_progLambert->setModelMatrix(glm::translate(glm::mat4(), glm::vec3(xChunk*16, 0, zChunk*16)));
-        mp_progLambert->draw(*c);
+        mp_progLambert->draw(*c, 0);
     }
     // then draw the transparents
     for(int64_t xz: mp_terrain->chunkMap.keys()) {
@@ -265,8 +291,6 @@ void MyGL::GLDrawScene()
         overlay->destroy();
         overlay->create();
     }
-
-    mp_progOverlay->drawPosNorCol(*overlay);
 }
 
 float distance3D(int x1, int y1, int z1, int x2, int y2, int z2)
@@ -368,13 +392,13 @@ void MyGL::mousePressEvent(QMouseEvent *e)
 
 void MyGL::mouseMoveEvent(QMouseEvent *e)
 {
-//    mp_player->updateMouse(e);
-//    glm::vec2 pos(e->pos().x(), e->pos().y());
-//    glm::vec2 center(width() / 2, height() / 2);
-//    glm::vec2 diff = 0.4f * (pos - center);
-//    mp_camera->RotateAboutUp(-diff.x);
-//    mp_camera->RotateAboutRight(-diff.y);
-//    mp_camera->RecomputeAttributes();
+    mp_player->updateMouse(e);
+    glm::vec2 pos(e->pos().x(), e->pos().y());
+    glm::vec2 center(width() / 2, height() / 2);
+    glm::vec2 diff = 0.4f * (pos - center);
+    mp_camera->RotateAboutUp(-diff.x);
+    mp_camera->RotateAboutRight(-diff.y);
+    mp_camera->RecomputeAttributes();
     MoveMouseToCenter();
 }
 

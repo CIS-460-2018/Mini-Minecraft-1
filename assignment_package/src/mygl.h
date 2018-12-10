@@ -14,7 +14,6 @@
 #include "quadrangle.h"
 #include "cursor.h"
 #include "npc.h"
-#include "scene/quad.h"
 
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
@@ -29,14 +28,11 @@ private:
     ShaderProgram* mp_progLambert;// A shader program that uses lambertian reflection
     ShaderProgram* mp_progFlat;// A shader program that uses "flat" reflection (no shadowing at all)
     ShaderProgram* mp_progOverlay; // A shader program that covers the entire screen with a transluscent quadrangle (under water or lava)
-    ShaderProgram* mp_postProcess;
     Quadrangle* overlay;
     Cursor* cur;
 
     GLuint vao; // A handle for our vertex array object. This will store the VBOs created in our geometry classes.
                 // Don't worry too much about this. Just know it is necessary in order to render geometry.
-
-    Quad m_geomQuad;
 
     // A collection of handles to the five frame buffers we've given
     // ourselves to perform render passes. The 0th frame buffer is always
@@ -52,6 +48,7 @@ private:
     Camera* mp_camera;
     Terrain* mp_terrain;
     Texture* mp_texture;
+    Texture* sheepTexture;
 
     Player* mp_player; // player instance
     int64_t startTime; // initial elapsed time

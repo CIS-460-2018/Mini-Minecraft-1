@@ -25,7 +25,7 @@ void Texture::load(int texSlot = 0)
 {
     context->printGLErrorLog();
 
-    context->glActiveTexture(GL_TEXTURE0);
+    context->glActiveTexture(GL_TEXTURE0 + texSlot);
     context->glBindTexture(GL_TEXTURE_2D, m_textureHandle);
 
     // These parameters need to be set for EVERY texture you create

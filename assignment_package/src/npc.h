@@ -7,7 +7,7 @@
 class NPC : public Drawable
 {
 private:
-    glm::vec4 position = glm::vec4(20, 400, 20, 1);
+    glm::vec4 position = glm::vec4(10, 400, 10, 1);
     glm::vec4 velocity = glm::vec4(0, 0, 0, 1); // npc's velocity in 3D space, initially zero
     const float G = 9.81f; // gravitational constant
     glm::vec4 acceleration = glm::vec4(0, -G, 0, 1);
@@ -18,6 +18,8 @@ private:
     bool didCollide = false;
     glm::vec4 lastDirection;
 public:
+    static int posGenerationConstX;
+    static int posGenerationConstZ;
     NPC(Terrain* t, OpenGLContext* context);
 
     void updateVelocity(); // update the velocity of the NPC
