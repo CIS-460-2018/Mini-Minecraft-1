@@ -48,4 +48,5 @@ HEADERS += \
     $$PWD/quadrangle.h \
     $$PWD/fbmthread.h \
     $$PWD/cursor.h \
-    $$PWD/npc.h
+    $$PWD/npc.h \
+    $$PWD/biometype.h

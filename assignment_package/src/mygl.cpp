@@ -103,6 +103,7 @@ void MyGL::initializeGL()
 //    vao.bind();
     glBindVertexArray(vao);
 
+    mp_terrain->initializeBiomeMap();
     mp_terrain->CreateTestScene();
     mp_terrain->updateScene();
     mp_texture->create(":/minecraft_textures_all/minecraft_textures_all.png");
@@ -281,8 +282,6 @@ void MyGL::placeBlock()
     }
 }
 
-//Can make this more efficient by replacing createTestScene with a function that only
-//renders the quadrant you need rendered rather than the whole scene again
 void MyGL::checkBoundary()
 {
 
@@ -310,13 +309,13 @@ void MyGL::mousePressEvent(QMouseEvent *e)
 
 void MyGL::mouseMoveEvent(QMouseEvent *e)
 {
-    mp_player->updateMouse(e);
-    glm::vec2 pos(e->pos().x(), e->pos().y());
-    glm::vec2 center(width() / 2, height() / 2);
-    glm::vec2 diff = 0.4f * (pos - center);
-    mp_camera->RotateAboutUp(-diff.x);
-    mp_camera->RotateAboutRight(-diff.y);
-    mp_camera->RecomputeAttributes();
+//    mp_player->updateMouse(e);
+//    glm::vec2 pos(e->pos().x(), e->pos().y());
+//    glm::vec2 center(width() / 2, height() / 2);
+//    glm::vec2 diff = 0.4f * (pos - center);
+//    mp_camera->RotateAboutUp(-diff.x);
+//    mp_camera->RotateAboutRight(-diff.y);
+//    mp_camera->RecomputeAttributes();
     MoveMouseToCenter();
 }
 

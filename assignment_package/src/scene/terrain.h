@@ -7,6 +7,7 @@
 #include "chunk.h"
 #include "blocktype.h"
 #include "lsystem.h"
+#include "biometype.h"
 
 using namespace glm;
 using namespace std;
@@ -22,15 +23,16 @@ enum BlockType: unsigned char;
 class Terrain
 {
 private:
-    int64_t getKey(int x, int y, bool chunked) const;
     OpenGLContext* context;
-
+    LSystem *l_system_delta;
+    LSystem *l_system_linear;
 public:
     QHash<int64_t, Chunk*> chunkMap;
+    QHash<int64_t, pair<glm::vec2, BiomeType>> biomeMap;
 
-    // Multithreading
     bool hasChunk(int x, int z);
     void createNewChunk(glm::vec3 position);
+    int64_t getKey(int x, int y, bool chunked) const;
 
     glm::ivec3 dimensions;
     int x_boundary_start, x_boundary_end, y_boundary_start, y_boundary_end, z_boundary_start, z_boundary_end;
@@ -44,6 +46,9 @@ public:
     void setBlockAt(int x, int y, int z, BlockType t); // Given a world-space coordinate (which may have negative
                                                            // values) set the block at that point in space to the
                                                            // given type.
+    BiomeType randBiome();
+    void initializeBiomeMap();
+    BlockType findTopBlock(int x, int z);
     void CreateTestScene();
     void updatePictureArea(int playerX, int playerZ, vector<vector<float>> newHeight);
 

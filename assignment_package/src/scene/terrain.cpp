@@ -6,14 +6,18 @@
 #include "vbothread.h"
 #include "fbmthread.h"
 #include <QThreadPool>
+#include <cstdlib>
 
 using namespace glm;
 using namespace std;
 
 Terrain::Terrain(OpenGLContext* c)
-    : context(c), dimensions(64, 256, 64), x_boundary_start(-192), y_boundary_start(0), z_boundary_start(-128),
-      x_boundary_end(128), y_boundary_end(256), z_boundary_end(256)
-{}
+    : context(c), dimensions(64, 256, 64), x_boundary_start(-256), y_boundary_start(0), z_boundary_start(-256),
+      x_boundary_end(256), y_boundary_end(256), z_boundary_end(256)
+{
+    l_system_delta = new LSystem(QString("FFFX"), x_boundary_start, x_boundary_end, -64, z_boundary_end);
+    l_system_linear = new LSystem(QString("FFFFFY"), x_boundary_start, x_boundary_end, 100, z_boundary_end);
+}
 
 Terrain::Terrain(OpenGLContext* c, int x_boundary_end, int y_boundary_end, int z_boundary_end)
     : context(c), dimensions(x_boundary_end, y_boundary_end, z_boundary_end),
@@ -115,6 +119,91 @@ void Terrain::setBlockAt(int x, int y, int z, BlockType t)
     *(chunkMap[key]->getBlockTypeRef(x, y, z)) = t;
 }
 
+glm::vec2 getBiomeWorleyPoint(int x, int z) {
+    float randX = rand(glm::vec2(((rand() % 100) / 99.f), ((rand() % 100) / 99.f)));
+    float randZ = rand(glm::vec2(((rand() % 100) / 99.f), ((rand() % 100) / 99.f)));
+    return glm::vec2((x + randX)*128, (z + randZ)*128);
+}
+
+BiomeType Terrain::randBiome() {
+    float randNum = (rand() % 10) / 9.f;
+    if(randNum < 0.25) {
+        return DESERT;
+    } else if(randNum < 0.5) {
+        return TUNDRA;
+    } else if(randNum < 0.75) {
+        return GRASSLAND;
+    }
+    return MOUNTAIN;
+}
+
+void Terrain::initializeBiomeMap() {
+    int xBiomeStart = (x_boundary_start / 128) - 1;
+    int xBiomeEnd = (x_boundary_end / 128) + 1;
+    int zBiomeStart = (z_boundary_start / 128) - 1;
+    int zBiomeEnd = (z_boundary_end / 128) + 1;
+    for(int x = xBiomeStart; x <= xBiomeEnd; x++) {
+        for(int z = zBiomeStart; z <= zBiomeEnd; z++) {
+            glm::vec2 worleyPoint = getBiomeWorleyPoint(x, z);
+            BiomeType t = randBiome();
+            int64_t key = getKey(x, z, true);
+            biomeMap.insert(key, pair<glm::vec2, BiomeType>(worleyPoint, t));
+        }
+    }
+}
+
+
+BlockType Terrain::findTopBlock(int x, int z) {
+    pair<glm::vec2, BiomeType> p = biomeMap[getKey(x / 128, z / 128, true)];
+    BiomeType bt = p.second;
+    float minDist = std::sqrt(pow(x - p.first.x, 2) + pow(z - p.first.y, 2));
+    // Find biome based on worley noise
+    for(int i = -1; i <= 1; i++) {
+        for(int j = -1; j <= 1; j++) {
+            if(!biomeMap.contains(getKey((x / 128) + i, (z / 128) + j, true))) {
+                glm::vec2 worleyPoint = getBiomeWorleyPoint((x / 128) + i, (z / 128) + j);
+                BiomeType t = randBiome();
+                int64_t key = getKey((x / 128) + i, (z / 128) + j, true);
+                biomeMap.insert(key, pair<glm::vec2, BiomeType>(worleyPoint, t));
+            }
+            pair<glm::vec2, BiomeType> p2 = biomeMap[getKey((x / 128) + i, (z / 128) + j, true)];
+            float newDist = std::sqrt(pow(x - p2.first.x, 2) + pow(z - p2.first.y, 2));
+            if(newDist < minDist) {
+                bt = p2.second;
+                minDist = newDist;
+            }
+        }
+    }
+    // Handle smooth transition between biomes
+    for(int i = -1; i <= 1; i++) {
+        for(int j = -1; j <= 1; j++) {
+            pair<glm::vec2, BiomeType> p2 = biomeMap[getKey((x / 128) + i, (z / 128) + j, true)];
+            float newDist = std::sqrt(pow(x - p2.first.x, 2) + pow(z - p2.first.y, 2));
+            if(newDist < 100) {
+                float diffDist = 60 - (newDist - minDist); // this'll be anywhere from 0 to 90ish
+                float prob = glm::smoothstep(0.f, 90.f, diffDist);
+                float randNum = (rand() % 100/ 99.f);
+                if(randNum < prob) {
+                    bt = p2.second;
+                }
+            }
+        }
+    }
+
+    switch(bt){
+    case DESERT:
+        return SAND;
+    case TUNDRA:
+        return SNOW;
+    case GRASSLAND:
+        return GRASS;
+    case MOUNTAIN:
+        return STONE;
+    default:
+        return GRASS;
+    }
+}
+
 void Terrain::CreateTestScene()
 {
     // Create the basic terrain floor
@@ -122,10 +211,23 @@ void Terrain::CreateTestScene()
     {
         for(int z = z_boundary_start; z < z_boundary_end; ++z)
         {
-            float height = fbm(x, z);
+            BlockType topBlock = findTopBlock(x, z);
 
-            height = 128 + height * 32;
-            //height = 116 + height * 10;
+            float height = fbm(x, z);
+            switch(topBlock) {
+            case SAND:
+                height = 128 + height * 12;
+                break;
+            case GRASS:
+                height = 128 + height * 12;
+                break;
+            case SNOW:
+                height = 128 + height * 12;
+                break;
+            case STONE:
+                height = 128 + height * 12;
+            }
+
 
             if (height < 128) {
                 height = 128.f;
@@ -136,7 +238,7 @@ void Terrain::CreateTestScene()
             for(int y = 0; y < 256; y++) {
                 if(y < height) {
                     if(y == ceil(height) - 1) {
-                        setBlockAt(x, y, z, GRASS);
+                        setBlockAt(x, y, z, topBlock);
                     }
                     else if(y >= 128) {
                         setBlockAt(x, y, z, DIRT);
@@ -152,12 +254,8 @@ void Terrain::CreateTestScene()
     }
 
     //L-System generation
-    LSystem *l_system_delta = new LSystem(QString("FFFX"), x_boundary_start, x_boundary_end, -64, z_boundary_end);
     drawLSystem(l_system_delta);
-
-    LSystem *l_system_linear = new LSystem(QString("FFFFFY"), x_boundary_start, x_boundary_end, 100, z_boundary_end);
     drawLSystem(l_system_linear);
-
 }
 
 void Terrain::updatePictureArea(int playerX, int playerZ, vector<vector<float>> newHeight) {
@@ -198,7 +296,6 @@ void Terrain::updatePictureArea(int playerX, int playerZ, vector<vector<float>> 
         }
     }
 }
-
 
 void Terrain::drawLSystem(LSystem *l_system) {
     //Expanding the axiom for n iterations
@@ -296,7 +393,7 @@ void Terrain::createNewChunk(glm::vec3 position) {
     {
         for(int z = 0; z < 16; ++z)
         {
-            FBMThread* thread = new FBMThread(c, x, z, (int)xChunk, (int)zChunk, &fbm, &mutex);
+            FBMThread* thread = new FBMThread(c, x, z, (int)xChunk, (int)zChunk, &fbm, findTopBlock(xChunk * 16 + x, zChunk * 16 + z), &mutex);
             QThreadPool::globalInstance()->start(thread);
         }
     }

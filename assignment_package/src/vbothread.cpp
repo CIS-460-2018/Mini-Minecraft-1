@@ -84,6 +84,20 @@ void VBOThread::createVertexPosNorUV() {
                         isTransparent = true;
                         checkFunction = &VBOThread::shouldRenderTransp;
                         break;
+                    case SNOW:
+                        uvIndicator = 10;
+                        cosinePow = 0.85f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
+                        break;
+                    case SAND:
+                        uvIndicator = 11;
+                        cosinePow = 1.f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
+                        break;
                     }
                     // top
                     if(checkEmpty(x, y+1, z, checkFunction)) {
@@ -350,8 +364,16 @@ glm::vec2 VBOThread::getTexture(int faceNum)
         return glm::vec2(1.0f / 16.0f * 13, 1.0f / 16.0f * 2);
     } else if (uvIndicator == 8) { // if water
         return glm::vec2(1.0f / 16.0f * 13, 1.0f / 16.0f * 4);
-    } else { // if ice
+    } else if (uvIndicator == 9){ // if ice
         return glm::vec2(1.0f / 16.0f * 3, 1.0f / 16.0f * 12);
+    } else if(uvIndicator == 10) { // if snow
+        if (faceNum == 0) {
+        return glm::vec2(1.0f / 16.0f * 2, 1.0f / 16.0f * 12);
+        } else { // snow sides
+        return glm::vec2(1.0f / 16.0f * 4, 1.0f / 16.0f * 12);
+        }
+    } else if(uvIndicator == 11) { // if sand
+        return glm::vec2(1.0f / 16.0f * 14, 1.0f / 16.0f * 8);
     }
 }
 

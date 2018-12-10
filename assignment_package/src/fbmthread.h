@@ -13,8 +13,9 @@ private:
     int xChunk;
     int zChunk;
     float (*fbm)(float, float);
+    BlockType topBlock;
     QMutex* mutex;
 public:
-    FBMThread(Chunk*, int, int, int, int, float (*fbmPtr)(float, float), QMutex*);
+    FBMThread(Chunk*, int, int, int, int, float (*fbmPtr)(float, float), BlockType top, QMutex*);
     void run() override;
 };
