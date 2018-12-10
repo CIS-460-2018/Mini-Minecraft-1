@@ -17,6 +17,14 @@ protected:
     GLuint bufPosNorUVTransparent; // A Vertex Buffer Object that we will use to store mesh vertices, normals, and uvs for transparent blocks
     GLuint bufPosNorCol;
 
+    GLuint bufPos; // A Vertex Buffer Object that we will use to store mesh vertices (vec4s)
+    GLuint bufNor; // A Vertex Buffer Object that we will use to store mesh normals (vec4s)
+    GLuint bufUV; // Can be used to pass per-vertex UV information to the shader
+
+    bool posBound;
+    bool norBound;
+    bool uvBound;
+
     bool idxBound; // Set to TRUE by generateIdx(), returned by bindIdx().
     bool idxBoundT;
     bool idxBoundCol;
@@ -56,4 +64,12 @@ public:
     bool bindPosNorCol();
     bool bindPosNorUVOpaque();
     bool bindPosNorUVTransparent();
+
+    void generatePos();
+    void generateNor();
+    void generateUV();
+
+    bool bindPos();
+    bool bindNor();
+    bool bindUV();
 };

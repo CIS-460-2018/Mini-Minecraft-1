@@ -10,7 +10,7 @@ ShaderProgram::ShaderProgram(OpenGLContext *context)
     : vertShader(), fragShader(), prog(),
       attrPos(-1), attrNor(-1), attrCol(-1), attrUV(-1), attrCos(-1), attrAnimate(-1),
       unifModel(-1), unifModelInvTr(-1), unifViewProj(-1), unifColor(-1),
-      unifSampler2D(-1), unifTime(-1), unifDimensions(-1), unifView(-1),
+      unifSampler2D(-1), unifTime(-1), unifDimensions(-1), unifView(-1), unifPlayer(-1),
       context(context)
 {}
 
@@ -77,6 +77,7 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     unifTime = context->glGetUniformLocation(prog, "u_Time");
     unifSampler2D = context->glGetUniformLocation(prog, "u_RenderedTexture");
     unifView = context->glGetUniformLocation(prog, "u_ViewVec");
+    unifPlayer = context->glGetUniformLocation(prog, "u_Player");
 }
 
 void ShaderProgram::useMe()
@@ -285,6 +286,38 @@ void ShaderProgram::drawPosNorCol(Drawable &d)
     context->printGLErrorLog();
 }
 
+void ShaderProgram::drawOverlay(Drawable &d)
+{
+    useMe();
+
+    // Set our "renderedTexture" sampler to user Texture Unit 0
+    context->glUniform1i(unifSampler2D, 1);
+
+    // Each of the following blocks checks that:
+    //   * This shader has this attribute, and
+    //   * This Drawable has a vertex buffer for this attribute.
+    // If so, it binds the appropriate buffers to each attribute.
+
+    if (attrPos != -1 && d.bindPos()) {
+        context->glEnableVertexAttribArray(attrPos);
+        context->glVertexAttribPointer(attrPos, 4, GL_FLOAT, false, 0, NULL);
+    }
+    if (attrUV != -1 && d.bindUV()) {
+        context->glEnableVertexAttribArray(attrUV);
+        context->glVertexAttribPointer(attrUV, 2, GL_FLOAT, false, 0, NULL);
+    }
+
+    // Bind the index buffer and then draw shapes from it.
+    // This invokes the shader program, which accesses the vertex buffers.
+    d.bindIdx();
+    context->glDrawElements(d.drawMode(), d.elemCount(), GL_UNSIGNED_INT, 0);
+
+    if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
+    if (attrUV != -1) context->glDisableVertexAttribArray(attrUV);
+
+    context->printGLErrorLog();
+}
+
 char* ShaderProgram::textFileRead(const char* fileName) {
     char* text;
 
@@ -387,5 +420,14 @@ void ShaderProgram::setViewVector(glm::vec4 view) {
     if(unifView != -1)
     {
         context->glUniform4fv(unifView, 1, &view[0]);
+    }
+}
+
+void ShaderProgram::setPlayerPos(glm::vec4 pos) {
+    useMe();
+
+    if(unifPlayer != -1)
+    {
+        context->glUniform4fv(unifPlayer, 1, &pos[0]);
     }
 }

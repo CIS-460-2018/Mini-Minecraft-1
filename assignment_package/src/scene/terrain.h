@@ -3,7 +3,6 @@
 #include <la.h>
 #include <QOpenGLContext>
 
-#include <scene/terrain.h>
 #include "chunk.h"
 #include "blocktype.h"
 #include "lsystem.h"

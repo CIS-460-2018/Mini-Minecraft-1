@@ -60,9 +60,9 @@ void main()
     fs_Cos = vs_Cos;
     fs_Animate = vs_Animate;
     fs_ViewVec = u_ViewVec;
-    fs_Pos = u_Model * vs_Pos;
 
     vec4 modelposition = u_Model * vs_Pos;   // Temporarily store the transformed vertex positions for use below
+    fs_Pos = modelposition;
 
     fs_LightVec = lightVec;  // Compute the direction in which the light source lies
 

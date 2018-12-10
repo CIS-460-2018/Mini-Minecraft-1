@@ -16,7 +16,8 @@ MyGL::MyGL(QWidget *parent)
       mp_geomCube(new Cube(this)), mp_worldAxes(new WorldAxes(this)),
       mp_progLambert(new ShaderProgram(this)), mp_progFlat(new ShaderProgram(this)),
       mp_camera(new Camera()), mp_terrain(new Terrain(this)), mp_player(new Player(mp_camera)), mp_texture(new Texture(this)),
-      mp_progOverlay(new ShaderProgram(this)), overlay(new Quadrangle(this, EMPTY)), cur(new Cursor(this))
+      mp_progOverlay(new ShaderProgram(this)), overlay(new Quadrangle(this, EMPTY)), cur(new Cursor(this)),
+      mp_sheep(new NPC(mp_terrain, this)), mp_postProcess(new ShaderProgram(this)), m_geomQuad(this)
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -33,6 +34,7 @@ MyGL::~MyGL()
     makeCurrent();
     glDeleteVertexArrays(1, &vao);
     mp_geomCube->destroy();
+    //m_geomQuad.destroy();
 
     delete mp_geomCube;
     delete mp_worldAxes;
@@ -45,6 +47,7 @@ MyGL::~MyGL()
     delete mp_texture;
     delete cur;
     delete overlay;
+    delete mp_sheep;
 }
 
 void MyGL::MoveMouseToCenter()
@@ -79,12 +82,49 @@ void MyGL::initializeGL()
 
     // Create a Vertex Attribute Object
     glGenVertexArrays(1, &vao);
+    glGenFramebuffers(1, &m_frameBuffer);
+    glGenTextures(1, &m_renderedTexture);
+    glGenRenderbuffers(1, &m_depthRenderBuffer);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_frameBuffer);
+    // Bind our texture so that all functions that deal with textures will interact with this one
+    glBindTexture(GL_TEXTURE_2D, m_renderedTexture);
+    // Give an empty image to OpenGL ( the last "0" )
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio(), 0, GL_RGB, GL_UNSIGNED_BYTE, (void*)0);
+    // Set the render settings for the texture we've just created.
+    // Essentially zero filtering on the "texture" so it appears exactly as rendered
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    // Clamp the colors at the edge of our texture
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    // Initialize our depth buffer
+    glBindRenderbuffer(GL_RENDERBUFFER, m_depthRenderBuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthRenderBuffer);
+    // Set m_renderedTexture as the color output of our frame buffer
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_renderedTexture, 0);
+
+    // Sets the color output of the fragment shader to be stored in GL_COLOR_ATTACHMENT0, which we previously set to m_renderedTextures[i]
+    GLenum drawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+    glDrawBuffers(1, drawBuffers); // "1" is the size of drawBuffers
+
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        std::cout << "Frame buffer did not initialize correctly..." << std::endl;
+        printGLErrorLog();
+    }
+
+    //m_geomQuad.create();
 
     //Create the instance of Cube
     mp_geomCube->create();
     mp_worldAxes->create();
     cur->create();
     overlay->create();
+    //mp_sheep->create();
 
     // Create and set up the diffuse shader
     mp_progLambert->create(":/glsl/lambert.vert.glsl", ":/glsl/lambert.frag.glsl");
@@ -92,6 +132,7 @@ void MyGL::initializeGL()
     mp_progFlat->create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
     // Create and set up the overlay shader
     mp_progOverlay->create(":/glsl/overlay.vert.glsl", ":/glsl/overlay.frag.glsl");
+    mp_postProcess->create(":/glsl/postprocess.vert.glsl", ":/glsl/postprocess.frag.glsl");
 
     // Set a color with which to draw geometry since you won't have one
     // defined until you implement the Node classes.
@@ -116,7 +157,7 @@ void MyGL::resizeGL(int w, int h)
 {
     //This code sets the concatenated view and perspective projection matrices used for
     //our scene's camera view.
-    *mp_camera = Camera(w, h, glm::vec3(mp_player->getPosition()), //glm::vec3(mp_terrain->dimensions.x, mp_terrain->dimensions.y * 0.75, mp_terrain->dimensions.z),
+    *mp_camera = Camera(w, h, glm::vec3(mp_player->getPosition()),
                        glm::vec3(mp_terrain->dimensions.x / 2, mp_terrain->dimensions.y / 2, mp_terrain->dimensions.z / 2), glm::vec3(0,1,0));
     glm::mat4 viewproj = mp_camera->getViewProj();
 
@@ -125,6 +166,7 @@ void MyGL::resizeGL(int w, int h)
     mp_progLambert->setViewProjMatrix(viewproj);
     mp_progFlat->setViewProjMatrix(viewproj);
     mp_progLambert->setViewVector(glm::vec4(mp_camera->look, 0));
+    mp_postProcess->setDimensions(glm::ivec2(w, h));
 
     printGLErrorLog();
 }
@@ -138,8 +180,10 @@ void MyGL::timerUpdate()
     // update the velocity
     dt /= 1000.0f;
     mp_player->updateVelocity();
+    //mp_sheep->updateVelocity();
     // check for collisions
     mp_player->checkCollision(dt, mp_terrain);
+    //mp_sheep->checkCollision(dt);
     mp_camera->RecomputeAttributes();
     startTime = now;
     //mp_player->resetKey();
@@ -160,11 +204,16 @@ void MyGL::paintGL()
     mp_progFlat->setViewProjMatrix(mp_camera->getViewProj());
     mp_progLambert->setViewProjMatrix(mp_camera->getViewProj());
     mp_progLambert->setViewVector(glm::vec4(mp_camera->look, 0));
+    mp_progLambert->setPlayerPos(mp_player->getPosition());
     mp_progLambert->setTime(m_time);
     mp_progFlat->setTime(m_time);
+    mp_postProcess->setTime(m_time);
     m_time++;
 
     mp_texture->bind(0);
+    //mp_sheep->destroy();
+    //mp_sheep->create();
+    //mp_progLambert->draw(*mp_sheep);
     GLDrawScene();
 
     glDisable(GL_DEPTH_TEST);
@@ -173,6 +222,16 @@ void MyGL::paintGL()
     mp_progFlat->setViewProjMatrix(glm::mat4());
     mp_progFlat->drawPosNorCol(*cur);
     glEnable(GL_DEPTH_TEST);
+
+    /*glBindFramebuffer(GL_FRAMEBUFFER, this->defaultFramebufferObject());
+    // Render on the whole framebuffer, complete from the lower left corner to the upper right
+    glViewport(0,0,this->width() * this->devicePixelRatio(), this->height() * this->devicePixelRatio());
+    // Clear the screen
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_renderedTexture);
+
+    mp_postProcess->drawOverlay(m_geomQuad);*/
 }
 
 void MyGL::GLDrawScene()
