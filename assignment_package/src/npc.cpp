@@ -10,7 +10,7 @@ void NPC::updateVelocity() {
 
 void NPC::checkCollision(float dt) {
 
-   /* BlockType inBlock = terrain->getBlockAt(position.x, position.y, position.z);
+    BlockType inBlock = terrain->getBlockAt(position.x, position.y, position.z);
     if(isLiquidBlock(inBlock)) {
         if(inLiquid == false) {
             acceleration = glm::vec4(acceleration.x * 2 / 3, acceleration.y * 2 / 3, acceleration.z * 2 / 3, 1);
@@ -37,7 +37,7 @@ void NPC::checkCollision(float dt) {
         std::vector<glm::vec4> toCheck = getPointsToCheck(dir);
         for (glm::vec4 point : toCheck) {
             glm::vec4 potentialPos = point + curDist * dir;
-            BlockType currBlock = t->getBlockAt(potentialPos.x, potentialPos.y, potentialPos.z);
+            BlockType currBlock = terrain->getBlockAt(potentialPos.x, potentialPos.y, potentialPos.z);
             if (currBlock != EMPTY && !isLiquidBlock(currBlock)) {
                 if (!grounded) {
                     velocity = glm::vec4(0, 0, 0, 1);
@@ -58,10 +58,10 @@ void NPC::checkCollision(float dt) {
                 glm::vec4 corner2 = glm::vec4(position.x + 0.5f, yIncr, position.z + 0.5f, 0);
                 glm::vec4 corner3 = glm::vec4(position.x - 0.5f, yIncr, position.z - 0.5f, 0);
                 glm::vec4 corner4 = glm::vec4(position.x - 0.5f, yIncr, position.z + 0.5f, 0);
-                BlockType b1 = t->getBlockAt(corner1.x, corner1.y, corner1.z);
-                BlockType b2 = t->getBlockAt(corner2.x, corner2.y, corner2.z);
-                BlockType b3 = t->getBlockAt(corner3.x, corner3.y, corner3.z);
-                BlockType b4 = t->getBlockAt(corner4.x, corner4.y, corner4.z);
+                BlockType b1 = terrain->getBlockAt(corner1.x, corner1.y, corner1.z);
+                BlockType b2 = terrain->getBlockAt(corner2.x, corner2.y, corner2.z);
+                BlockType b3 = terrain->getBlockAt(corner3.x, corner3.y, corner3.z);
+                BlockType b4 = terrain->getBlockAt(corner4.x, corner4.y, corner4.z);
                 if ((b1 == EMPTY || isLiquidBlock(b1)) && (b2 == EMPTY || isLiquidBlock(b2)) &&
                     (b3 == EMPTY || isLiquidBlock(b3)) && (b4 == EMPTY || isLiquidBlock(b4))) {
                     grounded = false;
@@ -77,17 +77,98 @@ void NPC::checkCollision(float dt) {
     // update the position accordingly
     glm::vec4 incrPos = curDist * dir;
     position += incrPos;
-    camera->eye = glm::vec3(position.x, position.y, position.z);
-    camera->ref += glm::vec3(incrPos.x, incrPos.y, incrPos.z);
     if (grounded) {
         velocity = glm::vec4(0, 0, 0, 1);
     } else {
         velocity.x = 0;
         velocity.z = 0;
-    }*/
+    }
 }
 
 std::vector<glm::vec4> NPC::getPointsToCheck(glm::vec4 direction) {
+    std::vector<glm::vec4> points; // store the points in here
+    if (direction.x > 0) {
+        float xIncr = position.x + 1.0f;
+        points.push_back(glm::vec4(xIncr, position.y, position.z - 0.75f, 0));
+        points.push_back(glm::vec4(xIncr, position.y, position.z + 0.75f, 0));
+        points.push_back(glm::vec4(xIncr, position.y, position.z, 0));
+        points.push_back(glm::vec4(xIncr, position.y + 1.0f, position.z + 0.75f, 0));
+        points.push_back(glm::vec4(xIncr, position.y + 1.0f, position.z - 0.75f, 0));
+        points.push_back(glm::vec4(xIncr, position.y + 1.0f, position.z, 0));
+        points.push_back(glm::vec4(xIncr, position.y - 1.0f, position.z + 0.75f, 0));
+        points.push_back(glm::vec4(xIncr, position.y - 1.0f, position.z - 0.75f, 0));
+        points.push_back(glm::vec4(xIncr, position.y - 1.0f, position.z, 0));
+    } else if (direction.x < 0) {
+        float xIncr = position.x - 1.5f;
+        points.push_back(glm::vec4(xIncr, position.y, position.z - 0.75f, 0));
+        points.push_back(glm::vec4(xIncr, position.y, position.z + 0.75f, 0));
+        points.push_back(glm::vec4(xIncr, position.y, position.z, 0));
+        points.push_back(glm::vec4(xIncr, position.y + 1.0f, position.z + 0.75f, 0));
+        points.push_back(glm::vec4(xIncr, position.y + 1.0f, position.z - 0.75f, 0));
+        points.push_back(glm::vec4(xIncr, position.y + 1.0f, position.z, 0));
+        points.push_back(glm::vec4(xIncr, position.y - 1.0f, position.z + 0.75f, 0));
+        points.push_back(glm::vec4(xIncr, position.y - 1.0f, position.z - 0.75f, 0));
+        points.push_back(glm::vec4(xIncr, position.y - 1.0f, position.z, 0));
+    }
+    if (direction.y > 0) {
+        float yIncr = position.y + 1.0f;
+        points.push_back(glm::vec4(position.x + 1.0f, yIncr, position.z - 0.75f, 0));
+        points.push_back(glm::vec4(position.x + 1.0f, yIncr, position.z + 0.75f, 0));
+        points.push_back(glm::vec4(position.x + 1.0f, yIncr, position.z, 0));
+        points.push_back(glm::vec4(position.x + 1.5f, yIncr, position.z - 0.75f, 0));
+        points.push_back(glm::vec4(position.x + 1.5f, yIncr, position.z + 0.75f, 0));
+        points.push_back(glm::vec4(position.x + 1.5f, yIncr, position.z, 0));
+        points.push_back(glm::vec4(position.x - 1.0f, yIncr, position.z - 0.75f, 0));
+        points.push_back(glm::vec4(position.x - 1.0f, yIncr, position.z + 0.75f, 0));
+        points.push_back(glm::vec4(position.x - 1.0f, yIncr, position.z, 0));
+        points.push_back(glm::vec4(position.x, yIncr, position.z, 0));
+        points.push_back(glm::vec4(position.x, yIncr, position.z + 0.75f, 0));
+        points.push_back(glm::vec4(position.x, yIncr, position.z - 0.75f, 0));
+    } else if (direction.y < 0) {
+        float yIncr = position.y - 1.0f;
+        points.push_back(glm::vec4(position.x + 1.0f, yIncr, position.z - 0.75f, 0));
+        points.push_back(glm::vec4(position.x + 1.0f, yIncr, position.z + 0.75f, 0));
+        points.push_back(glm::vec4(position.x + 1.0f, yIncr, position.z, 0));
+        points.push_back(glm::vec4(position.x + 1.5f, yIncr, position.z - 0.75f, 0));
+        points.push_back(glm::vec4(position.x + 1.5f, yIncr, position.z + 0.75f, 0));
+        points.push_back(glm::vec4(position.x + 1.5f, yIncr, position.z, 0));
+        points.push_back(glm::vec4(position.x - 1.0f, yIncr, position.z - 0.75f, 0));
+        points.push_back(glm::vec4(position.x - 1.0f, yIncr, position.z + 0.75f, 0));
+        points.push_back(glm::vec4(position.x - 1.0f, yIncr, position.z, 0));
+        points.push_back(glm::vec4(position.x, yIncr, position.z, 0));
+        points.push_back(glm::vec4(position.x, yIncr, position.z + 0.75f, 0));
+        points.push_back(glm::vec4(position.x, yIncr, position.z - 0.75f, 0));
+    }
+    if (direction.z > 0) {
+        float zIncr = position.z + 0.75f;
+        points.push_back(glm::vec4(position.x + 1.0f, position.y, zIncr, 0));
+        points.push_back(glm::vec4(position.x - 1.0f, position.y, zIncr, 0));
+        points.push_back(glm::vec4(position.x + 1.0f, position.y + 1.0f, zIncr, 0));
+        points.push_back(glm::vec4(position.x - 1.0f, position.y + 1.0f, zIncr, 0));
+        points.push_back(glm::vec4(position.x + 1.0f, position.y - 1.0f, zIncr, 0));
+        points.push_back(glm::vec4(position.x - 1.0f, position.y - 1.0f, zIncr, 0));
+        points.push_back(glm::vec4(position.x + 1.5f, position.y - 1.0f, zIncr, 0));
+        points.push_back(glm::vec4(position.x + 1.5f, position.y + 1.0f, zIncr, 0));
+        points.push_back(glm::vec4(position.x + 1.5f, position.y, zIncr, 0));
+        points.push_back(glm::vec4(position.x, position.y, zIncr, 0));
+        points.push_back(glm::vec4(position.x, position.y + 1.0f, zIncr, 0));
+        points.push_back(glm::vec4(position.x, position.y - 1.0f, zIncr, 0));
+    } else if (direction.z < 0) {
+        float zIncr = position.z - 0.75f;
+        points.push_back(glm::vec4(position.x + 1.0f, position.y, zIncr, 0));
+        points.push_back(glm::vec4(position.x - 1.0f, position.y, zIncr, 0));
+        points.push_back(glm::vec4(position.x + 1.0f, position.y + 1.0f, zIncr, 0));
+        points.push_back(glm::vec4(position.x - 1.0f, position.y + 1.0f, zIncr, 0));
+        points.push_back(glm::vec4(position.x + 1.0f, position.y - 1.0f, zIncr, 0));
+        points.push_back(glm::vec4(position.x - 1.0f, position.y - 1.0f, zIncr, 0));
+        points.push_back(glm::vec4(position.x + 1.5f, position.y - 1.0f, zIncr, 0));
+        points.push_back(glm::vec4(position.x + 1.5f, position.y + 1.0f, zIncr, 0));
+        points.push_back(glm::vec4(position.x + 1.5f, position.y, zIncr, 0));
+        points.push_back(glm::vec4(position.x, position.y, zIncr, 0));
+        points.push_back(glm::vec4(position.x, position.y + 1.0f, zIncr, 0));
+        points.push_back(glm::vec4(position.x, position.y - 1.0f, zIncr, 0));
+    }
+    return points;
 }
 
 bool NPC::isLiquidBlock(BlockType b) {
@@ -224,104 +305,104 @@ void NPC::create() {
 
     /// add head vertices
     // add front
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.25f, position.y + 0.75f, position.z + 1.25f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.5f, position.y + 1.25f, position.z + 1.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.y -= 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.25f, position.y + 0.25f, position.z + 1.25f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.5f, position.y + 0.25f, position.z + 1.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.25f, position.y + 0.25f, position.z + 1.25f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.5f, position.y + 0.25f, position.z + 1.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.y += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.25f, position.y + 0.75f, position.z + 1.25f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.5f, position.y + 1.25f, position.z + 1.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x -= 1.0f / 16.0f;
     // add back
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.25f, position.y + 0.75f, position.z + 0.75f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.5f, position.y + 1.25f, position.z + 0.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.y -= 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.25f, position.y + 0.25f, position.z + 0.75f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.5f, position.y + 0.25f, position.z + 0.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.25f, position.y + 0.25f, position.z + 0.75f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.5f, position.y + 0.25f, position.z + 0.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.y += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.25f, position.y + 0.75f, position.z + 0.75f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.5f, position.y + 1.25f, position.z + 0.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x -= 1.0f / 16.0f;
     // add left
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.25f, position.y + 0.75f, position.z + 0.75f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.5f, position.y + 1.25f, position.z + 0.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.y -= 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.25f, position.y + 0.25f, position.z + 0.75f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.5f, position.y + 0.25f, position.z + 0.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.25f, position.y + 0.25f, position.z + 1.25f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.5f, position.y + 0.25f, position.z + 1.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.y += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.25f, position.y + 0.75f, position.z + 1.25f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.5f, position.y + 1.25f, position.z + 1.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x -= 1.0f / 16.0f;
     // add right
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.25f, position.y + 0.75f, position.z + 1.25f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.5f, position.y + 1.25f, position.z + 1.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.y -= 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.25f, position.y + 0.25f, position.z + 1.25f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.5f, position.y + 0.25f, position.z + 1.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.25f, position.y + 0.25f, position.z + 0.75f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.5f, position.y + 0.25f, position.z + 0.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.y += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.25f, position.y + 0.75f, position.z + 0.75f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.5f, position.y + 1.25f, position.z + 0.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x -= 1.0f / 16.0f;
     // add top
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.25f, position.y + 0.75f, position.z + 0.75f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.5f, position.y + 1.25f, position.z + 0.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.y -= 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.25f, position.y + 0.75f, position.z + 1.25f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.5f, position.y + 1.25f, position.z + 1.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.25f, position.y + 0.75f, position.z + 1.25f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.5f, position.y + 1.25f, position.z + 1.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.y += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.25f, position.y + 0.75f, position.z + 0.75f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.5f, position.y + 1.25f, position.z + 0.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x -= 1.0f / 16.0f;
     // add bottom
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.25f, position.y + 0.25f, position.z + 0.75f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.5f, position.y + 0.25f, position.z + 0.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.y -= 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.25f, position.y + 0.25f, position.z + 1.25f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.5f, position.y + 0.25f, position.z + 1.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.25f, position.y + 0.25f, position.z + 1.25f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.5f, position.y + 0.25f, position.z + 1.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.y += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.25f, position.y + 0.25f, position.z + 0.75f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.5f, position.y + 0.25f, position.z + 0.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x -= 1.0f / 16.0f;
@@ -387,11 +468,11 @@ void NPC::create() {
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 1.0f, position.z - 0.6f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 1.0f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.y += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 0.5f, position.z - 0.6f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 0.5f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x -= 1.0f / 16.0f;
@@ -491,11 +572,11 @@ void NPC::create() {
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 1.0f, position.z - 0.6f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 1.0f, position.z - 0.1f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.y += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 0.5f, position.z - 0.6f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 0.5f, position.z - 0.1f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x -= 1.0f / 16.0f;
@@ -595,11 +676,11 @@ void NPC::create() {
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 1.0f, position.z + 0.6f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 1.0f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.y += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 0.5f, position.z + 0.6f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 0.5f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x -= 1.0f / 16.0f;
@@ -699,11 +780,11 @@ void NPC::create() {
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 1.0f, position.z + 0.6f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 1.0f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.y += 1.0f / 16.0f;
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 0.5f, position.z + 0.6f, 1));
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 0.5f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
     tex.x -= 1.0f / 16.0f;
