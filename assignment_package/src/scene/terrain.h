@@ -65,6 +65,8 @@ public:
 
     void drawRoute(Turtle startTurtle, Turtle nextTurtle);
     void drawLSystem(LSystem *l_system);
+    void drawBuilding(int x_start, int x_end, int z_start, int z_end, int gradient_start, int gradient_delta);
+    void drawSpiralBuilding(int x_start, int x_end, int z_start, int z_end, int gradient_start, int gradient_delta);
 
     // Multithreading
     QList<pair<pair<int, int>, Chunk*>> chunksToAdd;

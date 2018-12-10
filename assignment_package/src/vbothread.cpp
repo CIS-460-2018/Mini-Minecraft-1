@@ -203,6 +203,20 @@ void VBOThread::createVertexPosNorUV() {
                         isTransparent = false;
                         checkFunction = &VBOThread::shouldRenderSolid;
                         break;
+                    case RED_BRICK:
+                        uvIndicator = 27;
+                        cosinePow = 1.f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
+                        break;
+                    case WINDOW:
+                        uvIndicator = 28;
+                        cosinePow = 0.5f;
+                        isAnimate = 0;
+                        isTransparent = true;
+                        checkFunction = &VBOThread::shouldRenderSolid;
+                        break;
                     }
                     // top
                     if(checkEmpty(x, y+1, z, checkFunction)) {
@@ -509,6 +523,10 @@ glm::vec2 VBOThread::getTexture(int faceNum)
         return glm::vec2(1.0f / 16.0f * 2, 1.0f / 16.0f * 3);
     } else if(uvIndicator == 26) { // if gray
         return glm::vec2(1.0f / 16.0f * 1, 1.0f / 16.0f * 2);
+    } else if(uvIndicator == 27) {// if red brick
+        return glm::vec2(1.0f / 16.0f * 7, 1.0f);
+    } else if(uvIndicator == 28) {// if window
+        return glm::vec2(1.0f / 16.0f * 8, 1.0f / 16.0f * 15);
     }
 }
 

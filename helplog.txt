@@ -1,4 +1,5 @@
 Used the lecture slides for noise and fractal brownian motion functions (Yamir)
 Used the lsystems header code provided on Piazza (Yamir)
+Used the following code for printing a spiral matrix to render spiral buildings: https://www.geeksforgeeks.org/print-a-given-matrix-in-spiral-form/
 
 Went to Office Hours December 1 where Adam helped fix a bug from the previous milestone regarding adding chunks in the negative direction (Prateek)
