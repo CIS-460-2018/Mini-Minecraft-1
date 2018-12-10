@@ -19,6 +19,7 @@ uniform int u_Time;
 in vec4 fs_Nor;
 in vec4 fs_LightVec;
 uniform vec4 u_ViewVec;
+uniform vec4 u_Player;
 //in vec4 fs_Col;
 in vec2 fs_UV;
 in float fs_Cos;
@@ -63,7 +64,13 @@ void main()
                                                             //lit by our point light are not completely black.
 
         float specularIntensity = max(pow(dot(vec4(halfVec, 0) / 2.0, fs_Nor), fs_Cos), 0);
+        float dist = length(vec4(fs_Pos.x, 0, fs_Pos.z, 0) - vec4(u_Player.x, 0, u_Player.z, 0));
+        const vec3 fogColor = vec3(0.5, 0.5,0.5);
+        float fogFactor = (150 - dist)/(50);
+        fogFactor = clamp( fogFactor, 0.0, 1.0 );
+        vec3 lightColor = diffuseColor.rgb * lightIntensity + vec3(specularIntensity);
+        vec3 finalColor = mix(fogColor, lightColor, fogFactor);
 
         // Compute final shaded color
-        out_Col = vec4(diffuseColor.rgb * lightIntensity + vec3(specularIntensity), diffuseColor.a);
+        out_Col = vec4(finalColor, diffuseColor.a);
 }

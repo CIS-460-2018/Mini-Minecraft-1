@@ -365,6 +365,12 @@ void Terrain::addChunks() {
     for(pair<pair<int, int>, Chunk*> p: chunksToAdd) {
         chunkMap[getKey(p.first.first, p.first.second, true)] = p.second;
     }
+    for(pair<pair<int, int>, Chunk*> p: chunksToAdd) {
+         p.second->create();
+     }
+     for(pair<pair<int, int>, Chunk*> p: chunksToAdd) {
+         p.second->createTransparent();
+     }
     chunksToAdd.clear();
 }
 

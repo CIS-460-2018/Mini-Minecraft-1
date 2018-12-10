@@ -118,7 +118,7 @@ void MyGL::resizeGL(int w, int h)
 {
     //This code sets the concatenated view and perspective projection matrices used for
     //our scene's camera view.
-    *mp_camera = Camera(w, h, glm::vec3(mp_player->getPosition()), //glm::vec3(mp_terrain->dimensions.x, mp_terrain->dimensions.y * 0.75, mp_terrain->dimensions.z),
+    *mp_camera = Camera(w, h, glm::vec3(mp_player->getPosition()),
                        glm::vec3(mp_terrain->dimensions.x / 2, mp_terrain->dimensions.y / 2, mp_terrain->dimensions.z / 2), glm::vec3(0,1,0));
     glm::mat4 viewproj = mp_camera->getViewProj();
 
@@ -140,8 +140,10 @@ void MyGL::timerUpdate()
     // update the velocity
     dt /= 1000.0f;
     mp_player->updateVelocity();
+    //mp_sheep->updateVelocity();
     // check for collisions
     mp_player->checkCollision(dt, mp_terrain);
+    mp_sheep->checkCollision(dt);
     mp_camera->RecomputeAttributes();
     startTime = now;
     //mp_player->resetKey();
@@ -162,11 +164,14 @@ void MyGL::paintGL()
     mp_progFlat->setViewProjMatrix(mp_camera->getViewProj());
     mp_progLambert->setViewProjMatrix(mp_camera->getViewProj());
     mp_progLambert->setViewVector(glm::vec4(mp_camera->look, 0));
+    mp_progLambert->setPlayerPos(mp_player->getPosition());
     mp_progLambert->setTime(m_time);
     mp_progFlat->setTime(m_time);
     m_time++;
 
     mp_texture->bind(0);
+    mp_sheep->destroy();
+    mp_sheep->create();
     mp_progLambert->draw(*mp_sheep);
     GLDrawScene();
 

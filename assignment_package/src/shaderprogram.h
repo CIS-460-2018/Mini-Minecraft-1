@@ -31,6 +31,7 @@ public:
     int unifTime; // A handle for the "uniform" float representing time in the shader
     int unifDimensions; // A handle to the "uniform" ivec2 that stores the width and height of the texture being rendered
     int unifView; // A handle for the "uniform" vec4 representing view vector in the vertex shader
+    int unifPlayer; // A handle for the "uniform" float representing the position of player in the vertex shader
 
 public:
     ShaderProgram(OpenGLContext* context);
@@ -64,6 +65,8 @@ public:
     void setDimensions(glm::ivec2 dims);
 
     void setViewVector(glm::vec4 view);
+
+    void setPlayerPos(glm::vec4 pos);
 
 private:
     OpenGLContext* context;   // Since Qt's OpenGL support is done through classes like QOpenGLFunctions_3_2_Core,

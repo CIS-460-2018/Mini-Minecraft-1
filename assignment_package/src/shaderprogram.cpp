@@ -10,7 +10,7 @@ ShaderProgram::ShaderProgram(OpenGLContext *context)
     : vertShader(), fragShader(), prog(),
       attrPos(-1), attrNor(-1), attrCol(-1), attrUV(-1), attrCos(-1), attrAnimate(-1),
       unifModel(-1), unifModelInvTr(-1), unifViewProj(-1), unifColor(-1),
-      unifSampler2D(-1), unifTime(-1), unifDimensions(-1), unifView(-1),
+      unifSampler2D(-1), unifTime(-1), unifDimensions(-1), unifView(-1), unifPlayer(-1),
       context(context)
 {}
 
@@ -77,6 +77,7 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     unifTime = context->glGetUniformLocation(prog, "u_Time");
     unifSampler2D = context->glGetUniformLocation(prog, "u_RenderedTexture");
     unifView = context->glGetUniformLocation(prog, "u_ViewVec");
+    unifPlayer = context->glGetUniformLocation(prog, "u_Player");
 }
 
 void ShaderProgram::useMe()
@@ -387,5 +388,14 @@ void ShaderProgram::setViewVector(glm::vec4 view) {
     if(unifView != -1)
     {
         context->glUniform4fv(unifView, 1, &view[0]);
+    }
+}
+
+void ShaderProgram::setPlayerPos(glm::vec4 pos) {
+    useMe();
+
+    if(unifPlayer != -1)
+    {
+        context->glUniform4fv(unifPlayer, 1, &pos[0]);
     }
 }

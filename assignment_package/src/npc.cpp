@@ -1,11 +1,66 @@
 #include "npc.h"
+#include <iostream>
 
 NPC::NPC(Terrain* t, OpenGLContext *context) : Drawable(context), terrain(t)
 {}
 
 void NPC::updateVelocity() {
     // decide the new velocity direction randomly if a collision happens
+    if (didCollide) {
+        float amount = 1.0f;
+        if(inLiquid) {
+            amount = amount * 2 / 3;
+        }
+        if (lastDirection.y != 0) {
+            // move along z
+            velocity = glm::vec4(0, 0, amount, 1);
+        }
+        if (lastDirection.x > 0) {
+            if (grounded) {
+                velocity = glm::vec4(amount, 7, 0, 1); // jump with speed of 7
+                acceleration = glm::vec4(0, -G, 0, 1);
+            }
+            if(inLiquid) {
+                velocity = glm::vec4(amount, 2.5, 0, 1); // jump with speed of 7
+                acceleration = glm::vec4(0, -2.f / 3.f * G, 0, 1);
+            }
+            grounded = false;
 
+        } else if (lastDirection.x < 0) {
+            if (grounded) {
+                velocity = glm::vec4(-amount, 7, 0, 1); // jump with speed of 7
+                acceleration = glm::vec4(0, -G, 0, 1);
+            }
+            if(inLiquid) {
+                velocity = glm::vec4(-amount, 2.5, 0, 1); // jump with speed of 7
+                acceleration = glm::vec4(0, -2.f / 3.f * G, 0, 1);
+            }
+            grounded = false;
+
+        }
+        if (lastDirection.z > 0) {
+            if (grounded) {
+                velocity = glm::vec4(0, 7, 0, 1); // jump with speed of 7
+                acceleration = glm::vec4(0, -G, 0, 1);
+            }
+            if(inLiquid) {
+                velocity = glm::vec4(0, 2.5, 0, 1); // jump with speed of 7
+                acceleration = glm::vec4(0, -2.f / 3.f * G, 0, 1);
+            }
+            grounded = false;
+        } else if (lastDirection.z < 0) {
+            if (grounded) {
+                velocity = glm::vec4(0, 7, -amount, 1); // jump with speed of 7
+                acceleration = glm::vec4(0, -G, 0, 1);
+            }
+            if(inLiquid) {
+                velocity = glm::vec4(0, 2.5, -amount, 1); // jump with speed of 7
+                acceleration = glm::vec4(0, -2.f / 3.f * G, 0, 1);
+            }
+            grounded = false;
+        }
+        didCollide = false;
+    }
 }
 
 void NPC::checkCollision(float dt) {
@@ -32,14 +87,25 @@ void NPC::checkCollision(float dt) {
     float curDist = 0;
     bool isColFound = false;
     while (curDist < maxDist && !isColFound) {
-        // check if incrementing position causes in collision
+        // check if incrementing position results in collision
         curDist += 0.25f;
         std::vector<glm::vec4> toCheck = getPointsToCheck(dir);
         for (glm::vec4 point : toCheck) {
             glm::vec4 potentialPos = point + curDist * dir;
             BlockType currBlock = terrain->getBlockAt(potentialPos.x, potentialPos.y, potentialPos.z);
             if (currBlock != EMPTY && !isLiquidBlock(currBlock)) {
+                //std::cout << potentialPos.x << " " << potentialPos.y << " " << potentialPos.z << std::endl;//terrain->getBlockAt(30, potentialPos.y, 30) << std::endl;
+
+                if (dir.z != 0) {
+                    std::cout << "Yooooo Z" << std::endl;
+                } else if (dir.x != 0) {
+                    std::cout << "Yooooo X" << std::endl;
+                } else if (dir.y != 0) {
+                    std::cout << "Yooooo Y" << std::endl;
+                }
+                didCollide = true;
                 if (!grounded) {
+                    std::cout << "Sheep X: " << position.x << "Y: " << position.y << "Z: " << position.z << std::endl;
                     velocity = glm::vec4(0, 0, 0, 1);
                     if (dir.y > 0) {
                         // head bump check
@@ -48,16 +114,18 @@ void NPC::checkCollision(float dt) {
                         acceleration = glm::vec4(0, 0, 0, 1);
                     }
                 }
+                lastDirection = dir;
+                //std::cout << "now the last direction is x:" << lastDirection.x << " y:" << lastDirection.y << " z:" << lastDirection.z << std::endl;
                 curDist -= 0.25f;
                 isColFound = true;
                 break;
             } else {
-                // check if player is falling off from a cliff
+                // check if NPC is falling off from a cliff
                 float yIncr = position.y - 0.5f;
-                glm::vec4 corner1 = glm::vec4(position.x + 0.5f, yIncr, position.z - 0.5f, 0);
-                glm::vec4 corner2 = glm::vec4(position.x + 0.5f, yIncr, position.z + 0.5f, 0);
-                glm::vec4 corner3 = glm::vec4(position.x - 0.5f, yIncr, position.z - 0.5f, 0);
-                glm::vec4 corner4 = glm::vec4(position.x - 0.5f, yIncr, position.z + 0.5f, 0);
+                glm::vec4 corner1 = glm::vec4(position.x - 1.5f, yIncr, position.z - 0.75f, 0);
+                glm::vec4 corner2 = glm::vec4(position.x - 1.5f, yIncr, position.z + 0.75f, 0);
+                glm::vec4 corner3 = glm::vec4(position.x + 1.0f, yIncr, position.z - 0.75f, 0);
+                glm::vec4 corner4 = glm::vec4(position.x + 1.0f, yIncr, position.z + 0.75f, 0);
                 BlockType b1 = terrain->getBlockAt(corner1.x, corner1.y, corner1.z);
                 BlockType b2 = terrain->getBlockAt(corner2.x, corner2.y, corner2.z);
                 BlockType b3 = terrain->getBlockAt(corner3.x, corner3.y, corner3.z);
@@ -77,12 +145,13 @@ void NPC::checkCollision(float dt) {
     // update the position accordingly
     glm::vec4 incrPos = curDist * dir;
     position += incrPos;
-    if (grounded) {
+    /*if (grounded) {
         velocity = glm::vec4(0, 0, 0, 1);
+        lastDirection = dir;
     } else {
         velocity.x = 0;
         velocity.z = 0;
-    }
+    }*/
 }
 
 std::vector<glm::vec4> NPC::getPointsToCheck(glm::vec4 direction) {
@@ -115,9 +184,9 @@ std::vector<glm::vec4> NPC::getPointsToCheck(glm::vec4 direction) {
         points.push_back(glm::vec4(position.x + 1.0f, yIncr, position.z - 0.75f, 0));
         points.push_back(glm::vec4(position.x + 1.0f, yIncr, position.z + 0.75f, 0));
         points.push_back(glm::vec4(position.x + 1.0f, yIncr, position.z, 0));
-        points.push_back(glm::vec4(position.x + 1.5f, yIncr, position.z - 0.75f, 0));
-        points.push_back(glm::vec4(position.x + 1.5f, yIncr, position.z + 0.75f, 0));
-        points.push_back(glm::vec4(position.x + 1.5f, yIncr, position.z, 0));
+        points.push_back(glm::vec4(position.x - 1.5f, yIncr, position.z - 0.75f, 0));
+        points.push_back(glm::vec4(position.x - 1.5f, yIncr, position.z + 0.75f, 0));
+        points.push_back(glm::vec4(position.x - 1.5f, yIncr, position.z, 0));
         points.push_back(glm::vec4(position.x - 1.0f, yIncr, position.z - 0.75f, 0));
         points.push_back(glm::vec4(position.x - 1.0f, yIncr, position.z + 0.75f, 0));
         points.push_back(glm::vec4(position.x - 1.0f, yIncr, position.z, 0));
@@ -129,9 +198,9 @@ std::vector<glm::vec4> NPC::getPointsToCheck(glm::vec4 direction) {
         points.push_back(glm::vec4(position.x + 1.0f, yIncr, position.z - 0.75f, 0));
         points.push_back(glm::vec4(position.x + 1.0f, yIncr, position.z + 0.75f, 0));
         points.push_back(glm::vec4(position.x + 1.0f, yIncr, position.z, 0));
-        points.push_back(glm::vec4(position.x + 1.5f, yIncr, position.z - 0.75f, 0));
-        points.push_back(glm::vec4(position.x + 1.5f, yIncr, position.z + 0.75f, 0));
-        points.push_back(glm::vec4(position.x + 1.5f, yIncr, position.z, 0));
+        points.push_back(glm::vec4(position.x - 1.5f, yIncr, position.z - 0.75f, 0));
+        points.push_back(glm::vec4(position.x - 1.5f, yIncr, position.z + 0.75f, 0));
+        points.push_back(glm::vec4(position.x - 1.5f, yIncr, position.z, 0));
         points.push_back(glm::vec4(position.x - 1.0f, yIncr, position.z - 0.75f, 0));
         points.push_back(glm::vec4(position.x - 1.0f, yIncr, position.z + 0.75f, 0));
         points.push_back(glm::vec4(position.x - 1.0f, yIncr, position.z, 0));
@@ -147,9 +216,9 @@ std::vector<glm::vec4> NPC::getPointsToCheck(glm::vec4 direction) {
         points.push_back(glm::vec4(position.x - 1.0f, position.y + 1.0f, zIncr, 0));
         points.push_back(glm::vec4(position.x + 1.0f, position.y - 1.0f, zIncr, 0));
         points.push_back(glm::vec4(position.x - 1.0f, position.y - 1.0f, zIncr, 0));
-        points.push_back(glm::vec4(position.x + 1.5f, position.y - 1.0f, zIncr, 0));
-        points.push_back(glm::vec4(position.x + 1.5f, position.y + 1.0f, zIncr, 0));
-        points.push_back(glm::vec4(position.x + 1.5f, position.y, zIncr, 0));
+        points.push_back(glm::vec4(position.x - 1.5f, position.y - 1.0f, zIncr, 0));
+        points.push_back(glm::vec4(position.x - 1.5f, position.y + 1.0f, zIncr, 0));
+        points.push_back(glm::vec4(position.x - 1.5f, position.y, zIncr, 0));
         points.push_back(glm::vec4(position.x, position.y, zIncr, 0));
         points.push_back(glm::vec4(position.x, position.y + 1.0f, zIncr, 0));
         points.push_back(glm::vec4(position.x, position.y - 1.0f, zIncr, 0));
@@ -161,9 +230,9 @@ std::vector<glm::vec4> NPC::getPointsToCheck(glm::vec4 direction) {
         points.push_back(glm::vec4(position.x - 1.0f, position.y + 1.0f, zIncr, 0));
         points.push_back(glm::vec4(position.x + 1.0f, position.y - 1.0f, zIncr, 0));
         points.push_back(glm::vec4(position.x - 1.0f, position.y - 1.0f, zIncr, 0));
-        points.push_back(glm::vec4(position.x + 1.5f, position.y - 1.0f, zIncr, 0));
-        points.push_back(glm::vec4(position.x + 1.5f, position.y + 1.0f, zIncr, 0));
-        points.push_back(glm::vec4(position.x + 1.5f, position.y, zIncr, 0));
+        points.push_back(glm::vec4(position.x - 1.5f, position.y - 1.0f, zIncr, 0));
+        points.push_back(glm::vec4(position.x - 1.5f, position.y + 1.0f, zIncr, 0));
+        points.push_back(glm::vec4(position.x - 1.5f, position.y, zIncr, 0));
         points.push_back(glm::vec4(position.x, position.y, zIncr, 0));
         points.push_back(glm::vec4(position.x, position.y + 1.0f, zIncr, 0));
         points.push_back(glm::vec4(position.x, position.y - 1.0f, zIncr, 0));
@@ -197,6 +266,8 @@ void NPC::create() {
     count = indices.size();
     glm::vec2 tex = glm::vec2(1.0f / 16.0f * 5, 1.0f / 16.0f * 13);
     float cos = 2.0f;
+
+    vbo_vert_pos_nor_uv_transparent.clear();
 
     /// add the body vertices
     // add front
