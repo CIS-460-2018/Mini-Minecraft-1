@@ -23,7 +23,8 @@ SOURCES += \
     $$PWD/quadrangle.cpp \
     $$PWD/fbmthread.cpp \
     $$PWD/cursor.cpp \
-    $$PWD/npc.cpp
+    $$PWD/npc.cpp \
+    $$PWD/scene/quad.cpp
 
 HEADERS += \
     $$PWD/la.h \
@@ -48,4 +49,5 @@ HEADERS += \
     $$PWD/quadrangle.h \
     $$PWD/fbmthread.h \
     $$PWD/cursor.h \
-    $$PWD/npc.h
+    $$PWD/npc.h \
+    $$PWD/scene/quad.h

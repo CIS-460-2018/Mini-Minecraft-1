@@ -56,4 +56,7 @@ SOURCES +=
 
 DISTFILES += \
     glsl/overlay.frag.glsl \
-    glsl/overlay.vert.glsl
+    glsl/overlay.vert.glsl \
+    glsl/postprocess.fsh \
+    glsl/postprocess.vert.glsl \
+    glsl/postprocess.frag.glsl

@@ -51,6 +51,8 @@ public:
     void drawT(Drawable &d);
 
     void drawPosNorCol(Drawable &d);
+
+    void drawOverlay(Drawable &d);
     // Utility function used in create()
     char* textFileRead(const char*);
     // Utility function that prints any shader compilation errors to the console
