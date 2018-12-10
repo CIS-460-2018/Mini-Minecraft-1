@@ -250,6 +250,17 @@ void Terrain::CreateTestScene()
                     setBlockAt(x, y, z, EMPTY);
                 }
             }
+            //            std::cout << rand() % 100 << std::endl;
+
+            //            if(rand() % 10000 == 98) {
+            //                int x_width = 10;
+            //                int z_width = 10;
+            //                int z_end = glm::clamp(z + z_width, x_boundary_start, x_boundary_end);
+            //                int x_end = glm::clamp(x + x_width, z_boundary_start, z_boundary_end);
+            //                std::cout << x << " " << x_end <<" " << z << " " << z_end << std::endl;
+            //                drawBuilding(x, x_end, z, z_end, 30, 3);
+            ////                drawBuilding(x, x_end, -20, -10, rand() % 30, 3);
+            //            }
         }
     }
 
@@ -343,6 +354,10 @@ void Terrain::drawBuilding(int x_start, int x_end, int z_start, int z_end, int g
 
     int x_gradient = gradient_start;
     int x_gradient_delta = gradient_delta;
+    int increment_x1 = (x_end - x_start) / 2;
+    int increment_x2 = (x_end - x_start) / 3;
+    int increment_z1 = (x_end - x_start) / 2;
+    int increment_z2 = (x_end - x_start) / 3;
 
     for(int x = x_start + 1; x <= x_end; x++) {
         int z_gradient = gradient_start;
@@ -352,9 +367,19 @@ void Terrain::drawBuilding(int x_start, int x_end, int z_start, int z_end, int g
                 x_gradient += 3;
                 z_gradient += 3;
             }
+
             for(int height = 128; height < 128 + x_gradient + z_gradient; height ++) {
 
-                setBlockAt(x, height, z, STONE);
+                if((x == (x_start + increment_x1) || x == (x_start + increment_x2) || x == (x_start + (2 * increment_x2)) || z == (z_start + increment_z1) || z == (z_start + increment_z2) || z == (z_start + (2 * increment_z2))) && height % 6 == 0) {
+                    setBlockAt(x, height, z, WINDOW);
+                }
+//                if(rand() % 100 > 95) {
+//                    setBlockAt(x, height, z, WINDOW);
+//                }
+                else {
+                    setBlockAt(x, height, z, RED_BRICK);
+
+                }
             }
             if(x == x_start + (x_end-x_start)/2 + 1 && z == z_start + (z_end-z_start)/2 + 1) {
                 x_gradient -= 3;
@@ -381,6 +406,9 @@ void Terrain::drawBuilding(int x_start, int x_end, int z_start, int z_end, int g
 
     }
 }
+
+
+
 
 void Terrain::drawSpiralBuilding(int x_start, int x_end, int z_start, int z_end, int gradient_start, int gradient_delta) {
 
