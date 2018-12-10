@@ -84,3 +84,27 @@ Troubles:
 - I’m not 100% sure if I implemented the Blinn Phong cosine power effect properly in my fragment shader since I’m not sure if I’m getting the desired shading effect. I’m using the formula from the lecture slides where I find the vector H (the mid vector between the view and light vectors) and dot it with the normal vector, but I might ask this to a TA at office hours just to make sure
 - I’m not sure if the transparency outcome is the desired one: I’m able to see the opaque blocks behind the transparent ones but I also think that some transparent blocks are not only containing the faces of neighboring opaque blocks, but also the faces of opaque blocks that are way under the transparent block I’m looking at. I will probably need to do some debugging on this
 - The animation of textures is slightly off at the very last transition. The way I increment fs_UV.x might be exceeding the bounds at the very end for a brief second, I will debug this after the presentation
+
+Milestone 3:
+1. Greyscale Image as a Height Map - Prateek Agarwal
+- Loads a QFileDialog when the 'G' key is pressed
+- Resizes the image to a size that doesn't expand the terrain too much
+- using the greyscale value to set the height of all blocks in a certain area
+Challenges:
+- Sampling pixels in increments so that every pixel need not be visited (because images come in varying sizes, some more than 1000 pixels wide, which would be too many blocks). 
+- when adding an image at the edge of the map, I had to make sure that new chunks were completely formed and not only filled where the height of the map was defined by the input picture. To do this, I first created fbm based chunks and then set the height based on the picture, so there would be no part of new chunks left as "holes".
+2. Color Image as a Height Map - Prateek Agarwal
+- sets the height of an area of the terrain as greyscale height mapping does by extracting the greyscale value of the sampled pixel.
+- Used an eye dropper tool to sample the average color of the colored blocks given in the original texture file. 
+- Added blocktypes for the 11 color blocks provided
+- Using the color of each sampled pixel, I found the colored block closest in 3D distance to the sampled pixel color and assigned that block as the top block of the cell. 
+Challenges:
+- At first, I thought I would define RGB ranges in which to assign each of the 11 given color blocks. However, I thought it would be simpler to think about the problem as a 3D voroni diagram. Switching to this approach made the code simpler to write and execute.
+3. Biomes - Prateek Agarwal
+- Split the terrain into 128 x 128 areas where a random point is sampled and a random biome is assigned. 
+- Based on distance to adjacent points, I create a voroni diagram that splits the entire terrain into different biomes and assigns the top block accordingly.
+- I use the distance to neighboring biomes to weight the chance that the top block is of the nieghboring biome rather than the current biome. The chance is 50% when at a point equally close to the original biome and a neighboring biome (i.e: on the "edge"). 
+Challenges:
+- Smoothing between biomes proved challenging. I tried using the difference between the distance to the assigned biome and an adjacent biome, tried using different functions to weight the chance of assigining an adjacent biome, such as a simple cosine function and the glm::smoothstep() function. 
+- I tried changing the heights based on the biome. When adding new chunks, you can see the attempt to change the height so that MOUNTAIN biomes are steeper than DESERT biomes. I still need to work on making the height transitions smooth though, because it is proving a bit difficult. 
+I also added arrow keys as a way of panning the camera, in case that better suits your preferences.
