@@ -334,21 +334,58 @@ void MyGL::keyPressEvent(QKeyEvent *e)
             int h = img->height();
 
             vector<vector<float>> newHeight;
+            vector<vector<pair<float, BlockType>>> newBlocks;
+            vector<pair<glm::vec3, BlockType>> colorMap;
+            colorMap.push_back(pair<glm::vec3, BlockType>(glm::vec3(25, 25, 25), BLACK));
+            colorMap.push_back(pair<glm::vec3, BlockType>(glm::vec3(62, 62, 62), DARK_GRAY));
+            colorMap.push_back(pair<glm::vec3, BlockType>(glm::vec3(155, 50, 46), RED));
+            colorMap.push_back(pair<glm::vec3, BlockType>(glm::vec3(215, 120, 150), PINK));
+            colorMap.push_back(pair<glm::vec3, BlockType>(glm::vec3(55, 65, 28), DARK_GREEN));
+            colorMap.push_back(pair<glm::vec3, BlockType>(glm::vec3(70, 180, 55), GREEN));
+            colorMap.push_back(pair<glm::vec3, BlockType>(glm::vec3(78, 50, 30), BROWN));
+            colorMap.push_back(pair<glm::vec3, BlockType>(glm::vec3(160, 170, 45), YELLOW));
+            colorMap.push_back(pair<glm::vec3, BlockType>(glm::vec3(45, 50, 145), DARK_BLUE));
+            colorMap.push_back(pair<glm::vec3, BlockType>(glm::vec3(120, 130, 205), BLUE));
+            colorMap.push_back(pair<glm::vec3, BlockType>(glm::vec3(125, 65, 165), PURPLE));
+            colorMap.push_back(pair<glm::vec3, BlockType>(glm::vec3(180, 80, 185), MAGENTA));
+            colorMap.push_back(pair<glm::vec3, BlockType>(glm::vec3(45, 110, 138), TURQOUISE));
+            colorMap.push_back(pair<glm::vec3, BlockType>(glm::vec3(215, 120, 50), ORANGE));
+            colorMap.push_back(pair<glm::vec3, BlockType>(glm::vec3(160, 160, 160), GRAY));
+
             bool greyscale = img->allGray();
             float pixCounter = 0;
             for(int i = 0; i < w; i++) {
                 newHeight.push_back(vector<float>());
+                newBlocks.push_back(vector<pair<float, BlockType>>());
                 for(float j = 0; j < h; j++) {
                     QColor p = img->pixel(i, j);
                     if(greyscale) {
                         newHeight[i].push_back(p.red() / 255.f * 32.f + 127);
                     } else {
-                        float col = .2126 * p.red() + .7152 * p.green() + .0722 * p.blue();
-                        newHeight[i].push_back(col / 255.f * 32.f + 127);
+                        float gVal = .2126 * p.red() + .7152 * p.green() + .0722 * p.blue();
+                        glm::vec3 currCol = glm::vec3(p.red(), p.green(), p.blue());
+                        BlockType b = BLACK;
+                        double minDist = std::sqrt(pow(currCol.x - colorMap[0].first.x, 2) +
+                                                   pow(currCol.y - colorMap[0].first.y, 2) +
+                                                   pow(currCol.z - colorMap[0].first.z, 2));
+                        for(int c = 0; c < colorMap.size(); c++) {
+                            double newDist = std::sqrt(pow(currCol.x - colorMap[c].first.x, 2) +
+                                                       pow(currCol.y - colorMap[c].first.y, 2) +
+                                                       pow(currCol.z - colorMap[c].first.z, 2));
+                            if(newDist < minDist) {
+                                newDist = minDist;
+                                b = colorMap[c].second;
+                            }
+                        }
+                        newBlocks[i].push_back(pair<float, BlockType>(gVal / 255.f * 32.f + 127, b));
                     }
                 }
             }
-            mp_terrain->updatePictureArea(mp_player->getPosition().x, mp_player->getPosition().z, newHeight);
+            if(greyscale) {
+                mp_terrain->updatePictureArea(mp_player->getPosition().x, mp_player->getPosition().z, newHeight);
+            } else {
+                mp_terrain->updateColorPictureArea(mp_player->getPosition().x, mp_player->getPosition().z, newBlocks);
+            }
             mp_terrain->updateScene();
         }
     } else {

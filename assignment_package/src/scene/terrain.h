@@ -51,6 +51,7 @@ public:
     BlockType findTopBlock(int x, int z);
     void CreateTestScene();
     void updatePictureArea(int playerX, int playerZ, vector<vector<float>> newHeight);
+    void updateColorPictureArea(int playerX, int playerZ, vector<vector<pair<float, BlockType>>> newBlocks);
 
     void updateChunk(glm::vec3 position);
 

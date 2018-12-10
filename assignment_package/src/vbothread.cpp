@@ -98,6 +98,111 @@ void VBOThread::createVertexPosNorUV() {
                         isTransparent = false;
                         checkFunction = &VBOThread::shouldRenderSolid;
                         break;
+                    case BLACK:
+                        uvIndicator = 12;
+                        cosinePow = 1.f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
+                        break;
+                    case DARK_GRAY:
+                        uvIndicator = 13;
+                        cosinePow = 1.f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
+                        break;
+                    case RED:
+                        uvIndicator = 14;
+                        cosinePow = 1.f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
+                        break;
+                    case PINK:
+                        uvIndicator = 15;
+                        cosinePow = 1.f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
+                        break;
+                    case DARK_GREEN:
+                        uvIndicator = 16;
+                        cosinePow = 1.f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
+                        break;
+                    case GREEN:
+                        uvIndicator = 17;
+                        cosinePow = 1.f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
+                        break;
+                    case BROWN:
+                        uvIndicator = 18;
+                        cosinePow = 1.f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
+                        break;
+                    case YELLOW:
+                        uvIndicator = 19;
+                        cosinePow = 1.f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
+                        break;
+                    case DARK_BLUE:
+                        uvIndicator = 20;
+                        cosinePow = 1.f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
+                        break;
+                    case BLUE:
+                        uvIndicator = 21;
+                        cosinePow = 1.f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
+                        break;
+                    case PURPLE:
+                        uvIndicator = 22;
+                        cosinePow = 1.f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
+                        break;
+                    case MAGENTA:
+                        uvIndicator = 23;
+                        cosinePow = 1.f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
+                        break;
+                    case TURQOUISE:
+                        uvIndicator = 24;
+                        cosinePow = 1.f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
+                        break;
+                    case ORANGE:
+                        uvIndicator = 25;
+                        cosinePow = 1.f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
+                        break;
+                    case GRAY:
+                        uvIndicator = 26;
+                        cosinePow = 1.f;
+                        isAnimate = 0;
+                        isTransparent = false;
+                        checkFunction = &VBOThread::shouldRenderSolid;
+                        break;
                     }
                     // top
                     if(checkEmpty(x, y+1, z, checkFunction)) {
@@ -374,6 +479,36 @@ glm::vec2 VBOThread::getTexture(int faceNum)
         }
     } else if(uvIndicator == 11) { // if sand
         return glm::vec2(1.0f / 16.0f * 14, 1.0f / 16.0f * 8);
+    } else if(uvIndicator == 12) { // if black
+        return glm::vec2(1.0f / 16.0f * 1, 1.0f / 16.0f * 9);
+    } else if(uvIndicator == 13) { // if dark gray
+        return glm::vec2(1.0f / 16.0f * 2, 1.0f / 16.0f * 9);
+    } else if(uvIndicator == 14) { // if red
+        return glm::vec2(1.0f / 16.0f * 1, 1.0f / 16.0f * 8);
+    } else if(uvIndicator == 15) { // if pink
+        return glm::vec2(1.0f / 16.0f * 2, 1.0f / 16.0f * 8);
+    } else if(uvIndicator == 16) { // if dark green
+        return glm::vec2(1.0f / 16.0f * 1, 1.0f / 16.0f * 7);
+    } else if(uvIndicator == 17) { // if green
+        return glm::vec2(1.0f / 16.0f * 2, 1.0f / 16.0f * 7);
+    } else if(uvIndicator == 18) { // if brown
+        return glm::vec2(1.0f / 16.0f * 1, 1.0f / 16.0f * 6);
+    } else if(uvIndicator == 19) { // if yellow
+        return glm::vec2(1.0f / 16.0f * 2, 1.0f / 16.0f * 6);
+    } else if(uvIndicator == 20) { // if dark blue
+        return glm::vec2(1.0f / 16.0f * 1, 1.0f / 16.0f * 5);
+    } else if(uvIndicator == 21) { // if blue
+        return glm::vec2(1.0f / 16.0f * 2, 1.0f / 16.0f * 5);
+    } else if(uvIndicator == 22) { // if purple
+        return glm::vec2(1.0f / 16.0f * 1, 1.0f / 16.0f * 4);
+    } else if(uvIndicator == 23) { // if magenta
+        return glm::vec2(1.0f / 16.0f * 2, 1.0f / 16.0f * 4);
+    } else if(uvIndicator == 24) { // if turquoise
+        return glm::vec2(1.0f / 16.0f * 1, 1.0f / 16.0f * 3);
+    } else if(uvIndicator == 25) { // if orange
+        return glm::vec2(1.0f / 16.0f * 2, 1.0f / 16.0f * 3);
+    } else if(uvIndicator == 26) { // if gray
+        return glm::vec2(1.0f / 16.0f * 1, 1.0f / 16.0f * 2);
     }
 }
 
