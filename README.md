@@ -108,3 +108,42 @@ Challenges:
 - Smoothing between biomes proved challenging. I tried using the difference between the distance to the assigned biome and an adjacent biome, tried using different functions to weight the chance of assigining an adjacent biome, such as a simple cosine function and the glm::smoothstep() function. 
 - I tried changing the heights based on the biome. When adding new chunks, you can see the attempt to change the height so that MOUNTAIN biomes are steeper than DESERT biomes. I still need to work on making the height transitions smooth though, because it is proving a bit difficult. 
 I also added arrow keys as a way of panning the camera, in case that better suits your preferences.
+
+------------------------------------------------
+
+Milestone3 - Gizem Dal:
+
+1) Post-Process Camera Overlay:
+- Implemented the application of post-process shader to the game screen when the player goes underwater by using FBM functions (resource is given in the help log) that distorts the UV's as a function of time.
+Difficulties: I had difficulty making the distortion much more realistic and more fragment focused rather than screen focused.
+Also, some UV's that are passed to get the distorted UV coordinates exceed the bounds so there are more UV extensions than there should be I think.
+
+2) NPC:
+- Created NPC sheep characters that are under collision effects as well as the player and that can jump around. The first sheep is generated at coordinates (10, 400, 10, 1), then the other 2 sheep NPC's are generated at other places by using a generatePos() method.
+- Used a sheep texture file (resource stated below) to give appropriate colors to the sheep.
+Difficulties: Randomizing and determining the movements of the sheep (such as determining whether the sheep should move along the x-axis or jump over a wall, etc.) was harder than I thought, the method I have to generate the movements still need some revision to make the movements smoother and more randomized rather then moving the sheeps along a specific axis until they experience collision and stop.
+
+3) Distance fog:
+- Interpolated the final color of a block with some constant color based on the Z and X coordinates of the fragment to achieve a "fog" effect based on the distance terrain is from the camera. The instructions said that I should only take Z coordinates into account but I thought taking the X coordinate into account as well gave a more realistic and artistic look.
+- I determined the constant color (fog factor) by setting a "closest" and "farthest" distance constant such that the fog affect should start if the distance of the player is equal to the closest and the color of the fragment should be completely affected by the fog if the distance of the fragment falls into a value greater than the farthest.
+Difficulties: I didn't experience any difficulties, this feature seemed pretty straightforward.
+
+4) Sound effects:
+- Added sound effects to the game by using QSound, such as footsteps, splash sound of the water when the player jumps into a liquid block and the underwater sound that is played while the player is still inside a liquid block.
+Difficulties: The hard part about this feature was figuring out how to add the sound files, but I followed the same procedure as adding texture files and it worked. Other than that, I didn't experience any difficulties, this feature seemed pretty straightforward.
+
+5) Drawable cursor in the middle of the screen:
+- Implemented a class called Cursor that extends Drawable in order to draw a cross cursor in the middle of the screen so that the player can understand where the centerpoint is. After making the mouse cursor centralized, I thought there should be a static drawn cursor on the screen instead of the mouse icon since moving the mouse around caused a lot of glitches on the mouse icon.
+Difficulties: I initially had trouble drawing the cursor on screen space, yet I was able to do it after Nick and Adam explained me how to convert world coordinates to screen coordinates.
+
+6) Fixed bugs from previous milestones: Mouse movement, fluid animation, other player physics collision checks and edge cases
+
+Help Log:
+- Went to Adam and Nick's OH to figure out how to make the program run more efficiently and how to convert world coordinates to screen coordinates for the drawable cursor
+- Went to Connie's OH today to get some help on debugging for NPC and Post-Process camera overlay. The problem I had with NPC was fixed when I added the code that sets up the model matrix for the shader program. The bug with the overlay was fixed once I copied the code to set texture dimensions into resizeGL() and re-binded my frame buffer in paintGL().
+- Used internet resources for FBM and fog effect:https://thebookofshaders.com/13/, http://in2gpu.com/2014/07/22/create-fog-shader/, sheep texture file source: https://minecraft.novaskin.me/gallery/tag/sheep
+
+________________________________________
+
+
+
