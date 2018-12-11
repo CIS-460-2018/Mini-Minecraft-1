@@ -112,7 +112,32 @@ void Player::updateVelocity()
             if (isFlyMode) {
                 camera->TranslateAlongUp(-amount);
             }
+
         }
+        else if (key == Qt::Key_Left) {
+//                    if (isFlyMode) {
+                        camera->RotateAboutUp(amount);
+//                    }
+
+                }
+        else if (key == Qt::Key_Up) {
+//                    if (isFlyMode) {
+                        camera->RotateAboutRight(amount);
+//                    }
+
+                }
+        else if (key == Qt::Key_Right) {
+//                    if (isFlyMode) {
+                        camera->RotateAboutUp(-amount);
+//                    }
+
+                }
+        else if (key == Qt::Key_Down) {
+//                    if (isFlyMode) {
+                        camera->RotateAboutRight(-amount);
+//                    }
+
+                }
     }
 }
 

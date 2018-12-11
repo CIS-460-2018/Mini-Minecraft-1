@@ -271,11 +271,12 @@ void Terrain::CreateTestScene()
     drawBuilding(0, 10, 0, 10, 30, 3);
     drawSpiralBuilding(101, 108, 101, 108, 10, 2);
 
-    drawDisc(25, 10, 10, 20);
-    generateRandomWalkTunnel(25, 10, 10, 20, 100);
+    //Tunnel generation
+    drawDisc(25, -10, 10, 20);
+    generateRandomWalkTunnel(25, -10, 10, 20, 100);
 
-    drawDisc(-40, 80, 10, 20);
-    generateRandomWalkTunnel(-40, 80, 10, 20, 120);
+    drawDisc(-40, -80, 10, 20);
+    generateRandomWalkTunnel(-40, -80, 10, 20, 120);
 }
 
 void Terrain::drawDisc(int x, int z, int radius, int depth) {
