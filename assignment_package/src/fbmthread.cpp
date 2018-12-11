@@ -11,7 +11,19 @@ FBMThread::FBMThread(Chunk* ch, int _x, int _z, int _xChunk, int _zChunk, float 
 
 void FBMThread::run() {
     float height = fbm(xChunk*16 + x, zChunk*16 + z);
-    height = 128 + height * 32;
+    switch(topBlock) {
+    case SAND:
+        height = 128 + height * 10;
+        break;
+    case GRASS:
+        height = 128 + height * 12;
+        break;
+    case SNOW:
+        height = 128 + height * 14;
+        break;
+    case STONE:
+        height = 128 + height * 16;
+    }
 
     if (height < 128) {
         height = 128.f;

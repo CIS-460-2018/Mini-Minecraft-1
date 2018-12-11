@@ -7,6 +7,7 @@
 #include "fbmthread.h"
 #include <QThreadPool>
 #include <cstdlib>
+#include <QHash>
 
 using namespace glm;
 using namespace std;
@@ -174,6 +175,7 @@ BlockType Terrain::findTopBlock(int x, int z) {
             }
         }
     }
+
     // Handle smooth transition between biomes
     for(int i = -1; i <= 1; i++) {
         for(int j = -1; j <= 1; j++) {
@@ -190,17 +192,15 @@ BlockType Terrain::findTopBlock(int x, int z) {
         }
     }
 
-    switch(bt){
+    switch(bt) {
     case DESERT:
         return SAND;
-    case TUNDRA:
-        return SNOW;
-    case GRASSLAND:
-        return GRASS;
     case MOUNTAIN:
         return STONE;
-    default:
+    case GRASSLAND:
         return GRASS;
+    case TUNDRA:
+        return SNOW;
     }
 }
 
@@ -216,18 +216,18 @@ void Terrain::CreateTestScene()
             float height = fbm(x, z);
             switch(topBlock) {
             case SAND:
-                height = 128 + height * 12;
+                height = 128 + height * 10;
                 break;
             case GRASS:
                 height = 128 + height * 12;
                 break;
             case SNOW:
-                height = 128 + height * 12;
+                height = 128 + height * 14;
                 break;
             case STONE:
-                height = 128 + height * 12;
+                height = 128 + height * 16;
+                break;
             }
-
 
             if (height < 128) {
                 height = 128.f;
