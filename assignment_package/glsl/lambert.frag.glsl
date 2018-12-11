@@ -66,7 +66,7 @@ void main()
         float specularIntensity = max(pow(dot(vec4(halfVec, 0) / 2.0, fs_Nor), fs_Cos), 0);
         float dist = length(vec4(fs_Pos.x, 0, fs_Pos.z, 0) - vec4(u_Player.x, 0, u_Player.z, 0));
         const vec3 fogColor = vec3(0.5, 0.5,0.5);
-        float fogFactor = (150 - dist)/(50);
+        float fogFactor = (250 - dist)/(150);
         fogFactor = clamp( fogFactor, 0.0, 1.0 );
         vec3 lightColor = diffuseColor.rgb * lightIntensity + vec3(specularIntensity);
         vec3 finalColor = mix(fogColor, lightColor, fogFactor);

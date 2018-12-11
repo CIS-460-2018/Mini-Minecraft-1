@@ -85,7 +85,12 @@ Troubles:
 - I’m not sure if the transparency outcome is the desired one: I’m able to see the opaque blocks behind the transparent ones but I also think that some transparent blocks are not only containing the faces of neighboring opaque blocks, but also the faces of opaque blocks that are way under the transparent block I’m looking at. I will probably need to do some debugging on this
 - The animation of textures is slightly off at the very last transition. The way I increment fs_UV.x might be exceeding the bounds at the very end for a brief second, I will debug this after the presentation
 
-Milestone 3:
+
+------------------------------------------------
+
+
+Milestone3 - Prateek Agarwal:
+
 1. Greyscale Image as a Height Map - Prateek Agarwal
 - Loads a QFileDialog when the 'G' key is pressed
 - Resizes the image to a size that doesn't expand the terrain too much
@@ -109,7 +114,8 @@ Challenges:
 - I tried changing the heights based on the biome. When adding new chunks, you can see the attempt to change the height so that MOUNTAIN biomes are steeper than DESERT biomes. I still need to work on making the height transitions smooth though, because it is proving a bit difficult. 
 I also added arrow keys as a way of panning the camera, in case that better suits your preferences.
 
-------------------------------------------------
+________________________________________
+
 
 Milestone3 - Gizem Dal:
 
@@ -146,4 +152,16 @@ Help Log:
 ________________________________________
 
 
+1. Assets - buildings - Yamir Tainwala
+- generates two distinct building shapes - the Empire State building and the Burj Dubai. New textures were added for red bricks and windows and you can see windows covering one side of the Burj and being placed in a patter in the Empire State. 
+- Instead of using an L-System I used a spiral matrix traversal to generate incremental heights of the Burj and used a gradient calculation offset from the edges to determine the height of each segment of the Empire State.
+Challenges:
+- I found it hard to find the exact gradient values that yielding a good result and rendered buildings that mimiced the originals.
 
+2. Tunnels using random walks - Yamir Tainwala
+- I started at some location and bore a disc into the ground with some radius and depth paramters. Once this hole was dug, I used a random function over n iterations to determine whether to increment or decrement the x or z values with which to draw a segment of the tunnel.
+- Once the n iterations was completed another hole was dug into that x and z location so that the other end of the tunnel is accessible.
+- I also randomly placed pools of LAVA along the path of the tunnel.
+Challenges:
+- Since I didnt working on the chunking I was unaware how to display the pools of LAVA as their shells were display as pools of STONE blocks instead. Taking a walk inside the tunnel or flying around and dropping yourself near a LAVA pool is the only way to see it.
+- I ran into some bugs where unconnected segment of a tunnel were being rendered.
