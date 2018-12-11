@@ -66,6 +66,11 @@ public:
     void drawLSystem(LSystem *l_system);
     void drawBuilding(int x_start, int x_end, int z_start, int z_end, int gradient_start, int gradient_delta);
     void drawSpiralBuilding(int x_start, int x_end, int z_start, int z_end, int gradient_start, int gradient_delta);
+    void drawDisc(int x, int z, int radius, int depth);
+    void generateRandomWalkTunnel(int x, int z, int radius, int depth, int randomness_seed);
+    void drawTunnelSegment(int start_x, int end_x, int start_z, int end_z, int depth);
+    void drawLavaPool(int x, int z, int radius, int depth);
+
 
     // Multithreading
     QList<pair<pair<int, int>, Chunk*>> chunksToAdd;

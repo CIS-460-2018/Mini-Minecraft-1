@@ -270,6 +270,102 @@ void Terrain::CreateTestScene()
 
     drawBuilding(0, 10, 0, 10, 30, 3);
     drawSpiralBuilding(101, 108, 101, 108, 10, 2);
+
+    drawDisc(25, 10, 10, 20);
+    generateRandomWalkTunnel(25, 10, 10, 20, 100);
+
+    drawDisc(-40, 80, 10, 20);
+    generateRandomWalkTunnel(-40, 80, 10, 20, 120);
+}
+
+void Terrain::drawDisc(int x, int z, int radius, int depth) {
+    for(int i = x - radius; i < x + radius; i ++) {
+        for(int j = z - radius; j < z + radius; j ++) {
+            float distance = sqrt(pow(x - i, 2) + pow(z - j, 2));
+            if(distance < radius && hasChunk(i,j)) {
+                for(int y = 128 - depth; y < 256; y++) {
+                    setBlockAt(i, y, j, EMPTY);
+                }
+            }
+        }
+    }
+}
+
+void Terrain::drawLavaPool(int x, int z, int radius, int depth) {
+    for(int i = x - radius; i < x + radius; i ++) {
+        for(int j = z - radius; j < z + radius; j ++) {
+            float distance = sqrt(pow(x - i, 2) + pow(z - j, 2));
+            if(distance < radius && hasChunk(i,j)) {
+                    setBlockAt(i, 128-depth, j, LAVA);
+                    setBlockAt(i, 128-depth-1, j, LAVA);
+                    setBlockAt(i, 128-depth+1, j, LAVA);
+            }
+        }
+    }
+}
+
+void Terrain::generateRandomWalkTunnel(int x, int z, int radius, int depth, int randomness_seed) {
+
+    //Number of iterations of random walk
+    for(int i = 1; i < 100; i ++)
+    {
+        int random = rand() % randomness_seed;
+        if (random < randomness_seed/4) {
+            drawTunnelSegment(x, x + 20, z, z, depth);
+            x = x + 20;
+
+        }
+        else if (random < randomness_seed/2) {
+            drawTunnelSegment(x, x - 20, z, z, depth);
+            x = x - 20;
+        }
+        else if (random < randomness_seed * 3 / 4) {
+            drawTunnelSegment(x, x, z, z + 20, depth);
+            z = z + 20;
+        }
+        else {
+            drawTunnelSegment(x, x, z, z - 20, depth);
+            z = z - 20;
+        }
+
+        if (random < 3) {
+            drawLavaPool(x, z, radius*2, depth);
+        }
+
+    }
+    drawDisc(x, z, radius, depth);
+}
+
+void Terrain::drawTunnelSegment(int start_x, int end_x, int start_z, int end_z, int depth) {
+    if(start_x == end_x) {
+        for(int i = start_z; i < end_z; i++) {
+
+            for(int width = start_x - 5; width < start_x + 5; width++) {
+
+                for(int height = 128 - depth; height < std::min(128 - depth + 15, 127); height++) {
+                    if(hasChunk(width, i)) {
+                        setBlockAt(width, height, i, EMPTY);
+                    }
+                }
+            }
+
+        }
+    }
+
+    else if(start_z == end_z) {
+        for(int i = start_x; i < end_x; i++) {
+
+            for(int width = start_z - 5; width < start_z + 5; width++) {
+
+                for(int height = 128 - depth; height < std::min(128 - depth + 15, 127); height++) {
+                    if(hasChunk(i, width)) {
+                        setBlockAt(i, height, width, EMPTY);
+                    }
+                }
+            }
+
+        }
+    }
 }
 
 void Terrain::updatePictureArea(int playerX, int playerZ, vector<vector<float>> newHeight) {

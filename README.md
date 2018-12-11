@@ -108,3 +108,17 @@ Challenges:
 - Smoothing between biomes proved challenging. I tried using the difference between the distance to the assigned biome and an adjacent biome, tried using different functions to weight the chance of assigining an adjacent biome, such as a simple cosine function and the glm::smoothstep() function. 
 - I tried changing the heights based on the biome. When adding new chunks, you can see the attempt to change the height so that MOUNTAIN biomes are steeper than DESERT biomes. I still need to work on making the height transitions smooth though, because it is proving a bit difficult. 
 I also added arrow keys as a way of panning the camera, in case that better suits your preferences.
+
+4. Assets - buildings - Yamir Tainwala
+- generates two distinct building shapes - the Empire State building and the Burj Dubai. New textures were added for red bricks and windows and you can see windows covering one side of the Burj and being placed in a patter in the Empire State. 
+- Instead of using an L-System I used a spiral matrix traversal to generate incremental heights of the Burj and used a gradient calculation offset from the edges to determine the height of each segment of the Empire State.
+Challenges:
+- I found it hard to find the exact gradient values that yielding a good result and rendered buildings that mimiced the originals.
+
+5. Tunnels using random walks - Yamir Tainwala
+- I started at some location and bore a disc into the ground with some radius and depth paramters. Once this hole was dug, I used a random function over n iterations to determine whether to increment or decrement the x or z values with which to draw a segment of the tunnel.
+- Once the n iterations was completed another hole was dug into that x and z location so that the other end of the tunnel is accessible.
+- I also randomly placed pools of LAVA along the path of the tunnel.
+Challenges:
+- Since I didnt working on the chunking I was unaware how to display the pools of LAVA as their shells were display as pools of STONE blocks instead. Taking a walk inside the tunnel or flying around and dropping yourself near a LAVA pool is the only way to see it.
+- I ran into some bugs where unconnected segment of a tunnel were being rendered.
