@@ -32,6 +32,7 @@ public:
     int unifDimensions; // A handle to the "uniform" ivec2 that stores the width and height of the texture being rendered
     int unifView; // A handle for the "uniform" vec4 representing view vector in the vertex shader
     int unifPlayer; // A handle for the "uniform" float representing the position of player in the vertex shader
+    int unifMode; // A handle for the "uniform" float representing the state (water/lava/air) in the vertex shader
 
 public:
     ShaderProgram(OpenGLContext* context);
@@ -46,7 +47,7 @@ public:
     // Pass the given color to this shader on the GPU
     void setGeometryColor(glm::vec4 color);
     // Draw the given object to our screen using this ShaderProgram's shaders
-    void draw(Drawable &d);
+    void draw(Drawable &d, int texSlot);
 
     void drawT(Drawable &d);
 
@@ -69,6 +70,8 @@ public:
     void setViewVector(glm::vec4 view);
 
     void setPlayerPos(glm::vec4 pos);
+
+    void setUnifMode(int mode);
 
 private:
     OpenGLContext* context;   // Since Qt's OpenGL support is done through classes like QOpenGLFunctions_3_2_Core,

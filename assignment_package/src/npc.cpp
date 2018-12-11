@@ -1,5 +1,9 @@
 #include "npc.h"
 #include <iostream>
+#include <cstdlib>
+
+int NPC::posGenerationConstX = 10;
+int NPC::posGenerationConstZ = 10;
 
 NPC::NPC(Terrain* t, OpenGLContext *context) : Drawable(context), terrain(t)
 {}
@@ -12,27 +16,30 @@ void NPC::updateVelocity() {
             amount = amount * 2 / 3;
         }
         if (lastDirection.y != 0) {
-            // move along z
-            velocity = glm::vec4(0, 0, amount, 1);
+            if (position.x > position.z) {
+                velocity = glm::vec4(0, 0, amount, 1);
+            } else {
+                velocity = glm::vec4(amount, 0, 0, 1);
+            }
         }
         if (lastDirection.x > 0) {
             if (grounded) {
-                velocity = glm::vec4(amount, 7, 0, 1); // jump with speed of 7
+                velocity = glm::vec4(amount, 2, 0, 1); // jump with speed of 7
                 acceleration = glm::vec4(0, -G, 0, 1);
             }
             if(inLiquid) {
-                velocity = glm::vec4(amount, 2.5, 0, 1); // jump with speed of 7
+                velocity = glm::vec4(amount, 7, 0, 1); // jump with speed of 7
                 acceleration = glm::vec4(0, -2.f / 3.f * G, 0, 1);
             }
             grounded = false;
 
         } else if (lastDirection.x < 0) {
             if (grounded) {
-                velocity = glm::vec4(-amount, 7, 0, 1); // jump with speed of 7
+                velocity = glm::vec4(-amount, 2, 0, 1); // jump with speed of 7
                 acceleration = glm::vec4(0, -G, 0, 1);
             }
             if(inLiquid) {
-                velocity = glm::vec4(-amount, 2.5, 0, 1); // jump with speed of 7
+                velocity = glm::vec4(-amount, 7, 0, 1); // jump with speed of 7
                 acceleration = glm::vec4(0, -2.f / 3.f * G, 0, 1);
             }
             grounded = false;
@@ -40,21 +47,21 @@ void NPC::updateVelocity() {
         }
         if (lastDirection.z > 0) {
             if (grounded) {
-                velocity = glm::vec4(0, 7, 0, 1); // jump with speed of 7
+                velocity = glm::vec4(0, 2, amount, 1); // jump with speed of 7
                 acceleration = glm::vec4(0, -G, 0, 1);
             }
             if(inLiquid) {
-                velocity = glm::vec4(0, 2.5, 0, 1); // jump with speed of 7
+                velocity = glm::vec4(0, 2.5, amount, 1); // jump with speed of 7
                 acceleration = glm::vec4(0, -2.f / 3.f * G, 0, 1);
             }
             grounded = false;
         } else if (lastDirection.z < 0) {
             if (grounded) {
-                velocity = glm::vec4(0, 7, -amount, 1); // jump with speed of 7
+                velocity = glm::vec4(0, 2, -amount / 2.0f, 1); // jump with speed of 7
                 acceleration = glm::vec4(0, -G, 0, 1);
             }
             if(inLiquid) {
-                velocity = glm::vec4(0, 2.5, -amount, 1); // jump with speed of 7
+                velocity = glm::vec4(0, 2.5, -amount / 2.0f, 1); // jump with speed of 7
                 acceleration = glm::vec4(0, -2.f / 3.f * G, 0, 1);
             }
             grounded = false;
@@ -88,24 +95,14 @@ void NPC::checkCollision(float dt) {
     bool isColFound = false;
     while (curDist < maxDist && !isColFound) {
         // check if incrementing position results in collision
-        curDist += 0.25f;
+        curDist += 0.10f;
         std::vector<glm::vec4> toCheck = getPointsToCheck(dir);
         for (glm::vec4 point : toCheck) {
             glm::vec4 potentialPos = point + curDist * dir;
             BlockType currBlock = terrain->getBlockAt(potentialPos.x, potentialPos.y, potentialPos.z);
             if (currBlock != EMPTY && !isLiquidBlock(currBlock)) {
-                //std::cout << potentialPos.x << " " << potentialPos.y << " " << potentialPos.z << std::endl;//terrain->getBlockAt(30, potentialPos.y, 30) << std::endl;
-
-                if (dir.z != 0) {
-                    std::cout << "Yooooo Z" << std::endl;
-                } else if (dir.x != 0) {
-                    std::cout << "Yooooo X" << std::endl;
-                } else if (dir.y != 0) {
-                    std::cout << "Yooooo Y" << std::endl;
-                }
                 didCollide = true;
                 if (!grounded) {
-                    std::cout << "Sheep X: " << position.x << "Y: " << position.y << "Z: " << position.z << std::endl;
                     velocity = glm::vec4(0, 0, 0, 1);
                     if (dir.y > 0) {
                         // head bump check
@@ -115,8 +112,7 @@ void NPC::checkCollision(float dt) {
                     }
                 }
                 lastDirection = dir;
-                //std::cout << "now the last direction is x:" << lastDirection.x << " y:" << lastDirection.y << " z:" << lastDirection.z << std::endl;
-                curDist -= 0.25f;
+                curDist -= 0.10f;
                 isColFound = true;
                 break;
             } else {
@@ -145,13 +141,6 @@ void NPC::checkCollision(float dt) {
     // update the position accordingly
     glm::vec4 incrPos = curDist * dir;
     position += incrPos;
-    /*if (grounded) {
-        velocity = glm::vec4(0, 0, 0, 1);
-        lastDirection = dir;
-    } else {
-        velocity.x = 0;
-        velocity.z = 0;
-    }*/
 }
 
 std::vector<glm::vec4> NPC::getPointsToCheck(glm::vec4 direction) {
@@ -241,7 +230,7 @@ std::vector<glm::vec4> NPC::getPointsToCheck(glm::vec4 direction) {
 }
 
 bool NPC::isLiquidBlock(BlockType b) {
-    return false;
+    return (b == WATER || b == LAVA);
 }
 
 glm::vec4 NPC::getPosition() {
@@ -249,7 +238,11 @@ glm::vec4 NPC::getPosition() {
 }
 
 void NPC::generatePosition() {
-
+    position = glm::vec4(posGenerationConstX, 400, posGenerationConstZ, 1);
+    posGenerationConstX += (rand() % 200 - 50);
+    posGenerationConstZ += (rand() % 200 - 50);
+    posGenerationConstX = glm::clamp(posGenerationConstX, -200, 200);
+    posGenerationConstZ = glm::clamp(posGenerationConstZ, -200, 200);
 }
 
 void NPC::create() {
@@ -376,22 +369,22 @@ void NPC::create() {
 
     /// add head vertices
     // add front
+    glm::vec2 faceTexture = glm::vec2(57, 197) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.5f, position.y + 1.25f, position.z + 1.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(faceTexture.x, faceTexture.y, cos, 0));
+    faceTexture = glm::vec2(57, 146) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.5f, position.y + 0.25f, position.z + 1.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(faceTexture.x, faceTexture.y, cos, 0));
+    faceTexture = glm::vec2(108, 146) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.5f, position.y + 0.25f, position.z + 1.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(faceTexture.x, faceTexture.y, cos, 0));
+    faceTexture = glm::vec2(108, 197) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.5f, position.y + 1.25f, position.z + 1.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(faceTexture.x, faceTexture.y, cos, 0));
     // add back
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.5f, position.y + 1.25f, position.z + 0.5f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
@@ -479,421 +472,420 @@ void NPC::create() {
     tex.x -= 1.0f / 16.0f;
 
     /// add back left leg vertices
+    vec2 legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     // add front
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 0.5f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 1.0f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 1.0f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 0.5f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add back
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 0.5f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 1.0f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 1.0f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 0.5f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add left
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 0.5f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 1.0f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 1.0f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 0.5f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add right
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 0.5f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 1.0f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 1.0f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 0.5f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add top
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 0.5f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 0.5f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 0.5f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 0.5f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add bottom
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 1.0f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 1.0f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 1.0f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 1.0f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
 
     /// add back right leg vertices
     // add front
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 0.5f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 1.0f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 1.0f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 0.5f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add back
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 0.5f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 1.0f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 1.0f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 0.5f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add right
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 0.5f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 1.0f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 1.0f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 0.5f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add left
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 0.5f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 1.0f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 1.0f, position.z - 0.1f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 0.5f, position.z - 0.1f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add top
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 0.5f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 0.5f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 0.5f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 0.5f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add bottom
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 1.0f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 1.0f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 1.0f, position.z - 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 1.0f, position.z - 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
 
     /// add front left leg vertices
     // add front
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 0.5f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 1.0f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 1.0f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 0.5f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add back
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 0.5f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 1.0f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 1.0f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 0.5f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add left
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 0.5f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 1.0f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 1.0f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 0.5f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add right
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 0.5f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 1.0f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 1.0f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 0.5f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add top
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 0.5f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 0.5f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 0.5f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 0.5f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add bottom
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 1.0f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.75f, position.y - 1.0f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 1.0f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x - 0.35f, position.y - 1.0f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
 
     /// add front right leg vertices
     // add front
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 0.5f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 1.0f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 1.0f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 0.5f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, -1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add back
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 0.5f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 1.0f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 1.0f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 0.5f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 0, 1, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add right
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 0.5f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 1.0f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 1.0f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 0.5f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add left
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 0.5f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 1.0f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 1.0f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 0.5f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(-1, 0, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add top
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 0.5f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 0.5f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 0.5f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 0.5f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, 1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
     // add bottom
+    legTexture = glm::vec2(30, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 1.0f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y -= 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(30, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.75f, position.y - 1.0f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 11) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 1.0f, position.z + 1.0f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.y += 1.0f / 16.0f;
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
+    legTexture = glm::vec2(58, 39) * (1 / 256.0f);
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(position.x + 0.35f, position.y - 1.0f, position.z + 0.6f, 1));
     vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(0, -1, 0, 0));
-    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(tex.x, tex.y, cos, 0));
-    tex.x -= 1.0f / 16.0f;
-
+    vbo_vert_pos_nor_uv_transparent.push_back(glm::vec4(legTexture.x, legTexture.y, cos, 0));
 
     generateIdx();
     context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufIdx);
