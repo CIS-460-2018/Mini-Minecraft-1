@@ -17,7 +17,7 @@ MyGL::MyGL(QWidget *parent)
       mp_progLambert(new ShaderProgram(this)), mp_progFlat(new ShaderProgram(this)),
       mp_camera(new Camera()), mp_terrain(new Terrain(this)), mp_player(new Player(mp_camera)), mp_texture(new Texture(this)),
       mp_progOverlay(new ShaderProgram(this)), overlay(new Quadrangle(this, EMPTY)), cur(new Cursor(this)),
-      mp_sheep(new NPC(mp_terrain, this)), sheepTexture(new Texture(this))
+      sheepTexture(new Texture(this))//, mp_sheep(new NPC(mp_terrain, this))
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -27,6 +27,11 @@ MyGL::MyGL(QWidget *parent)
 
     setMouseTracking(true); // MyGL will track the mouse's movements even if a mouse button is not pressed
     setCursor(Qt::BlankCursor); // Make the cursor invisible
+    for (int i = 0; i < 3; i++) {
+        NPC* newSheep = new NPC(mp_terrain, this);
+        newSheep->generatePosition();
+        mp_sheep.push_back(newSheep);
+    }
 }
 
 MyGL::~MyGL()
@@ -47,7 +52,10 @@ MyGL::~MyGL()
     delete sheepTexture;
     delete cur;
     delete overlay;
-    delete mp_sheep;
+    //delete mp_sheep;
+    for (int i = 0; i < 3; i++) {
+        delete mp_sheep[i];
+    }
 }
 
 void MyGL::MoveMouseToCenter()
@@ -122,7 +130,10 @@ void MyGL::initializeGL()
     mp_worldAxes->create();
     cur->create();
     overlay->create();
-    mp_sheep->create();
+    //mp_sheep->create();
+    for (int i = 0; i < 3; i++) {
+        mp_sheep[i]->create();
+    }
 
     // Create and set up the diffuse shader
     mp_progLambert->create(":/glsl/lambert.vert.glsl", ":/glsl/lambert.frag.glsl");
@@ -191,10 +202,14 @@ void MyGL::timerUpdate()
     // update the velocity
     dt /= 1000.0f;
     mp_player->updateVelocity();
-    mp_sheep->updateVelocity();
+    for (int i = 0; i < 3; i++) {
+        mp_sheep[i]->updateVelocity();
+        mp_sheep[i]->checkCollision(dt);
+    }
+    //mp_sheep->updateVelocity();
     // check for collisions
     mp_player->checkCollision(dt, mp_terrain);
-    mp_sheep->checkCollision(dt);
+    //mp_sheep->checkCollision(dt);
     mp_camera->RecomputeAttributes();
     startTime = now;
     //mp_player->resetKey();
@@ -231,9 +246,11 @@ void MyGL::paintGL()
     mp_texture->bind(0);
     sheepTexture->bind(1);
     mp_progLambert->setModelMatrix(glm::mat4());
-    mp_sheep->destroy();
-    mp_sheep->create();
-    mp_progLambert->draw(*mp_sheep, 1);
+    for (int i = 0; i < 3; i++) {
+        mp_sheep[i]->destroy();
+        mp_sheep[i]->create();
+        mp_progLambert->draw(*(mp_sheep[i]), 1);
+    }
     GLDrawScene();
 
     glDisable(GL_DEPTH_TEST);

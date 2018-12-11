@@ -52,7 +52,8 @@ private:
 
     Player* mp_player; // player instance
     int64_t startTime; // initial elapsed time
-    NPC* mp_sheep;
+    //NPC* mp_sheep;
+    std::vector<NPC*> mp_sheep;
 
     /// Timer linked to timerUpdate(). Fires approx. 60 times per second
     QTimer timer;

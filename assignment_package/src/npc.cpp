@@ -1,5 +1,6 @@
 #include "npc.h"
 #include <iostream>
+#include <cstdlib>
 
 int NPC::posGenerationConstX = 10;
 int NPC::posGenerationConstZ = 10;
@@ -23,22 +24,22 @@ void NPC::updateVelocity() {
         }
         if (lastDirection.x > 0) {
             if (grounded) {
-                velocity = glm::vec4(amount, 7, 0, 1); // jump with speed of 7
+                velocity = glm::vec4(amount, 2, 0, 1); // jump with speed of 7
                 acceleration = glm::vec4(0, -G, 0, 1);
             }
             if(inLiquid) {
-                velocity = glm::vec4(amount, 2.5, 0, 1); // jump with speed of 7
+                velocity = glm::vec4(amount, 7, 0, 1); // jump with speed of 7
                 acceleration = glm::vec4(0, -2.f / 3.f * G, 0, 1);
             }
             grounded = false;
 
         } else if (lastDirection.x < 0) {
             if (grounded) {
-                velocity = glm::vec4(-amount, 7, 0, 1); // jump with speed of 7
+                velocity = glm::vec4(-amount, 2, 0, 1); // jump with speed of 7
                 acceleration = glm::vec4(0, -G, 0, 1);
             }
             if(inLiquid) {
-                velocity = glm::vec4(-amount, 2.5, 0, 1); // jump with speed of 7
+                velocity = glm::vec4(-amount, 7, 0, 1); // jump with speed of 7
                 acceleration = glm::vec4(0, -2.f / 3.f * G, 0, 1);
             }
             grounded = false;
@@ -46,17 +47,17 @@ void NPC::updateVelocity() {
         }
         if (lastDirection.z > 0) {
             if (grounded) {
-                velocity = glm::vec4(0, 7, amount / 2.0f, 1); // jump with speed of 7
+                velocity = glm::vec4(0, 2, amount, 1); // jump with speed of 7
                 acceleration = glm::vec4(0, -G, 0, 1);
             }
             if(inLiquid) {
-                velocity = glm::vec4(0, 2.5, amount / 2.0f, 1); // jump with speed of 7
+                velocity = glm::vec4(0, 2.5, amount, 1); // jump with speed of 7
                 acceleration = glm::vec4(0, -2.f / 3.f * G, 0, 1);
             }
             grounded = false;
         } else if (lastDirection.z < 0) {
             if (grounded) {
-                velocity = glm::vec4(0, 7, -amount / 2.0f, 1); // jump with speed of 7
+                velocity = glm::vec4(0, 2, -amount / 2.0f, 1); // jump with speed of 7
                 acceleration = glm::vec4(0, -G, 0, 1);
             }
             if(inLiquid) {
@@ -102,7 +103,6 @@ void NPC::checkCollision(float dt) {
             if (currBlock != EMPTY && !isLiquidBlock(currBlock)) {
                 didCollide = true;
                 if (!grounded) {
-                    //std::cout << "Sheep X: " << position.x << "Y: " << position.y << "Z: " << position.z << std::endl;
                     velocity = glm::vec4(0, 0, 0, 1);
                     if (dir.y > 0) {
                         // head bump check
@@ -112,7 +112,6 @@ void NPC::checkCollision(float dt) {
                     }
                 }
                 lastDirection = dir;
-                //std::cout << "now the last direction is x:" << lastDirection.x << " y:" << lastDirection.y << " z:" << lastDirection.z << std::endl;
                 curDist -= 0.10f;
                 isColFound = true;
                 break;
@@ -231,7 +230,7 @@ std::vector<glm::vec4> NPC::getPointsToCheck(glm::vec4 direction) {
 }
 
 bool NPC::isLiquidBlock(BlockType b) {
-    return false;
+    return (b == WATER || b == LAVA);
 }
 
 glm::vec4 NPC::getPosition() {
@@ -240,6 +239,10 @@ glm::vec4 NPC::getPosition() {
 
 void NPC::generatePosition() {
     position = glm::vec4(posGenerationConstX, 400, posGenerationConstZ, 1);
+    posGenerationConstX += (rand() % 200 - 50);
+    posGenerationConstZ += (rand() % 200 - 50);
+    posGenerationConstX = glm::clamp(posGenerationConstX, -200, 200);
+    posGenerationConstZ = glm::clamp(posGenerationConstZ, -200, 200);
 }
 
 void NPC::create() {
