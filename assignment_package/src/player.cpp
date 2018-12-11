@@ -112,14 +112,6 @@ void Player::updateVelocity()
             if (isFlyMode) {
                 camera->TranslateAlongUp(-amount);
             }
-        } else if (key == Qt::Key_Up) {
-            camera->RotateAboutRight(amount);
-        } else if (key == Qt::Key_Down) {
-            camera->RotateAboutRight(-amount);
-        } else if (key == Qt::Key_Right) {
-            camera->RotateAboutUp(-amount);
-        } else if (key == Qt::Key_Left) {
-            camera->RotateAboutUp(amount);
         }
     }
 }
@@ -169,7 +161,6 @@ void Player::checkCollision(float dt, Terrain* t)
             BlockType currBlock = t->getBlockAt(potentialPos.x, potentialPos.y, potentialPos.z);
             if (currBlock != EMPTY && !isLiquidBlock(currBlock)) {
                 if (!grounded) {
-                    //std::cout << "Me X: " << position.x << "Y: " << position.y << "Z: " << position.z << std::endl;
                     velocity = glm::vec4(0, 0, 0, 1);
                     if (dir.y > 0) {
                         // head bump check
